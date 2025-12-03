@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Reader Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); margin: 0; padding: 15px;}
+        .task-item { padding: 10px; margin-bottom: 5px; background: var(--tg-theme-secondary-bg-color); border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Список задач с n8n</h2>
+    <div id="taskList" class="task-list">Загрузка...</div>
+    
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        
+        // --- ВАШИ КРИТИЧЕСКИ ВАЖНЫЕ ДАННЫЕ ---
+        const N8N_BASE_URL = 'https://worldonme.app.n8n.cloud/webhook';
+        // ВВЕДИТЕ СЮДА СВОЙ ЛОГИН И ПАРОЛЬ Basic Auth (user:pass)
+        const N8N_AUTH_HEADER = 'Basic ' + btoa('admin:321'); 
+        // ------------------------------------
+        
+        function fetchTasks() {
+            document.getElementById('taskList').innerHTML = 'Подключение к n8n...';
+            
+            fetch(`${N8N_BASE_URL}/get-tasks`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': N8N_AUTH_HEADER, // Basic Auth
+                    'X-Init-Data': tg.initData // <-- ЭТО ГЕНЕРИРУЕТ ТОЛЬКО TELEGRAM!
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP Error! Status: ${response.status}. Проверьте Basic Auth.`);
+                }
+                return response.json();
+            })
+            .then(tasks => {
+                const list = document.getElementById('taskList');
+                list.innerHTML = '';
+                
+                if (!Array.isArray(tasks) || tasks.length === 0) {
+                    list.innerHTML = '<p>Задач нет. Ваш API работает!</p>';
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const item = document.createElement('div');
+                    item.className = 'task-item';
+                    item.innerHTML = `<strong>${task.task || 'Нет задачи'}</strong><br>
+                                      <small>Дата: ${task.date || '—'} Время: ${task.time || '—'}</small>`;
+                    list.appendChild(item);
+                });
+            })
+            .catch(error => {
+                document.getElementById('taskList').innerHTML = `<p style="color:red;">API Error: ${error.message}</p>`;
+                tg.showAlert(`Ошибка: ${error.message}`);
+            });
+        }
+
+        fetchTasks();
+    </script>
+</body>
+</html>
