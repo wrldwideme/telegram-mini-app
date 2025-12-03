@@ -18,7 +18,6 @@
         
         /* --- 2. ЗАГОЛОВКИ И СЕКЦИИ --- */
         h1 {
-            /* Финальное название */
             color: var(--tg-theme-text-color, #fff);
             font-size: 1.5em; 
             margin-top: 0;
@@ -26,15 +25,20 @@
             font-weight: 600;
         }
         
-        h2 {
+        /* Стили для заголовка формы - для кликабельности */
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             color: var(--tg-theme-text-color, #ecf0f1);
             font-size: 1.1em;
             margin-top: 0;
-            margin-bottom: 12px;
+            margin-bottom: 0; 
             font-weight: 500;
-            padding-top: 5px;
+            padding-bottom: 12px;
+            cursor: pointer; 
         }
-
+        
         .form-section {
             background: var(--tg-theme-secondary-bg-color, #2a2a2a);
             padding: 15px;
@@ -42,7 +46,37 @@
             margin-bottom: 25px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
-        
+
+        /* Иконка-переключатель */
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        /* -------------------------------------- */
+        /* ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ */
+        /* -------------------------------------- */
+
+        /* Контейнер для содержимого формы */
+        .form-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out; 
+        }
+
+        /* Класс, который разворачивает контент */
+        .form-section.expanded .form-content {
+            max-height: 500px; 
+            transition: max-height 0.4s ease-in;
+            padding-top: 10px;
+            border-top: 1px solid var(--tg-theme-bg-color, #333);
+        }
+
+        /* Поворот иконки */
+        .form-section.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
         /* --- 3. ПОЛЯ ФОРМЫ (MODERN INPUTS) --- */
         .input-group {
             margin-bottom: 15px;
@@ -93,21 +127,20 @@
             border-radius: 12px; 
             background: var(--tg-theme-secondary-bg-color, #2a2a2a); 
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s; /* Добавляем transition */
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s; 
             border-left: 5px solid;
             cursor: pointer;
         }
 
         .task-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Эффект приподнятия */
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); 
         }
         
         .task-card.high { border-left-color: var(--tg-theme-destructive-text-color, #e74c3c); }
         .task-card.medium { border-left-color: var(--tg-theme-link-color, #f39c12); }
         .task-card.low { border-left-color: #2ecc71; }
 
-        /* Динамическое выделение для просроченных (если нужно) */
         .task-card.expired {
             opacity: 0.6;
             background-color: var(--tg-theme-secondary-bg-color, #1f1f1f);
@@ -158,33 +191,39 @@
 
     <h1>Персональный ассистент To Do Bot 😎</h1> 
     
-    <div class="form-section">
-        <h2>✍️ Новая задача</h2>
-        <form id="task-form">
-            <div class="input-group">
-                <label for="taskInput">Текст задачи:</label>
-                <input type="text" id="taskInput" required placeholder="Например: Позвонить брату в 16:00">
-            </div>
-            
-            <div class="input-group">
-                <label for="dateInput">Дата:</label>
-                <input type="date" id="dateInput" required>
-            </div>
-            
-            <div class="input-group">
-                <label for="timeInput">Время:</label>
-                <input type="time" id="timeInput" required>
-            </div>
+    <div id="form-section" class="form-section">
+        <h2 class="collapsible-header" onclick="toggleForm()">
+            <span>✍️ Новая задача</span>
+            <span id="toggle-icon" class="toggle-icon">▼</span>
+        </h2>
 
-            <div class="input-group">
-                <label for="importanceInput">Важность:</label>
-                <select id="importanceInput" required>
-                    <option value="medium">Средняя (MEDIUM)</option>
-                    <option value="high">Высокая (HIGH)</option>
-                    <option value="low">Низкая (LOW)</option>
-                </select>
-            </div>
-        </form>
+        <div class="form-content">
+            <form id="task-form">
+                <div class="input-group">
+                    <label for="taskInput">Текст задачи:</label>
+                    <input type="text" id="taskInput" required placeholder="Например: Позвонить брату в 16:00">
+                </div>
+                
+                <div class="input-group">
+                    <label for="dateInput">Дата:</label>
+                    <input type="date" id="dateInput" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="timeInput">Время:</label>
+                    <input type="time" id="timeInput" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="importanceInput">Важность:</label>
+                    <select id="importanceInput" required>
+                        <option value="medium">Средняя (MEDIUM)</option>
+                        <option value="high">Высокая (HIGH)</option>
+                        <option value="low">Низкая (LOW)</option>
+                    </select>
+                </div>
+            </form>
+        </div>
     </div>
 
     <h2>🗓️ Активные задачи</h2>
@@ -204,8 +243,14 @@
         
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
+        const formSection = document.getElementById('form-section');
         
-        // --- 1. ЛОГИКА ДОБАВЛЕНИЯ ЗАДАЧИ (POST) ---
+        // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
+        function toggleForm() {
+            formSection.classList.toggle('expanded');
+        }
+
+        // --- 2. ЛОГИКА ДОБАВЛЕНИЯ ЗАДАЧИ (POST) ---
         async function sendTask() {
             
             const taskName = document.getElementById('taskInput').value.trim();
@@ -250,6 +295,7 @@
                 if (response.ok && result.success) {
                     tg.showAlert('Задача успешно добавлена!');
                     taskForm.reset(); 
+                    formSection.classList.remove('expanded'); 
                     await fetchTasks(); 
                 } else {
                     throw new Error(result.message || 'Не удалось добавить задачу. (Проверь n8n log)');
@@ -267,53 +313,82 @@
         tg.onEvent('mainButtonClicked', sendTask);
 
 
-        // --- 2. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (GET) ---
+        // --- 3. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (GET) ---
 
         /**
-         * Форматирует дату и время в читаемый вид с учетом "Сегодня/Завтра" и иконками.
-         * Также проверяет, не истекло ли время задачи.
-         * @returns {{formattedText: string, isExpired: boolean}}
+         * Парсит дату в формате ГГГГ-ММ-ДД или ДД.ММ.ГГГГ и возвращает объект Date.
+         */
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+
+            // 1. Пытаемся парсить стандартный ISO формат (ГГГГ-ММ-ДД)
+            if (dateStr.includes('-')) {
+                const parts = dateStr.split('-');
+                // Убеждаемся, что это YYYY-MM-DD
+                if (parts.length === 3 && parts[0].length === 4) {
+                    // Месяцы в JS с 0
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                }
+            }
+
+            // 2. Пытаемся парсить русский формат (ДД.ММ.ГГГГ) - возможно, из старых записей
+            if (dateStr.includes('.')) {
+                const parts = dateStr.split('.');
+                // Убеждаемся, что это DD.MM.YYYY
+                if (parts.length === 3 && parts[2].length === 4) {
+                    // Месяцы в JS с 0
+                    return new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+
+            // Если парсинг не удался, пробуем создать через new Date (для гибкости)
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        /**
+         * Форматирует дату и время и проверяет, не истекло ли время задачи.
          */
         function formatTaskDateTime(dateStr, timeStr) {
-            if (!dateStr || !timeStr) return { formattedText: 'Нет даты/времени', isExpired: false };
+            // Создаем полный объект Date, используя парсер для надежности
+            const dateOnly = parseDate(dateStr);
             
-            try {
-                // Создаем дату и время из строки (формат ISO 8601: YYYY-MM-DDTHH:MM)
-                const taskDateTime = new Date(`${dateStr}T${timeStr}:00`);
-                const now = new Date();
-                
-                // Проверка на просроченность
-                const isExpired = taskDateTime < now;
-
-                // Сброс времени для корректного сравнения "Сегодня/Завтра"
-                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const taskDateOnly = new Date(taskDateTime.getFullYear(), taskDateTime.getMonth(), taskDateTime.getDate());
-
-                let dateDisplay;
-                
-                if (taskDateOnly.getTime() === today.getTime()) {
-                    dateDisplay = 'Сегодня';
-                } else if (taskDateOnly.getTime() === today.getTime() + (24 * 60 * 60 * 1000)) { // + 1 день
-                    dateDisplay = 'Завтра';
-                } else {
-                    const options = { day: 'numeric', month: 'short' };
-                    dateDisplay = taskDateTime.toLocaleDateString('ru-RU', options).toUpperCase();
-                }
-
-                const formattedTime = timeStr; // Время оставляем в исходном формате
-                
-                return { 
-                    formattedText: `📅 ${dateDisplay} в ⏰ ${formattedTime}`, 
-                    isExpired: isExpired 
-                };
-
-            } catch (e) {
-                // В случае ошибки возвращаем исходные строки
-                return { 
-                    formattedText: `📅 ${dateStr} | ⏰ ${timeStr}`, 
-                    isExpired: false 
-                };
+            if (!dateOnly || !timeStr) {
+                return { formattedText: '📅 INVALID DATE', isExpired: false };
             }
+
+            // Устанавливаем время на объект Date
+            const timeParts = timeStr.split(':');
+            dateOnly.setHours(timeParts[0] || 0, timeParts[1] || 0, 0, 0);
+
+            const taskDateTime = dateOnly;
+            const now = new Date();
+            
+            // Проверка на просроченность
+            const isExpired = taskDateTime < now;
+
+            // Сброс времени для корректного сравнения "Сегодня/Завтра"
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const taskDateOnly = new Date(taskDateTime.getFullYear(), taskDateTime.getMonth(), taskDateTime.getDate());
+
+            let dateDisplay;
+            
+            if (taskDateOnly.getTime() === today.getTime()) {
+                dateDisplay = 'Сегодня';
+            } else if (taskDateOnly.getTime() === today.getTime() + (24 * 60 * 60 * 1000)) {
+                dateDisplay = 'Завтра';
+            } else {
+                const options = { day: 'numeric', month: 'short' };
+                // Используем taskDateOnly, чтобы избежать влияния времени
+                dateDisplay = taskDateOnly.toLocaleDateString('ru-RU', options).toUpperCase();
+            }
+
+            const formattedTime = timeStr;
+            
+            return { 
+                formattedText: `📅 ${dateDisplay} в ⏰ ${formattedTime}`, 
+                isExpired: isExpired 
+            };
         }
 
         function displayError(message) {
@@ -349,15 +424,23 @@
                     return;
                 }
                 
-                // 🚀 ИСПРАВЛЕННАЯ ЛОГИКА СОРТИРОВКИ: Сортируем по ближайшей дате и времени (ascending)
+                // 🚀 ИСПРАВЛЕННАЯ ЛОГИКА СОРТИРОВКИ: Сортируем по ближайшей дате и времени
                 tasks.sort((a, b) => {
-                    // Используем комбинированные строки для надежной сортировки
-                    const aDateTimeString = `${a.date}T${a.time}:00`;
-                    const bDateTimeString = `${b.date}T${b.time}:00`;
+                    // Используем функцию parseDate для создания надежных объектов Date
+                    const aDate = parseDate(a.date);
+                    const bDate = parseDate(b.date);
 
-                    if (aDateTimeString < bDateTimeString) return -1;
-                    if (aDateTimeString > bDateTimeString) return 1;
-                    return 0;
+                    if (!aDate || !bDate) return 0; // Не сортируем, если дата невалидна
+
+                    // Устанавливаем время для точной сортировки
+                    const aTimeParts = (a.time || '00:00').split(':');
+                    aDate.setHours(aTimeParts[0] || 0, aTimeParts[1] || 0, 0, 0);
+
+                    const bTimeParts = (b.time || '00:00').split(':');
+                    bDate.setHours(bTimeParts[0] || 0, bTimeParts[1] || 0, 0, 0);
+                    
+                    // Сортировка по возрастанию (самые ранние первыми)
+                    return aDate.getTime() - bDate.getTime();
                 });
                 // ------------------------------------------------------------------
 
@@ -367,8 +450,7 @@
                     const importance = (taskData.importance || 'low').toLowerCase();
                     const taskCard = document.createElement('div');
                     
-                    const taskText = taskData.task || 'Нет текста задачи'; // Используем taskData.task
-                    
+                    const taskText = taskData.task || 'Нет текста задачи'; 
                     const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
 
                     // Добавляем класс 'expired' (просрочено), если задача истекла
