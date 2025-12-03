@@ -321,8 +321,8 @@
                     const taskCard = document.createElement('div');
                     taskCard.className = `task-card ${importance}`; 
 
-                    // !!! ИСПРАВЛЕНИЕ !!!: Используем taskData.task_text, как возвращает n8n
-                    const taskText = taskData.task_text || 'Нет текста задачи'; 
+                    // !!! ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ !!!: Используем taskData.task
+                    const taskText = taskData.task || 'Нет текста задачи'; 
                     const dateTimeFormatted = formatTime(taskData.date, taskData.time);
 
                     taskCard.innerHTML = `
