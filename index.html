@@ -15,10 +15,15 @@
             margin: 0;
         }
         
+        /* Стилизация заголовка приложения */
         h1 {
             color: var(--tg-theme-accent-text-color, #3498db);
-            font-size: 1.5em;
-            margin-bottom: 20px;
+            font-size: 1.6em; /* Чуть крупнее */
+            margin-top: 0;
+            margin-bottom: 25px; /* Отступ от формы */
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--tg-theme-link-color, #3498db); /* Декоративная линия */
+            font-weight: 700;
         }
         
         /* Стили для формы */
@@ -27,6 +32,13 @@
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--tg-theme-text-color, #ecf0f1);
+            font-size: 1.2em;
+            margin-top: 0;
+            margin-bottom: 15px;
         }
         
         .form-section label {
@@ -48,9 +60,6 @@
             color: var(--tg-theme-text-color, #fff);
         }
         
-        /* Стиль кнопки Главной панели Telegram */
-        /* Настоящая кнопка управляется через JS (tg.MainButton) */
-        
         /* Стили для метки Важности */
         .task-card { border-left: 5px solid #444; padding: 15px; margin-bottom: 12px; border-radius: 8px; background: var(--tg-theme-secondary-bg-color, #2a2a2a); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
         .task-header { display: flex; align-items: center; margin-bottom: 5px; }
@@ -66,10 +75,10 @@
 </head>
 <body>
 
-    <h1>Список задач с n8n (To Do Bot)</h1>
+    <h1>🎯 Твой Планировщик Задач ✨</h1>
     
     <div class="form-section">
-        <h2>Добавить новую задачу</h2>
+        <h2>✍️ Быстрое добавление</h2>
         <form id="task-form">
             <label for="taskInput">Текст задачи:</label>
             <input type="text" id="taskInput" required>
@@ -89,7 +98,7 @@
         </form>
     </div>
 
-    <h2>Ваши невыполненные задачи</h2>
+    <h2>📝 Текущие задачи</h2>
     <div id="tasks-list">
         <p class="loading-message">Загрузка задач...</p>
     </div>
@@ -108,9 +117,8 @@
         const taskForm = document.getElementById('task-form');
         
         // --- 1. ЛОГИКА ДОБАВЛЕНИЯ ЗАДАЧИ (POST) ---
-        async function sendTask(event) {
-            event.preventDefault();
-
+        async function sendTask() {
+            
             const taskName = document.getElementById('taskInput').value.trim();
             const date = document.getElementById('dateInput').value;
             const time = document.getElementById('timeInput').value;
@@ -122,7 +130,7 @@
             }
 
             try {
-                tg.MainButton.showProgress(true); // Показываем прогресс
+                tg.MainButton.showProgress(true); 
                 
                 const response = await fetch(N8N_POST_URL, {
                     method: 'POST',
@@ -139,14 +147,23 @@
                     })
                 });
 
-                const result = await response.json();
+                let result;
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    if (response.ok) {
+                        result = { success: true, message: 'Задача добавлена' };
+                    } else {
+                        throw new Error(`Non-JSON response (Status: ${response.status})`);
+                    }
+                }
 
                 if (response.ok && result.success) {
                     tg.showAlert('Задача успешно добавлена!');
-                    taskForm.reset(); // Очищаем форму
-                    await fetchTasks(); // Перезагружаем список задач
+                    taskForm.reset(); 
+                    await fetchTasks(); 
                 } else {
-                    throw new Error(result.message || 'Не удалось добавить задачу.');
+                    throw new Error(result.message || 'Не удалось добавить задачу. (Проверь n8n log)');
                 }
 
             } catch (error) {
@@ -203,14 +220,18 @@
                     const taskCard = document.createElement('div');
                     taskCard.className = 'task-card';
 
+                    const taskText = taskData.task || 'Нет текста задачи';
+                    const dateText = taskData.date ? `Дата: ${taskData.date}` : 'Нет даты';
+                    const timeText = taskData.time ? `Время: ${taskData.time}` : 'Нет времени';
+
                     taskCard.innerHTML = `
                         <div class="task-info">
                             <div class="task-header">
                                 <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
-                                <span class="task-text">${taskData.task}</span>
+                                <span class="task-text">${taskText}</span>
                             </div>
                             
-                            <p>Дата: ${taskData.date} | Время: ${taskData.time}</p>
+                            <p>${dateText} | ${timeText}</p>
                         </div>
                     `;
                     tasksList.appendChild(taskCard);
@@ -227,4 +248,3 @@
     </script>
 </body>
 </html>
-
