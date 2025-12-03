@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>To Do Bot</title>
+    <title>Персональный ассистент To Do Bot 😎</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         /* --- 1. ТЕЛЕГРАМ ТЕМЫ И СБРОС СТИЛЕЙ --- */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             background-color: var(--tg-theme-bg-color, #1a1a1a);
             color: var(--tg-theme-text-color, #ecf0f1);
             padding: 15px;
             margin: 0;
-            transition: background-color 0.3s; /* Плавная смена темы */
+            transition: background-color 0.3s;
         }
         
         /* --- 2. ЗАГОЛОВКИ И СЕКЦИИ --- */
         h1 {
+            /* ИСПРАВЛЕНО ИМЯ ПРИЛОЖЕНИЯ */
             color: var(--tg-theme-text-color, #fff);
             font-size: 1.5em; 
             margin-top: 0;
@@ -37,9 +38,9 @@
         .form-section {
             background: var(--tg-theme-secondary-bg-color, #2a2a2a);
             padding: 15px;
-            border-radius: 12px; /* Более мягкие углы */
+            border-radius: 12px;
             margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Современная тень */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         /* --- 3. ПОЛЯ ФОРМЫ (MODERN INPUTS) --- */
@@ -60,7 +61,7 @@
             padding: 10px 12px;
             box-sizing: border-box;
             border: 1px solid var(--tg-theme-secondary-bg-color, #444);
-            border-radius: 8px; /* Скругленные поля */
+            border-radius: 8px;
             background: var(--tg-theme-bg-color, #333);
             color: var(--tg-theme-text-color, #fff);
             font-size: 0.9em;
@@ -69,12 +70,11 @@
         
         .form-section input:focus, .form-section select:focus {
             border-color: var(--tg-theme-link-color, #3498db);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3); /* Активный фокус */
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
             outline: none;
         }
         
         .form-section select {
-            /* Переопределяем фон для select, чтобы соответствовал дизайну */
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
@@ -95,14 +95,13 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
             transition: transform 0.2s;
             border-left: 5px solid;
-            cursor: pointer; /* Для будущей возможности клика */
+            cursor: pointer;
         }
 
         .task-card:hover {
             transform: translateY(-2px);
         }
         
-        /* Цвета для левой полосы */
         .task-card.high { border-left-color: var(--tg-theme-destructive-text-color, #e74c3c); }
         .task-card.medium { border-left-color: var(--tg-theme-link-color, #f39c12); }
         .task-card.low { border-left-color: #2ecc71; }
@@ -121,7 +120,7 @@
             font-size: 0.85em; 
             color: var(--tg-theme-hint-color, #aaa); 
             margin: 5px 0 0 0; 
-            margin-left: 10px; /* Отступ от тега */
+            margin-left: 10px;
         }
         
         .importance-tag { 
@@ -135,12 +134,10 @@
             text-align: center;
         }
 
-        /* Цвета тегов */
         .importance-tag.high { background-color: var(--tg-theme-destructive-text-color, #e74c3c); }
-        .importance-tag.medium { background-color: #f39c12; } /* Желтый */
-        .importance-tag.low { background-color: #2ecc71; } /* Зеленый */
+        .importance-tag.medium { background-color: #f39c12; }
+        .importance-tag.low { background-color: #2ecc71; }
 
-        /* Сообщения о состоянии */
         .loading-message, .empty-message, .error-message { 
             text-align: center; 
             padding: 30px; 
@@ -152,7 +149,7 @@
 </head>
 <body>
 
-    <h1>✨ Task Pilot</h1>
+    <h1>Персональный ассистент To Do Bot 😎</h1> 
     
     <div class="form-section">
         <h2>✍️ Новая задача</h2>
@@ -192,7 +189,7 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         
-        // --- ПЕРЕМЕННЫЕ N8N (Используем ваши значения) ---
+        // --- ПЕРЕМЕННЫЕ N8N ---
         const N8N_GET_URL = 'https://worldonme.app.n8n.cloud/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://worldonme.app.n8n.cloud/webhook/add-task'; 
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
@@ -234,10 +231,8 @@
 
                 let result;
                 try {
-                    // Пытаемся получить JSON
                     result = await response.json();
                 } catch (e) {
-                    // Если ответ не JSON, но успешный (200), считаем успехом (как мы настроили в n8n)
                     if (response.ok) {
                         result = { success: true, message: 'Задача добавлена' };
                     } else {
@@ -248,7 +243,7 @@
                 if (response.ok && result.success) {
                     tg.showAlert('Задача успешно добавлена!');
                     taskForm.reset(); 
-                    await fetchTasks(); // Обновляем список задач
+                    await fetchTasks();
                 } else {
                     throw new Error(result.message || 'Не удалось добавить задачу. (Проверь n8n log)');
                 }
@@ -261,7 +256,6 @@
             }
         }
         
-        // Устанавливаем кнопку Telegram для отправки формы (современный метод привязки)
         tg.MainButton.setText('➕ Добавить задачу').show();
         tg.onEvent('mainButtonClicked', sendTask);
 
@@ -275,16 +269,13 @@
         function formatTime(dateStr, timeStr) {
             if (!dateStr || !timeStr) return '';
             try {
-                // Создаем объект Date
                 const [year, month, day] = dateStr.split('-').map(Number);
                 const [hour, minute] = timeStr.split(':').map(Number);
                 const date = new Date(year, month - 1, day, hour, minute);
 
-                // Форматирование даты: 12 ДЕК
                 const dateOptions = { day: 'numeric', month: 'short' };
                 const formattedDate = date.toLocaleDateString('ru-RU', dateOptions).toUpperCase();
 
-                // Форматирование времени: 12:12
                 const formattedTime = timeStr; 
                 
                 return `${formattedDate} в ${formattedTime}`;
@@ -326,12 +317,12 @@
                 tasksList.innerHTML = ''; 
 
                 tasks.forEach(taskData => {
-                    // Используем поля, которые возвращает n8n: task_text, date, time
                     const importance = (taskData.importance || 'low').toLowerCase();
                     const taskCard = document.createElement('div');
-                    taskCard.className = `task-card ${importance}`; // Класс для цвета полосы
+                    taskCard.className = `task-card ${importance}`; 
 
-                    const taskText = taskData.task_text || 'Нет текста задачи';
+                    // ИСПОЛЬЗУЕМ taskData.task_text, как возвращает n8n
+                    const taskText = taskData.task_text || 'Нет текста задачи'; 
                     const dateTimeFormatted = formatTime(taskData.date, taskData.time);
 
                     taskCard.innerHTML = `
