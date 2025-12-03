@@ -2,21 +2,20 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Персональный ассистент To Do Bot 😎</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* --- 1. ТЕЛЕГРАМ ТЕМЫ И СБРОС СТИЛЕЙ --- */
+        /* Общие стили и стили карточек (как раньше) */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: var(--tg-theme-bg-color, #1a1a1a);
             color: var(--tg-theme-text-color, #ecf0f1);
             padding: 15px;
             margin: 0;
-            transition: background-color 0.3s;
         }
         
-        /* --- 2. ЗАГОЛОВКИ И СЕКЦИИ --- */
+        /* Стилизация заголовка приложения */
         h1 {
             /* ИСПРАВЛЕНО: Название приложения */
             color: var(--tg-theme-text-color, #fff);
@@ -26,161 +25,79 @@
             font-weight: 600;
         }
         
-        h2 {
-            color: var(--tg-theme-text-color, #ecf0f1);
-            font-size: 1.1em;
-            margin-top: 0;
-            margin-bottom: 12px;
-            font-weight: 500;
-            padding-top: 5px;
-        }
-
+        /* Стили для формы */
         .form-section {
             background: var(--tg-theme-secondary-bg-color, #2a2a2a);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        
-        /* --- 3. ПОЛЯ ФОРМЫ (MODERN INPUTS) --- */
-        .input-group {
+
+        h2 {
+            color: var(--tg-theme-text-color, #ecf0f1);
+            font-size: 1.2em;
+            margin-top: 0;
             margin-bottom: 15px;
         }
         
-        .input-group label {
+        .form-section label {
             display: block;
-            margin-bottom: 4px;
-            font-size: 0.85em;
+            margin-top: 10px;
+            font-size: 0.9em;
             color: var(--tg-theme-hint-color, #aaa);
-            font-weight: 400;
         }
         
         .form-section input, .form-section select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
             box-sizing: border-box;
             border: 1px solid var(--tg-theme-secondary-bg-color, #444);
-            border-radius: 8px;
+            border-radius: 4px;
             background: var(--tg-theme-bg-color, #333);
             color: var(--tg-theme-text-color, #fff);
-            font-size: 0.9em;
-            transition: border-color 0.2s, box-shadow 0.2s;
         }
         
-        .form-section input:focus, .form-section select:focus {
-            border-color: var(--tg-theme-link-color, #3498db);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
-            outline: none;
-        }
-        
-        .form-section select {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8l4-4H2z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            padding-right: 30px;
-        }
-        
-        /* --- 4. КАРТОЧКИ ЗАДАЧ (TASK CARDS) --- */
-        .task-card { 
-            display: flex;
-            align-items: center;
-            padding: 15px; 
-            margin-bottom: 12px; 
-            border-radius: 12px; 
-            background: var(--tg-theme-secondary-bg-color, #2a2a2a); 
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-            transition: transform 0.2s;
-            border-left: 5px solid;
-            cursor: pointer;
-        }
-
-        .task-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .task-card.high { border-left-color: var(--tg-theme-destructive-text-color, #e74c3c); }
-        .task-card.medium { border-left-color: var(--tg-theme-link-color, #f39c12); }
-        .task-card.low { border-left-color: #2ecc71; }
-
-        .task-info { flex-grow: 1; }
+        /* Стили для метки Важности */
+        .task-card { border-left: 5px solid #444; padding: 15px; margin-bottom: 12px; border-radius: 8px; background: var(--tg-theme-secondary-bg-color, #2a2a2a); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
         .task-header { display: flex; align-items: center; margin-bottom: 5px; }
-        
-        .task-text { 
-            font-weight: 600; 
-            font-size: 1em; 
-            word-wrap: break-word; 
-            color: var(--tg-theme-text-color);
-        }
-        
-        .task-card p { 
-            font-size: 0.85em; 
-            color: var(--tg-theme-hint-color, #aaa); 
-            margin: 5px 0 0 0; 
-            margin-left: 10px;
-        }
-        
-        .importance-tag { 
-            font-size: 0.7em; 
-            font-weight: 700; 
-            padding: 3px 8px; 
-            border-radius: 6px; 
-            margin-right: 10px; 
-            color: white; 
-            min-width: 60px; 
-            text-align: center;
-        }
-
-        .importance-tag.high { background-color: var(--tg-theme-destructive-text-color, #e74c3c); }
+        .task-text { font-weight: bold; font-size: 1.1em; word-wrap: break-word; }
+        .task-card p { font-size: 0.9em; color: var(--tg-theme-hint-color, #aaa); margin: 5px 0 0 0; }
+        .importance-tag { font-size: 0.7em; font-weight: bold; padding: 3px 8px; border-radius: 4px; margin-right: 10px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); min-width: 60px; text-align: center; }
+        .importance-tag.high { background-color: #e74c3c; }
         .importance-tag.medium { background-color: #f39c12; }
         .importance-tag.low { background-color: #2ecc71; }
-
-        .loading-message, .empty-message, .error-message { 
-            text-align: center; 
-            padding: 30px; 
-            color: var(--tg-theme-hint-color, #aaa); 
-            font-size: 0.9em;
-        }
+        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--tg-theme-hint-color, #aaa); }
         
     </style>
 </head>
 <body>
 
-    <h1>Персональный ассистент To Do Bot 😎</h1> 
+    <h1>Персональный ассистент To Do Bot 😎</h1>
     
     <div class="form-section">
-        <h2>✍️ Новая задача</h2>
+        <h2>✍️ Быстрое добавление</h2>
         <form id="task-form">
-            <div class="input-group">
-                <label for="taskInput">Текст задачи:</label>
-                <input type="text" id="taskInput" required placeholder="Например: Позвонить брату в 16:00">
-            </div>
+            <label for="taskInput">Текст задачи:</label>
+            <input type="text" id="taskInput" required>
             
-            <div class="input-group">
-                <label for="dateInput">Дата:</label>
-                <input type="date" id="dateInput" required>
-            </div>
+            <label for="dateInput">Дата (ГГГГ-ММ-ДД):</label>
+            <input type="date" id="dateInput" required>
             
-            <div class="input-group">
-                <label for="timeInput">Время:</label>
-                <input type="time" id="timeInput" required>
-            </div>
+            <label for="timeInput">Время (ЧЧ:ММ):</label>
+            <input type="time" id="timeInput" required>
 
-            <div class="input-group">
-                <label for="importanceInput">Важность:</label>
-                <select id="importanceInput" required>
-                    <option value="medium">Средняя (MEDIUM)</option>
-                    <option value="high">Высокая (HIGH)</option>
-                    <option value="low">Низкая (LOW)</option>
-                </select>
-            </div>
+            <label for="importanceInput">Важность:</label>
+            <select id="importanceInput" required>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
+                <option value="low">low</option>
+            </select>
         </form>
     </div>
 
-    <h2>🗓️ Активные задачи</h2>
+    <h2>📝 Текущие задачи</h2>
     <div id="tasks-list">
         <p class="loading-message">Загрузка задач...</p>
     </div>
@@ -189,11 +106,11 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         
-        // --- ПЕРЕМЕННЫЕ N8N ---
+        // --- ЗАПОЛНИТЕ ТРИ ПЕРЕМЕННЫЕ! ---
         const N8N_GET_URL = 'https://worldonme.app.n8n.cloud/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://worldonme.app.n8n.cloud/webhook/add-task'; 
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
-        // ------------------------------------------------
+        // ----------------------------------
         
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
@@ -243,7 +160,7 @@
                 if (response.ok && result.success) {
                     tg.showAlert('Задача успешно добавлена!');
                     taskForm.reset(); 
-                    await fetchTasks();
+                    await fetchTasks(); 
                 } else {
                     throw new Error(result.message || 'Не удалось добавить задачу. (Проверь n8n log)');
                 }
@@ -256,8 +173,9 @@
             }
         }
         
+        // Устанавливаем кнопку Telegram для отправки формы
         tg.MainButton.setText('➕ Добавить задачу').show();
-        tg.onEvent('mainButtonClicked', sendTask);
+        tg.MainButton.onClick(sendTask);
 
 
         // --- 2. ЛОГИКА ЗАГРУЗКИ ЗАДАЧ (GET) ---
@@ -265,26 +183,6 @@
             tasksList.innerHTML = `<p class="error-message">API Error: ${message}</p>`;
             tg.showAlert('Ошибка загрузки задач.');
         }
-
-        function formatTime(dateStr, timeStr) {
-            if (!dateStr || !timeStr) return '';
-            try {
-                const [year, month, day] = dateStr.split('-').map(Number);
-                const [hour, minute] = timeStr.split(':').map(Number);
-                const date = new Date(year, month - 1, day, hour, minute);
-
-                const dateOptions = { day: 'numeric', month: 'short' };
-                const formattedDate = date.toLocaleDateString('ru-RU', dateOptions).toUpperCase();
-
-                const formattedTime = timeStr; 
-                
-                return `${formattedDate} в ${formattedTime}`;
-
-            } catch (e) {
-                return `${dateStr} в ${timeStr}`;
-            }
-        }
-
 
         async function fetchTasks() {
             try {
@@ -310,20 +208,32 @@
                 const tasks = await response.json();
 
                 if (!Array.isArray(tasks) || tasks.length === 0) {
-                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
+                    tasksList.innerHTML = '<p class="empty-message">Нет невыполненных задач. Список пуст!</p>';
                     return;
                 }
                 
+                // 🚀 ЛОГИКА СОРТИРОВКИ: Сортируем по ближайшей дате и времени (ascending)
+                tasks.sort((a, b) => {
+                    // Создаем объекты Date для сравнения, используя поля date и time
+                    const aDateTime = new Date(`${a.date}T${a.time}:00`);
+                    const bDateTime = new Date(`${b.date}T${b.time}:00`);
+
+                    // Сортируем по возрастанию: a - b, чтобы ближайшая дата была первой
+                    return aDateTime.getTime() - bDateTime.getTime();
+                });
+                // ------------------------------------------------------------------
+
                 tasksList.innerHTML = ''; 
 
                 tasks.forEach(taskData => {
                     const importance = (taskData.importance || 'low').toLowerCase();
                     const taskCard = document.createElement('div');
-                    taskCard.className = `task-card ${importance}`; 
+                    taskCard.className = 'task-card';
 
-                    // !!! ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ !!!: Используем taskData.task
-                    const taskText = taskData.task || 'Нет текста задачи'; 
-                    const dateTimeFormatted = formatTime(taskData.date, taskData.time);
+                    // Используем taskData.task, как возвращает ваш GET-воркфлоу
+                    const taskText = taskData.task || 'Нет текста задачи';
+                    const dateText = taskData.date ? `Дата: ${taskData.date}` : 'Нет даты';
+                    const timeText = taskData.time ? `Время: ${taskData.time}` : 'Нет времени';
 
                     taskCard.innerHTML = `
                         <div class="task-info">
@@ -332,7 +242,7 @@
                                 <span class="task-text">${taskText}</span>
                             </div>
                             
-                            <p>${dateTimeFormatted}</p>
+                            <p>${dateText} | ${timeText}</p>
                         </div>
                     `;
                     tasksList.appendChild(taskCard);
