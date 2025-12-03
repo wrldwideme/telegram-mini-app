@@ -8,7 +8,7 @@
     <style>
         /* --- 1. ТЕЛЕГРАМ ТЕМЫ И СБРОС СТИЛЕЙ --- */
         body {
-            font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             background-color: var(--tg-theme-bg-color, #1a1a1a);
             color: var(--tg-theme-text-color, #ecf0f1);
             padding: 15px;
@@ -18,7 +18,7 @@
         
         /* --- 2. ЗАГОЛОВКИ И СЕКЦИИ --- */
         h1 {
-            /* ИСПРАВЛЕНО ИМЯ ПРИЛОЖЕНИЯ */
+            /* ИСПРАВЛЕНО: Название приложения */
             color: var(--tg-theme-text-color, #fff);
             font-size: 1.5em; 
             margin-top: 0;
@@ -321,7 +321,7 @@
                     const taskCard = document.createElement('div');
                     taskCard.className = `task-card ${importance}`; 
 
-                    // ИСПОЛЬЗУЕМ taskData.task_text, как возвращает n8n
+                    // !!! ИСПРАВЛЕНИЕ !!!: Используем taskData.task_text, как возвращает n8n
                     const taskText = taskData.task_text || 'Нет текста задачи'; 
                     const dateTimeFormatted = formatTime(taskData.date, taskData.time);
 
