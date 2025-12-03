@@ -1,66 +1,182 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Task Reader Mini App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: var(--tg-theme-bg-color); color: var(--tg-theme-text-color); margin: 0; padding: 15px;}
-        .task-item { padding: 10px; margin-bottom: 5px; background: var(--tg-theme-secondary-bg-color); border-radius: 5px; }
+        /* Общие стили */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color, #1a1a1a); /* Темный фон из темы Telegram */
+            color: var(--tg-theme-text-color, #ecf0f1); /* Светлый текст из темы Telegram */
+            padding: 15px;
+            margin: 0;
+        }
+        
+        h1 {
+            color: var(--tg-theme-accent-text-color, #3498db);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        /* Стиль карточки задачи */
+        .task-card {
+            border-left: 5px solid #444; 
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            background: var(--tg-theme-secondary-bg-color, #2a2a2a); /* Вторичный фон из темы Telegram */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Структура внутри карточки */
+        .task-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .task-text {
+            font-weight: bold;
+            font-size: 1.1em;
+            word-wrap: break-word; /* Перенос длинного текста */
+        }
+        
+        .task-card p {
+            font-size: 0.9em;
+            color: var(--tg-theme-hint-color, #aaa); /* Цвет подсказок */
+            margin: 5px 0 0 0;
+        }
+
+        /* Стили для метки Важности */
+        .importance-tag {
+            font-size: 0.7em;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 10px;
+            color: white;
+            text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+            min-width: 60px; /* Фиксируем ширину для ровности */
+            text-align: center;
+        }
+
+        /* Условная стилизация по важности */
+        .importance-tag.high {
+            background-color: #e74c3c; /* Красный */
+        }
+        .importance-tag.medium {
+            background-color: #f39c12; /* Оранжевый */
+        }
+        .importance-tag.low {
+            background-color: #2ecc71; /* Зеленый */
+        }
+        
+        .loading-message, .empty-message, .error-message {
+            text-align: center;
+            padding: 20px;
+            color: var(--tg-theme-hint-color, #aaa);
+        }
     </style>
 </head>
 <body>
-    <h2>Список задач с n8n</h2>
-    <div id="taskList" class="task-list">Загрузка...</div>
+
+    <h1>Список задач с n8n (To Do Bot)</h1>
     
+    <div id="tasks-list">
+        <p class="loading-message">Загрузка задач...</p>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
         
-        // --- ВАШИ КРИТИЧЕСКИ ВАЖНЫЕ ДАННЫЕ ---
-        const N8N_BASE_URL = 'https://worldonme.app.n8n.cloud/webhook';
-        // ВВЕДИТЕ СЮДА СВОЙ ЛОГИН И ПАРОЛЬ Basic Auth (user:pass)
-        const N8N_AUTH_HEADER = 'Basic ' + btoa('admin:321'); 
-        // ------------------------------------
+        // --- ЗАМЕНИТЕ ЭТИ ПЕРЕМЕННЫЕ ---
+        const N8N_BASE_URL = 'https://worldonme.app.n8n.cloud/webhook/get-tasks'; 
+        // Пример: 'https://worldonme.app.n8n.cloud/webhook/get-tasks'
         
-        function fetchTasks() {
-            document.getElementById('taskList').innerHTML = 'Подключение к n8n...';
-            
-            fetch(`${N8N_BASE_URL}/get-tasks`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': N8N_AUTH_HEADER, // Basic Auth
-                    'X-Init-Data': tg.initData // <-- ЭТО ГЕНЕРИРУЕТ ТОЛЬКО TELEGRAM!
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP Error! Status: ${response.status}. Проверьте Basic Auth.`);
-                }
-                return response.json();
-            })
-            .then(tasks => {
-                const list = document.getElementById('taskList');
-                list.innerHTML = '';
-                
-                if (!Array.isArray(tasks) || tasks.length === 0) {
-                    list.innerHTML = '<p>Задач нет. Ваш API работает!</p>';
+        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
+        // Пример: 'Basic YWRtaW46YmFzZXNlY3VyZXRlc3Q=' 
+        // -------------------------------
+        
+        const tasksList = document.getElementById('tasks-list');
+
+        function displayError(message) {
+            tasksList.innerHTML = `<p class="error-message">API Error: ${message}</p>`;
+            tg.showAlert('Ошибка загрузки задач.');
+        }
+
+        async function fetchTasks() {
+            try {
+                // 1. Проверяем наличие initData (ключ безопасности)
+                if (!tg.initData) {
+                    displayError('Telegram initData is missing. Cannot authorize.');
                     return;
                 }
 
-                tasks.forEach(task => {
-                    const item = document.createElement('div');
-                    item.className = 'task-item';
-                    item.innerHTML = `<strong>${task.task || 'Нет задачи'}</strong><br>
-                                      <small>Дата: ${task.date || '—'} Время: ${task.time || '—'}</small>`;
-                    list.appendChild(item);
+                tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
+
+                const response = await fetch(N8N_BASE_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData, // Отправляем заголовок безопасности
+                    },
                 });
-            })
-            .catch(error => {
-                document.getElementById('taskList').innerHTML = `<p style="color:red;">API Error: ${error.message}</p>`;
-                tg.showAlert(`Ошибка: ${error.message}`);
-            });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                // 2. Получаем и обрабатываем JSON
+                const tasks = await response.json();
+
+                if (!Array.isArray(tasks) || tasks.length === 0) {
+                    tasksList.innerHTML = '<p class="empty-message">Нет невыполненных задач. Список пуст!</p>';
+                    return;
+                }
+                
+                // 3. Рендеринг задач
+                tasksList.innerHTML = ''; // Очищаем сообщение о загрузке
+
+                tasks.forEach(taskData => {
+                    // Используем taskData.task, taskData.importance, которые были переименованы и очищены в n8n
+                    
+                    const importance = (taskData.importance || 'low').toLowerCase();
+                    const doneStatus = taskData.done || 'no';
+
+                    const taskCard = document.createElement('div');
+                    taskCard.className = 'task-card'; // Стилизация через CSS
+
+                    taskCard.innerHTML = `
+                        <div class="task-info">
+                            <div class="task-header">
+                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
+                                
+                                <span class="task-text">${taskData.task}</span>
+                            </div>
+                            
+                            <p>Дата: ${taskData.date} | Время: ${taskData.time}</p>
+                            
+                            <p class="status">Статус: <span style="font-weight: bold; color: ${doneStatus === 'yes' ? '#1abc9c' : '#e74c3c'};">${doneStatus === 'yes' ? 'Выполнено' : 'Не выполнено'}</span></p>
+                        </div>
+                    `;
+                    tasksList.appendChild(taskCard);
+                });
+
+                tg.MainButton.setText('Задачи загружены');
+                tg.MainButton.show();
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                displayError(error.message);
+                tg.MainButton.hide();
+            }
         }
 
+        // Запуск при загрузке
         fetchTasks();
     </script>
 </body>
