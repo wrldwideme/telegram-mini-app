@@ -325,22 +325,32 @@
             
             /* ЭФФЕКТ LIQUID GLASS */
             /* Полупрозрачный фон */
-            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
+            background: color-mix(in srgb, var(--secondary-bg-color) 85%, transparent); 
             /* Размытие для создания эффекта стекла */
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
+            backdrop-filter: blur(30px); 
+            -webkit-backdrop-filter: blur(30px); 
+            
+            /* Более округлые края как на iPhone */
+            border-radius: 20px 20px 0 0;
             
             /* Мягкий разделитель */
-            border-top: 1px solid color-mix(in srgb, var(--input-border-color) 50%, transparent); 
+            border-top: 1px solid color-mix(in srgb, var(--input-border-color) 30%, transparent);
+            border-left: 1px solid color-mix(in srgb, var(--input-border-color) 15%, transparent);
+            border-right: 1px solid color-mix(in srgb, var(--input-border-color) 15%, transparent);
             
             display: flex;
             justify-content: space-around;
-            padding: 5px 0;
-            box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.05);
+            padding: 8px 0 0 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
             z-index: 1000;
             
             /* Добавляем отступ для "безопасной зоны" на современных iPhone */
-            padding-bottom: calc(5px + env(safe-area-inset-bottom)); 
+            padding-bottom: calc(8px + env(safe-area-inset-bottom)); 
+            
+            /* Отступы по бокам для эффекта "плавающей панели" */
+            margin: 0 10px;
+            width: calc(100% - 20px);
+            box-sizing: border-box;
         }
         
         .nav-button {
@@ -354,9 +364,10 @@
             padding: 5px 10px;
             color: var(--hint-color);
             font-size: 0.7em;
-            transition: color 0.2s;
+            transition: color 0.2s, transform 0.2s;
             min-width: 60px;
             text-align: center;
+            flex: 1;
         }
         
         .nav-button.active {
@@ -372,7 +383,7 @@
             height: 45px;
             border-radius: 50%;
             margin-bottom: 2px;
-            transition: background-color 0.2s, box-shadow 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
         }
         
         .nav-button-icon span {
@@ -382,8 +393,13 @@
         
         /* Стиль активной иконки - только фон */
         .nav-button.active .nav-button-icon {
-            background-color: color-mix(in srgb, var(--link-color) 20%, transparent); 
-            box-shadow: none; /* Убираем агрессивную тень */
+            background-color: color-mix(in srgb, var(--link-color) 15%, transparent); 
+            transform: translateY(-2px);
+        }
+
+        /* Эффект нажатия */
+        .nav-button:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
