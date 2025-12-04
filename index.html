@@ -46,19 +46,35 @@
             font-weight: 700;
         }
 
-        /* --- СТИЛИ ФОРМЫ (НОВАЯ ЛОГИКА РАСКРЫТИЯ) --- */
+        /* --- СТИЛИ ФОРМЫ (НАДЕЖНАЯ ЛОГИКА РАСКРЫТИЯ) --- */
         .form-section {
             background: var(--secondary-bg-color);
-            padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
             overflow: hidden;
-            transition: max-height 0.4s ease-out, padding 0.4s ease-out;
-            max-height: 80px; /* Свернутое состояние */
+            transition: max-height 0.4s ease-out;
+            max-height: 60px; /* Свернутое состояние - высота только заголовка */
+        }
+
+        .form-section-content {
+            padding: 20px;
+            padding-top: 15px; /* Отступ после заголовка */
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            height: 0;
+            overflow: hidden;
         }
 
         .form-section.expanded {
             max-height: 500px; /* Развернутое состояние */
+        }
+
+        .form-section.expanded .form-section-content {
+            visibility: visible;
+            opacity: 1;
+            height: auto;
+            overflow: visible;
         }
 
         .form-header {
@@ -70,6 +86,9 @@
             font-size: 1.2em;
             font-weight: bold;
             margin-bottom: 0;
+            padding: 20px;
+            height: 60px; /* Фиксированная высота заголовка */
+            box-sizing: border-box;
         }
         
         .form-header h2 {
@@ -78,10 +97,6 @@
             align-items: center;
         }
 
-        .form-section-content {
-            padding-top: 15px; /* Отступ после заголовка */
-        }
-        
         .form-section label {
             display: block;
             margin-top: 10px;
@@ -289,7 +304,7 @@
             // UI изменения
             formSection.classList.add('expanded');
             document.getElementById('form-arrow').textContent = '▲';
-            formTitle.innerHTML = '📝 Редактирование задачи';
+            formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
             
             tg.MainButton.setText('✍️ Сохранить изменения').show();
             tg.HapticFeedback.notificationOccurred('success');
@@ -300,7 +315,7 @@
             isEditing = false;
             currentEditingId = null;
             taskForm.reset(); 
-            formTitle.innerHTML = '💡 Новая задача';
+            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
             tg.MainButton.setText('➕ Добавить задачу').show();
             // Не сворачиваем форму автоматически
         }
