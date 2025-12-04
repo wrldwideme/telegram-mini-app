@@ -352,6 +352,10 @@
                     formSection.classList.remove('expanded'); 
                     await fetchTasks(); 
                 } else {
+                    // Добавлена проверка для более информативной ошибки n8n
+                    if (response.status === 500 && (result && result.message && result.message.includes('Unused Respond to Webhook node'))) {
+                         throw new Error('Не удалось получить ответ от n8n. Проверьте, что нод "Respond to Webhook" корректно подключен в workflow POST ADD.');
+                    }
                     throw new Error(result.message || 'Не удалось добавить задачу. (Проверь n8n log)');
                 }
 
@@ -369,30 +373,44 @@
         // --- 3. ЛОГИКА КОНТЕКСТНОГО МЕНЮ И ОБНОВЛЕНИЯ СТАТУСА ---
         
         // *******************************************************
-        // * ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ МЕНЮ (FIX FOR IOS) *
+        // * ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ МЕНЮ (АДАПТИВНАЯ) *
         // *******************************************************
         function showMenu(taskId, buttonElement) {
-            // 1. Сначала скрываем
-            contextMenu.style.display = 'none'; 
+            contextMenu.style.display = 'none';
             currentTaskId = taskId; 
 
+            // 1. Получаем размеры экрана и кнопки
             const viewportWidth = window.innerWidth;
-            
-            // 2. Делаем блок видимым, чтобы получить его реальную ширину
-            contextMenu.style.display = 'block';
-
-            const menuWidth = contextMenu.offsetWidth; 
             const rect = buttonElement.getBoundingClientRect();
-            const offset = 10; // Отступ 10px от правого края экрана
+            const offset = 10; // Отступ 10px от края экрана/кнопки
+
+            // 2. Показываем меню, чтобы получить его ширину
+            contextMenu.style.display = 'block';
+            const menuWidth = contextMenu.offsetWidth; 
 
             let leftPosition;
             
-            // 3. Расчет: Выравниваем правый край меню по правому краю экрана минус отступ.
-            leftPosition = viewportWidth - menuWidth - offset; 
+            // 3. Расчет позиции:
+            // По умолчанию прижимаем меню к правому краю кнопки (с небольшим сдвигом)
+            let defaultLeft = rect.right - menuWidth + 5; 
+
+            // Проверяем, не выходит ли меню за правый край экрана
+            if (defaultLeft + menuWidth > viewportWidth - offset) {
+                // Если выходит, сдвигаем меню влево так, чтобы его правый край был на offset от края viewport
+                leftPosition = viewportWidth - menuWidth - offset;
+            } else {
+                // Если места достаточно, используем позицию, привязанную к кнопке
+                leftPosition = defaultLeft;
+            }
+
+            // Дополнительная проверка, чтобы меню не уехало за левый край
+            if (leftPosition < offset) {
+                leftPosition = offset;
+            }
 
             // 4. Применяем стили
-            contextMenu.style.top = `${rect.bottom + 5}px`; // Открываем немного ниже кнопки
-            contextMenu.style.left = `${leftPosition}px`; // Новая, фиксированная позиция
+            contextMenu.style.top = `${rect.bottom + 5}px`; 
+            contextMenu.style.left = `${leftPosition}px`;
         }
 
         // Функция скрытия меню при клике вне его
@@ -462,19 +480,20 @@
         // --- 4. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (GET) ---
 
         /**
-         * Парсит дату и возвращает объект Date, учитывая разные форматы.
+         * Парсит дату и возвращает объект Date.
          */
         function parseDate(dateStr) {
             if (!dateStr) return null;
 
-            // Предполагаем, что dateStr приходит в формате ГГГГ-ММ-ДД (стандарт input type="date")
             if (dateStr.includes('-')) {
                 const parts = dateStr.split('-');
                 if (parts.length === 3 && parts[0].length === 4) {
+                    // Формат ГГГГ-ММ-ДД
                     return new Date(parts[0], parts[1] - 1, parts[2]);
                 }
             }
             
+            // Попытка парсинга стандартным способом
             const date = new Date(dateStr);
             return isNaN(date.getTime()) ? null : date;
         }
@@ -485,11 +504,12 @@
         function formatTaskDateTime(dateStr, timeStr) {
             const dateOnly = parseDate(dateStr);
             
-            if (!dateOnly || !timeStr) {
-                return { formattedText: '📅 INVALID DATE в ⏰ 00:00', isExpired: false };
+            if (!dateOnly) {
+                const formattedTime = timeStr || '00:00';
+                return { formattedText: `📅 INVALID DATE в ⏰ ${formattedTime}`, isExpired: false };
             }
 
-            const timeParts = timeStr.split(':');
+            const timeParts = (timeStr || '00:00').split(':');
             const taskDateTime = new Date(dateOnly.getTime()); 
             
             taskDateTime.setFullYear(dateOnly.getFullYear(), dateOnly.getMonth(), dateOnly.getDate());
@@ -565,7 +585,8 @@
                     const aDate = parseDate(a.date);
                     const bDate = parseDate(b.date);
 
-                    if (!aDate || !bDate) return 0;
+                    if (!aDate) return 1; // Невалидные даты в конец
+                    if (!bDate) return -1;
 
                     const aTimeParts = (a.time || '00:00').split(':');
                     aDate.setHours(aTimeParts[0] || 0, aTimeParts[1] || 0, 0, 0);
@@ -583,7 +604,6 @@
                     const importance = (taskData.importance || 'low').toLowerCase();
                     const taskCard = document.createElement('div');
                     
-                    // Поле task_text используется для совместимости с n8n, но если оно пустое, используем task
                     const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
                     const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
                     const taskId = taskData.id; 
