@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To Do Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- ========== ORIGINAL STYLES (your file) ========== -->
     <style>
-        /* (original CSS you provided) */
         /* Общие стили и переменные */
         :root {
             --bg-color: var(--tg-theme-bg-color, #ffffff);
@@ -36,7 +33,7 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 0; /* Удаляем основной паддинг, чтобы навигация была от края до края */
+            padding: 0; 
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
         }
@@ -174,12 +171,11 @@
             border: none;
             outline: none;
             font-size: 1em;
-            text-align: right; /* Ввод справа */
-            /* Убрать стандартные стрелки для select и date/time в iOS */
+            text-align: right; 
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
-            padding-right: 5px; /* Небольшой отступ справа */
+            padding-right: 5px; 
         }
         
         /* ИСПРАВЛЕНИЕ: Гарантируем, что дата, время и select выравниваются справа */
@@ -264,7 +260,7 @@
         #ai-chat-messages {
             min-height: 200px;
             overflow-y: auto;
-            /* Отступ от нижнего поля ввода с учетом Safe Area */
+            /* Учитываем поднятый чат-бар */
             margin-bottom: calc(60px + 60px + env(safe-area-inset-bottom)); 
         }
 
@@ -279,8 +275,9 @@
         /* --- СТИЛИ ПОЛЯ ВВОДА AI CHAT --- */
         #ai-chat-input-area {
             position: fixed;
-            /* Поднимаем выше, чтобы не перекрывать нижнюю навигацию, + учитываем Safe Area */
-            bottom: calc(60px + env(safe-area-inset-bottom)); 
+            /* ПРАВКА: Поднимаем выше плавающей навигации */
+            /* Расчет: Высота навбара (~55px) + Отступ снизу (10px) + Отступ для чат-бара (10px) = ~75px */
+            bottom: calc(75px + env(safe-area-inset-bottom)); 
             left: 0;
             right: 0;
             padding: 10px 15px;
@@ -296,7 +293,8 @@
         #ai-chat-input-area input {
             flex-grow: 1;
             padding: 10px 15px;
-            border-radius: 20px;
+            /* ПРАВКА: Округлое поле ввода */
+            border-radius: 20px; 
             background-color: var(--secondary-bg-color);
             color: var(--text-color);
             border: none;
@@ -306,44 +304,55 @@
         }
 
         #ai-chat-input-area button {
+            /* ПРАВКА: Круглая кнопка отправки */
             background-color: var(--link-color);
             color: white;
             border: none;
-            border-radius: 20px;
-            padding: 10px 20px;
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px;
+            padding: 0;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
-            line-height: 1.2;
+            line-height: 1;
             white-space: nowrap;
-            font-size: 1.1em;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
-        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass) --- */
+        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
         #bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            
+            /* Новое позиционирование для эффекта "плавающей" плашки */
+            bottom: calc(10px + env(safe-area-inset-bottom)); /* Поднимаем плашку и учитываем Safe Area */
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: calc(100% - 30px); /* 15px margin on both sides */
+            max-width: 500px; /* Ограничение ширины */
             
             /* ЭФФЕКТ LIQUID GLASS */
-            /* Полупрозрачный фон */
             background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
-            /* Размытие для создания эффекта стекла */
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px); 
             
-            /* Мягкий разделитель */
-            border-top: 1px solid color-mix(in srgb, var(--input-border-color) 50%, transparent); 
+            /* Изменения стиля для "овальной" плашки */
+            border-top: none; /* Убираем верхний разделитель */
+            border-radius: 25px; /* Округление для придания овальной формы */
             
             display: flex;
             justify-content: space-around;
-            padding: 5px 0;
-            box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.05);
+            padding: 10px 0; /* Увеличиваем вертикальный паддинг */
+            
+            /* Улучшенная тень для эффекта "плавания" */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
+            
             z-index: 1000;
             
-            /* Добавляем отступ для "безопасной зоны" на современных iPhone */
-            padding-bottom: calc(5px + env(safe-area-inset-bottom)); 
+            /* Убираем старый padding-bottom, так как Safe Area уже учтена в свойстве 'bottom' */
         }
         
         .nav-button {
@@ -351,7 +360,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: none; /* Кнопки сами не должны иметь фона */
+            background: none; 
             border: none;
             cursor: pointer;
             padding: 5px 10px;
@@ -386,122 +395,12 @@
         /* Стиль активной иконки - только фон */
         .nav-button.active .nav-button-icon {
             background-color: color-mix(in srgb, var(--link-color) 20%, transparent); 
-            box-shadow: none; /* Убираем агрессивную тень */
+            box-shadow: none; 
         }
-    </style>
-
-    <!-- ========== ENHANCEMENT STYLES (added) ========== -->
-    <style>
-        /* Card appear animation */
-        @keyframes cardPop {
-            0% { opacity: 0; transform: translateY(10px) scale(0.995); }
-            60% { opacity: 1; transform: translateY(-4px) scale(1.01); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .task-card {
-            will-change: transform, opacity;
-        }
-        .task-card.new-item {
-            animation: cardPop .36s cubic-bezier(.2,.9,.2,1) both;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-        }
-
-        /* Small fade for removed (if needed) */
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to   { opacity: 0; transform: translateY(10px); }
-        }
-
-        /* Validation highlight */
-        .input-error {
-            box-shadow: 0 0 0 3px rgba(231,76,60,0.12) inset;
-            border-radius: 10px;
-            animation: shake .36s cubic-bezier(.36,.07,.19,.97);
-        }
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            50% { transform: translateX(6px); }
-            75% { transform: translateX(-4px); }
-            100% { transform: translateX(0); }
-        }
-
-        /* Swipe handle visual hint */
-        .form-header::after {
-            content: '';
-            display: inline-block;
-            width: 36px;
-            height: 6px;
-            border-radius: 4px;
-            background: color-mix(in srgb, var(--hint-color) 28%, transparent);
-            opacity: .7;
-            margin-left: 12px;
-        }
-
-        /* AI chat bubbles */
-        #ai-chat-messages {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 8px 12px;
-            max-height: calc(100vh - 220px);
-        }
-        .chat-row { display:flex; width:100%; }
-        .chat-row.user { justify-content: flex-end; }
-        .chat-row.bot  { justify-content: flex-start; }
-
-        .chat-bubble {
-            max-width: 82%;
-            padding: 10px 14px;
-            border-radius: 16px;
-            font-size: 0.96em;
-            line-height: 1.2;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-            opacity: 0;
-            transform: translateY(6px);
-            transition: transform .18s ease, opacity .18s ease;
-        }
-        .chat-row.user .chat-bubble {
-            background: linear-gradient(180deg, #1380FF 0%, #006DF0 100%);
-            color: #fff;
-            border-bottom-right-radius: 4px;
-        }
-        .chat-row.bot .chat-bubble {
-            background: var(--secondary-bg-color);
-            color: var(--text-color);
-            border-bottom-left-radius: 4px;
-        }
-        .chat-bubble.appear {
-            opacity:1;
-            transform: translateY(0);
-        }
-
-        /* Small timestamp style (optional) */
-        .chat-ts { font-size: .72em; color: var(--hint-color); margin-top:6px; }
-
-        /* Smooth scroll behavior */
-        #tasks-list, #ai-chat-messages { scroll-behavior: smooth; }
-
-        /* Touch feedback for menu buttons */
-        .menu-button { touch-action: manipulation; }
-
-        /* Make the inputs show red border if invalid when class present */
-        .ios-row input.input-error, .ios-row select.input-error {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(231,76,60,0.12) inset;
-            border-radius: 8px;
-        }
-
-        /* Small helper for "no tasks" fade */
-        .empty-message { opacity: 0.95; transform-origin: center; }
-
-        /* Slightly increase hit area for nav buttons */
-        #bottom-nav .nav-button { padding: 10px 14px; }
     </style>
 </head>
 <body>
 
-    <!-- ================== ORIGINAL HTML (unchanged) ================== -->
     <div id="tasks-content" class="content-section active">
         <h1>📋 Task Assistant</h1>
         
@@ -559,11 +458,11 @@
              <div class="ai-welcome">
                  Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
              </div>
-        </div>
+             </div>
 
         <div id="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
-            <button id="sendAiChat">🚀 Отправить</button>
+            <button id="sendAiChat">🚀</button>
         </div>
     </div>
     
@@ -575,7 +474,8 @@
         <p>
             Навигация реализована по принципу Single Page Application (SPA) для мгновенного переключения между разделами.
         </p>
-    </div>
+        </div>
+
 
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
@@ -598,7 +498,7 @@
         </button>
     </div>
 
-    <!-- ================== ORIGINAL SCRIPT (unchanged logic) ================== -->
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
@@ -871,6 +771,7 @@
         });
 
         // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+
         function parseDate(dateStr) {
             if (!dateStr) return null;
             if (dateStr.includes('-')) {
@@ -1069,235 +970,6 @@
             const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
             switchSection('tasks-content', tasksButton); // Активируем вкладку Tasks при старте
         });
-    </script>
-
-    <!-- ================== ENHANCEMENTS SCRIPT (UI only) ================== -->
-    <script>
-        (function(){
-            // Safety checks
-            if (!window || !document) return;
-
-            // ----------------------
-            // 1) Animate newly added cards + auto-scroll to them
-            // ----------------------
-            const observer = new MutationObserver((mutations) => {
-                for (const m of mutations) {
-                    for (const n of m.addedNodes) {
-                        if (!(n instanceof HTMLElement)) continue;
-                        if (n.classList && n.classList.contains('task-card')) {
-                            // mark as new item (CSS animation)
-                            n.classList.add('new-item');
-                            // remove class later to keep DOM tidy
-                            setTimeout(() => n.classList.remove('new-item'), 600);
-
-                            // scroll into view a bit (center)
-                            try {
-                                n.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            } catch (e) { /* ignore */ }
-                        }
-                    }
-                }
-            });
-            try {
-                observer.observe(tasksList, { childList: true, subtree: false });
-            } catch (e) { /* if tasksList not found yet */ }
-
-            // ----------------------
-            // 2) Wrap fetchTasks to perform UX steps AFTER fetch completes
-            // (we keep original behaviour — just augment with scroll & subtle focus)
-            // ----------------------
-            if (typeof fetchTasks === 'function') {
-                const originalFetchTasks = fetchTasks;
-                window.fetchTasks = async function(...args) {
-                    await originalFetchTasks(...args);
-                    // if there is at least one task-card, animate the list container slightly
-                    const firstCard = tasksList.querySelector('.task-card');
-                    if (firstCard) {
-                        // small pulse
-                        tasksList.animate([{opacity:0.99},{opacity:1}], {duration:220, easing:'ease-in-out'});
-                    } else {
-                        // if no tasks, scroll to top
-                        tasksList.scrollTop = 0;
-                    }
-                };
-            }
-
-            // ----------------------
-            // 3) Auto-scroll after adding a task (when sendTask completes)
-            // We will also wrap sendTask to add friendly validation highlight BEFORE original validation runs.
-            // ----------------------
-            if (typeof sendTask === 'function') {
-                const originalSendTask = sendTask;
-                window.sendTask = async function(...args){
-                    // UI validation highlight (pre-check) to give nicer feedback
-                    const tInput = document.getElementById('taskInput');
-                    const dInput = document.getElementById('dateInput');
-                    const tiInput = document.getElementById('timeInput');
-
-                    // remove prior error classes
-                    [tInput, dInput, tiInput].forEach(el => el && el.classList.remove('input-error'));
-
-                    let missing = [];
-                    if (!tInput.value.trim()) missing.push(tInput);
-                    if (!dInput.value) missing.push(dInput);
-                    if (!tiInput.value) missing.push(tiInput);
-
-                    if (missing.length) {
-                        // highlight
-                        missing.forEach(el => el && el.classList.add('input-error'));
-                        // haptic if available
-                        try { tg.HapticFeedback?.notificationOccurred('error'); } catch(e){}
-                        // shake first missing input
-                        if (missing[0]) {
-                            missing[0].focus();
-                        }
-                        // show alert (original also shows, but nicer)
-                        tg.showAlert('Пожалуйста, заполните все поля задачи.');
-                        return; // do not call original
-                    }
-
-                    // Call original
-                    await originalSendTask.apply(this, args);
-
-                    // after send completes and fetchTasks has updated list, the MutationObserver will scroll to new node
-                };
-                // rebind mainButton as original code bound early - ensure event bound to new sendTask
-                try { tg.onEvent('mainButtonClicked', sendTask); } catch(e){}
-            }
-
-            // Also, validate on the fly: remove error style when user types
-            ['taskInput','dateInput','timeInput'].forEach(id => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.addEventListener('input', () => {
-                    if (el.classList.contains('input-error') && (el.value && el.value.trim() !== '')) {
-                        el.classList.remove('input-error');
-                    }
-                });
-            });
-
-            // ----------------------
-            // 4) Swipe-down to close form (touch devices)
-            // ----------------------
-            (function enableSwipeClose(){
-                let startY = 0, currentY = 0, touching = false;
-                const threshold = 80; // px to trigger close
-                const fs = formSection;
-
-                if (!fs) return;
-
-                fs.addEventListener('touchstart', (e) => {
-                    if (!fs.classList.contains('expanded')) return;
-                    if (e.touches && e.touches.length === 1) {
-                        touching = true;
-                        startY = e.touches[0].clientY;
-                        fs.style.transition = 'transform 0s';
-                    }
-                }, {passive:true});
-
-                fs.addEventListener('touchmove', (e) => {
-                    if (!touching) return;
-                    currentY = e.touches[0].clientY;
-                    const dy = currentY - startY;
-                    if (dy > 0) {
-                        fs.style.transform = `translateY(${dy}px)`;
-                    }
-                }, {passive:true});
-
-                fs.addEventListener('touchend', (e) => {
-                    if (!touching) return;
-                    touching = false;
-                    fs.style.transition = '';
-                    const dy = currentY - startY;
-                    fs.style.transform = '';
-                    if (dy > threshold) {
-                        // close form
-                        if (typeof exitEditMode === 'function' && isEditing) exitEditMode();
-                        fs.classList.remove('expanded');
-                        document.getElementById('form-arrow').textContent = '▼';
-                        try { tg.MainButton.hide(); } catch(e){}
-                    }
-                    startY = currentY = 0;
-                });
-            })();
-
-            // ----------------------
-            // 5) Improved AI Chat UI (client-side bubbles + auto-scroll)
-            // ----------------------
-            (function enhanceChat(){
-                const chatInput = document.getElementById('aiChatInput');
-                const sendBtn = document.getElementById('sendAiChat');
-                const chatBox = document.getElementById('ai-chat-messages');
-
-                if (!chatInput || !sendBtn || !chatBox) return;
-
-                function appendMessage(text, who='user') {
-                    const row = document.createElement('div');
-                    row.className = `chat-row ${who}`;
-                    const bubble = document.createElement('div');
-                    bubble.className = 'chat-bubble';
-                    bubble.textContent = text;
-                    row.appendChild(bubble);
-                    chatBox.appendChild(row);
-                    // slight delay to trigger appear transition
-                    requestAnimationFrame(() => bubble.classList.add('appear'));
-                    // scroll to bottom
-                    setTimeout(()=> chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }), 60);
-                    return {row, bubble};
-                }
-
-                // send handler
-                async function sendHandler() {
-                    const text = chatInput.value.trim();
-                    if (!text) return;
-                    appendMessage(text, 'user');
-                    chatInput.value = '';
-                    chatInput.focus();
-
-                    // fake 'thinking' bubble for bot (or you can hook this to real AI later)
-                    const {bubble} = appendMessage('...', 'bot');
-                    // simulate response — you could replace with real call later
-                    setTimeout(() => {
-                        bubble.textContent = 'Спасибо — принял запрос. Могу предложить добавить это в задачи.';
-                        bubble.classList.add('appear');
-                        chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-                    }, 700);
-                }
-
-                sendBtn.addEventListener('click', sendHandler);
-                chatInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        sendHandler();
-                    }
-                });
-            })();
-
-            // ----------------------
-            // 6) Minor niceties: auto-focus when opening form and small animation on nav click
-            // ----------------------
-            (function misc() {
-                const origToggle = toggleForm;
-                toggleForm = function() {
-                    origToggle();
-                    setTimeout(() => {
-                        const inp = document.getElementById('taskInput');
-                        if (formSection.classList.contains('expanded') && inp) inp.focus();
-                    }, 260);
-                };
-
-                const aiButton = bottomNav.querySelector('[data-section="ai-chat-content"]');
-                if (aiButton) aiButton.addEventListener('click', () => {
-                    // small delayed scroll
-                    setTimeout(()=> {
-                        const chatBox = document.getElementById('ai-chat-messages');
-                        if (chatBox) chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-                    }, 260);
-                });
-            })();
-
-            // End of enhancements IIFE
-        })();
     </script>
 </body>
 </html>
