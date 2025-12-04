@@ -116,9 +116,10 @@
             padding: 0 15px;
         }
 
-        /* Стили для задач */
+        /* Стили для задач - только в tasks-view */
         #tasks-view {
             padding-bottom: 80px;
+            display: block;
         }
         
         .form-section {
@@ -255,7 +256,7 @@
             color: var(--link-color);
         }
         
-        /* Карточки задач с анимациями */
+        /* Карточки задач с анимациями - только в tasks-view */
         .task-card {
             border-left: 6px solid;
             padding: 18px;
@@ -471,14 +472,23 @@
             color: var(--danger-color);
         }
         
-        /* Чат с улучшенными анимациями */
+        /* Чат с улучшенными анимациями - ТОЛЬКО в ai-view */
         #ai-view {
-            display: flex;
+            display: none;
             flex-direction: column;
             flex-grow: 1;
-            height: 100vh;
+            height: calc(100vh - 70px);
             padding: 0;
-            padding-bottom: 80px;
+            padding-bottom: 70px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: var(--bg-color);
+        }
+        
+        #ai-view.active-view {
+            display: flex;
         }
         
         #chat-content-wrapper {
@@ -486,6 +496,7 @@
             overflow-y: auto;
             padding: 15px;
             scroll-behavior: smooth;
+            height: calc(100vh - 160px);
         }
         
         #chat-input-container {
@@ -633,17 +644,18 @@
         /* Навигация с анимациями */
         .view {
             display: none;
-            flex-grow: 1;
-            animation: fadeIn 0.4s ease-out;
-        }
-        
-        .active-view {
-            display: flex;
             flex-direction: column;
             flex-grow: 1;
         }
         
-        #tasks-view.active-view,
+        .view.active-view {
+            display: flex;
+        }
+        
+        #tasks-view.active-view {
+            display: block;
+        }
+        
         #info-view.active-view {
             display: block;
         }
@@ -655,8 +667,9 @@
             width: 100%;
             padding: 10px 15px 15px 15px;
             box-sizing: border-box;
-            z-index: 999;
+            z-index: 1000;
             animation: slideInRight 0.5s ease-out;
+            background: var(--bg-color);
         }
         
         #bottom-nav {
@@ -848,6 +861,16 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--link-color);
         }
+
+        /* Info view стили */
+        #info-view {
+            padding-bottom: 80px;
+            display: none;
+        }
+        
+        #info-view.active-view {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -1038,6 +1061,7 @@
                     quickActionBtn.style.display = 'flex';
                     quickActionBtn.innerHTML = '<span>+</span>';
                     quickActionBtn.onclick = toggleForm;
+                    tg.MainButton.show();
                 } else if (viewId === 'ai') {
                     quickActionBtn.style.display = 'flex';
                     quickActionBtn.innerHTML = '<span>🤖</span>';
@@ -1046,16 +1070,12 @@
                         tg.HapticFeedback.impactOccurred('light');
                     };
                     aiPromptInput.focus();
+                    tg.MainButton.hide();
                 } else {
                     quickActionBtn.style.display = 'none';
-                }
-
-                if (viewId === 'tasks' && formSection.classList.contains('expanded')) {
-                    tg.MainButton.show();
-                } else {
                     tg.MainButton.hide();
                 }
-                
+
                 contextMenu.style.display = 'none';
                 tg.HapticFeedback.selectionChanged();
             }, 150);
@@ -1218,7 +1238,7 @@
                 // Автофокус на первое поле
                 setTimeout(() => document.getElementById('taskInput').focus(), 300);
             } else {
-                tg.MainButton.hide();
+                tg.MainButton.setText('➕ Добавить задачу');
             }
             
             tg.HapticFeedback.impactOccurred('light');
@@ -1259,7 +1279,7 @@
             currentEditingId = null;
             taskForm.reset();
             formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
-            tg.MainButton.setText('➕ Добавить задачу').show();
+            tg.MainButton.setText('➕ Добавить задачу');
         }
         
         async function sendTask() {
@@ -1330,7 +1350,7 @@
                     
                     formSection.classList.remove('expanded');
                     document.getElementById('form-arrow').textContent = '▼';
-                    tg.MainButton.hide();
+                    tg.MainButton.setText('➕ Добавить задачу');
 
                     await fetchTasks();
 
@@ -1347,8 +1367,7 @@
             }
         }
         
-        tg.MainButton.setText('➕ Добавить задачу').hide();
-        tg.onEvent('mainButtonClicked', sendTask);
+        tg.MainButton.setText('➕ Добавить задачу').onClick(sendTask).hide();
 
         // --- УЛУЧШЕННОЕ КОНТЕКСТНОЕ МЕНЮ ---
         function showMenu(taskId, buttonElement) {
