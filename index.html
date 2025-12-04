@@ -48,7 +48,8 @@
             padding: 15px;
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
-            padding-bottom: 90px; 
+            /* Уменьшаем паддинг, чтобы компенсировать меньшую навигацию */
+            padding-bottom: 80px; 
         }
         
         h1 {
@@ -122,14 +123,14 @@
             align-self: flex-end;
             background-color: var(--user-bubble-color);
             color: var(--user-text-color);
-            border-bottom-right-radius: 4px; /* "Срезанный" угол у пользователя */
+            border-bottom-right-radius: 4px; 
         }
         
         .ai-message {
             align-self: flex-start;
             background-color: var(--ai-bubble-color);
             color: var(--ai-text-color);
-            border-bottom-left-radius: 4px; /* "Срезанный" угол у бота */
+            border-bottom-left-radius: 4px; 
         }
 
         .ai-greeting {
@@ -140,31 +141,60 @@
             font-style: italic;
         }
         
-        /* --- НАВИГАЦИЯ, МЕНЮ (без изменений) --- */
-        .menu-button { background: none; border: none; color: var(--hint-color); font-size: 1.5em; cursor: pointer; padding: 0 5px; margin-left: 10px; line-height: 1; margin-top: -5px; }
-        #context-menu { position: fixed; background: var(--bg-color); border: 1px solid var(--secondary-bg-color); border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); z-index: 1000; min-width: 180px; display: none; overflow: hidden; }
-        .menu-item { padding: 12px 15px; cursor: pointer; color: var(--text-color); transition: background-color 0.2s; font-size: 0.95em; border-bottom: 1px solid var(--secondary-bg-color); }
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background-color: var(--secondary-bg-color); }
-        .menu-item.delete-item { color: #e74c3c; font-weight: 600; }
-        .view { display: none; transition: opacity 0.3s; }
-        .active-view { display: flex; flex-direction: column; flex-grow: 1; } /* Для AI View делаем его flex-контейнером */
-        #bottom-nav-container { position: fixed; bottom: 0; left: 0; width: 100%; padding: 10px 15px 15px 15px; box-sizing: border-box; z-index: 999; }
-        #bottom-nav { display: flex; justify-content: space-around; align-items: center; padding: 10px 5px; background: color-mix(in srgb, var(--secondary-bg-color) 70%, transparent); border: 1px solid color-mix(in srgb, var(--hint-color) 20%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); }
-        .nav-button { background: transparent; border: none; color: var(--text-color); padding: 10px 15px; margin: 0 5px; font-size: 0.9em; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s ease-in-out; border-radius: 50px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        /* --- СТИЛИ НИЖНЕЙ ПАНЕЛИ (ИЗМЕНЕНИЯ ЗДЕСЬ) --- */
+        #bottom-nav-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            /* Уменьшаем вертикальный паддинг */
+            padding: 5px 15px 10px 15px; 
+            box-sizing: border-box;
+            z-index: 999;
+        }
+
+        #bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            /* Уменьшаем вертикальный паддинг внутри контейнера */
+            padding: 5px 0; 
+            
+            /* СТИЛЬ LIQUID GLASS */
+            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
+            border: 1px solid color-mix(in srgb, var(--hint-color) 10%, transparent); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
+            
+            border-radius: 20px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
+        }
+
+        .nav-button {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            /* Уменьшаем паддинг для меньшего размера кнопок */
+            padding: 8px 12px; 
+            margin: 0 5px;
+            font-size: 0.85em; /* Уменьшаем шрифт */
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease-in-out;
+            border-radius: 50px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
         .nav-button:hover { background: color-mix(in srgb, var(--link-color) 10%, transparent); }
         .nav-button.active { background: var(--link-color); color: var(--bg-color); box-shadow: 0 2px 10px var(--link-color); }
         .nav-button-icon { font-size: 1.2em; }
         
-        /* Стили для AI Chat */
-        .ai-chat-view {
-             padding: 0 0 15px 0; /* Убираем верхний паддинг, оставляем нижний для красоты */
-             flex-grow: 1; 
-        }
-        .ai-chat-view h1 {
-            padding: 0 0 10px 0;
-            margin-bottom: 15px;
-        }
+        .ai-chat-view { padding: 0 0 15px 0; flex-grow: 1; }
+        .ai-chat-view h1 { padding: 0 0 10px 0; margin-bottom: 15px; }
         
     </style>
 </head>
@@ -212,6 +242,7 @@
                     </div> </form>
             </div>
         </div>
+
         <h2>📝 Активные задачи</h2>
         <div id="tasks-list">
             <p class="loading-message">Загрузка задач...</p>
@@ -277,7 +308,7 @@
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
         const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; 
-        const N8N_AI_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat'; // НОВЫЙ URL ДЛЯ AI
+        const N8N_AI_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat'; 
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
@@ -314,10 +345,8 @@
             if (viewId === 'tasks' && formSection.classList.contains('expanded')) {
                 tg.MainButton.show();
             } else if (viewId === 'ai') {
-                // В AI режиме используем локальную кнопку, а не MainButton
                 tg.MainButton.hide(); 
                 aiPromptInput.focus();
-                // Прокрутка чата вниз при переходе
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             } else {
                 tg.MainButton.hide();
@@ -330,17 +359,15 @@
             contextMenu.style.display = 'none';
         }
         
-        // --- ЛОГИКА ЧАТА ---
+        // --- ЛОГИКА ЧАТА (С ИСПРАВЛЕНИЕМ ПРОГРЕССА) ---
         
         function addMessageToChat(text, sender) {
             const bubble = document.createElement('div');
             bubble.className = `message-bubble ${sender}-message`;
             
-            // Заменяем переносы строк на <br> для корректного отображения
             bubble.innerHTML = text.replace(/\n/g, '<br>');
             chatContainer.appendChild(bubble);
             
-            // Автоматическая прокрутка вниз
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -348,14 +375,14 @@
             const prompt = aiPromptInput.value.trim();
             if (!prompt) return;
 
-            // 1. Отобразить сообщение пользователя
             addMessageToChat(prompt, 'user');
-            aiPromptInput.value = ''; // Очистить поле
+            aiPromptInput.value = ''; 
             aiPromptInput.disabled = true;
             sendPromptBtn.disabled = true;
 
             try {
-                tg.showProgress(true); 
+                // ИСПРАВЛЕНИЕ: Используем MainButton для показа прогресса
+                tg.MainButton.showProgress(true); 
 
                 const response = await fetch(N8N_AI_URL, {
                     method: 'POST',
@@ -374,7 +401,6 @@
                 const result = await response.json();
                 
                 if (result.success && result.response) {
-                    // 2. Отобразить ответ AI
                     addMessageToChat(result.response, 'ai');
                 } else {
                     addMessageToChat('Ошибка: AI не смог сгенерировать ответ.', 'ai');
@@ -385,7 +411,8 @@
                 console.error('AI Chat Error:', error);
                 addMessageToChat(`Ошибка соединения: ${error.message}`, 'ai');
             } finally {
-                tg.showProgress(false);
+                // ИСПРАВЛЕНИЕ: Скрываем прогресс через MainButton
+                tg.MainButton.hideProgress(); 
                 aiPromptInput.disabled = false;
                 sendPromptBtn.disabled = false;
                 aiPromptInput.focus();
@@ -415,15 +442,9 @@
                 }
             } else {
                 tg.MainButton.hide(); 
-                if (document.getElementById('ai-view').classList.contains('active-view')) {
-                     // Убедиться, что MainButton скрыта при переходе на AI
-                     tg.MainButton.hide();
-                }
             }
         }
 
-        // ... (ОСТАЛЬНЫЕ ФУНКЦИИ - БЕЗ ИЗМЕНЕНИЙ) ...
-        
         function enterEditMode(task) {
             if (!task) return;
             
@@ -452,7 +473,6 @@
         }
         
         async function sendTask() {
-            // ... (КОД sendTask - БЕЗ ИЗМЕНЕНИЙ) ...
             
             const taskName = document.getElementById('taskInput').value.trim();
             const date = document.getElementById('dateInput').value;
@@ -738,7 +758,6 @@
         }
 
         async function fetchTasks() {
-             // Проверяем, находится ли пользователь в разделе Tasks
             if (!document.getElementById('tasks-view').classList.contains('active-view')) {
                 return;
             }
@@ -837,7 +856,7 @@
         window.exitEditMode = exitEditMode; 
         window.navigateTo = navigateTo; 
         window.deleteTask = deleteTask; 
-        window.sendAiPrompt = sendAiPrompt; // Добавляем в глобальный доступ
+        window.sendAiPrompt = sendAiPrompt; 
 
         fetchTasks();
     </script>
