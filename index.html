@@ -42,8 +42,8 @@
         .content-section {
             display: none;
             padding: 15px;
-            /* ПРАВКА 1: Увеличиваем отступ на 5px (110px -> 115px) */
-            padding-bottom: calc(115px + env(safe-area-inset-bottom)); 
+            /* ПРАВКА: Увеличенный отступ, чтобы контент не перекрывался поднятым чат-баром */
+            padding-bottom: calc(115px + env(safe-area-inset-bottom));
         }
         .content-section.active {
             display: block;
@@ -61,15 +61,15 @@
 
         /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
         .form-section {
-            background: transparent; 
+            background: transparent;
             margin-bottom: 20px;
             overflow: hidden; 
             transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            max-height: 60px; 
+            max-height: 60px;
         }
 
         .form-section.expanded {
-            max-height: 500px; 
+            max-height: 500px;
         }
 
         /* Улучшенный Заголовок */
@@ -82,7 +82,7 @@
             height: 60px; 
             box-sizing: border-box;
             background: var(--secondary-bg-color); 
-            border-radius: 12px; 
+            border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
             transition: background-color 0.2s;
         }
@@ -112,7 +112,7 @@
         }
 
         .form-section-content {
-            padding: 0; 
+            padding: 0;
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
@@ -121,7 +121,7 @@
             background: var(--input-bg-color); 
             border-bottom-left-radius: 12px;
             border-bottom-right-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .form-section.expanded .form-section-content {
@@ -134,7 +134,7 @@
         /* --- НОВЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
 
         .ios-group {
-            border-radius: 12px; 
+            border-radius: 12px;
             overflow: hidden;
         }
         
@@ -149,7 +149,7 @@
         }
 
         .ios-row:last-child {
-            border-bottom: none; 
+            border-bottom: none;
         }
 
         .ios-label {
@@ -182,13 +182,13 @@
         .ios-row input[type="date"], 
         .ios-row input[type="time"],
         .ios-row select {
-            text-align: right !important; 
+            text-align: right !important;
             padding-right: 5px; 
         }
 
         /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
         .task-card { 
-            border-left: 6px solid #444; 
+            border-left: 6px solid #444;
             padding: 15px; 
             margin-bottom: 15px; 
             border-radius: 12px; 
@@ -200,19 +200,32 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        .task-card:active { transform: scale(0.99); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
-        .task-card.expired { border-left-color: #e74c3c; opacity: 0.9; }
-        .task-info { flex-grow: 1; }
-        .task-header { display: flex; align-items: flex-start; margin-bottom: 5px; }
-        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1; }
-        .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0; }
-        .task-card.expired p { color: #ff5555; font-weight: bold; } 
+        .task-card:active { transform: scale(0.99);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .task-card.expired { border-left-color: #e74c3c;
+            opacity: 0.9; }
+        .task-info { flex-grow: 1;
+        }
+        .task-header { display: flex; align-items: flex-start; margin-bottom: 5px;
+        }
+        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1;
+        }
+        .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0;
+        }
+        .task-card.expired p { color: #ff5555; font-weight: bold;
+        } 
         
-        .importance-tag { font-size: 0.7em; font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); min-width: 60px; text-align: center; }
-        .importance-tag.high { background-color: #e74c3c; }
-        .importance-tag.medium { background-color: #f39c12; }
-        .importance-tag.low { background-color: #2ecc71; }
-        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color); }
+        .importance-tag { font-size: 0.7em;
+            font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+            min-width: 60px; text-align: center; }
+        .importance-tag.high { background-color: #e74c3c;
+        }
+        .importance-tag.medium { background-color: #f39c12;
+        }
+        .importance-tag.low { background-color: #2ecc71;
+        }
+        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color);
+        }
         
         /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
         .menu-button {
@@ -224,11 +237,11 @@
             padding: 0 5px;
             margin-left: 10px;
             line-height: 1; 
-            margin-top: -5px; 
+            margin-top: -5px;
         }
 
         #context-menu {
-            position: fixed; 
+            position: fixed;
             background: var(--bg-color);
             border: 1px solid var(--secondary-bg-color);
             border-radius: 12px; 
@@ -247,22 +260,25 @@
             border-bottom: 1px solid var(--secondary-bg-color);
         }
 
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background-color: var(--secondary-bg-color); }
-        .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6; }
+        .menu-item:last-child { border-bottom: none;
+        }
+        .menu-item:hover { background-color: var(--secondary-bg-color);
+        }
+        .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6;
+        }
 
 
         /* --- СТИЛИ AI CHAT --- */
         #ai-chat-content h1 {
-            border-color: #e74c3c; 
+            border-color: #e74c3c;
         }
         
         #ai-chat-messages {
             min-height: 200px;
             overflow-y: auto;
-            /* Небольшой отступ сверху для заголовка */
             margin-top: 15px; 
             margin-bottom: 0; 
+            padding: 0 5px; /* Добавлен отступ для лучшего вида */
         }
 
         /* Стили для приветственного сообщения */
@@ -272,12 +288,46 @@
             color: var(--hint-color);
             font-style: italic;
         }
+        
+        /* НОВЫЕ СТИЛИ ДЛЯ ПУЗЫРЕЙ ЧАТА */
+        .chat-message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 0.95em;
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+        .user-message .chat-bubble {
+            background-color: var(--link-color); /* Синий как в Telegram */
+            color: white;
+            border-bottom-right-radius: 4px; /* Скошенный уголок */
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+        .ai-message .chat-bubble {
+            background-color: var(--secondary-bg-color); /* Серый фон */
+            color: var(--text-color);
+            border-bottom-left-radius: 4px; /* Скошенный уголок */
+        }
+
 
         /* --- СТИЛИ ПОЛЯ ВВОДА AI CHAT --- */
         #ai-chat-input-area {
             position: fixed;
-            /* ПРАВКА 2: Поднимаем поле ввода еще на 5px (90px -> 95px) */
-            bottom: calc(95px + env(safe-area-inset-bottom)); 
+            /* ФИНАЛЬНАЯ ПРАВКА: 95px для идеального позиционирования */
+            bottom: calc(95px + env(safe-area-inset-bottom));
             left: 0;
             right: 0;
             padding: 10px 15px;
@@ -286,7 +336,7 @@
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            gap: 10px; 
+            gap: 10px;
             z-index: 990;
         }
         
@@ -299,7 +349,7 @@
             border: none;
             outline: none;
             font-size: 1.0em;
-            height: 40px; 
+            height: 40px;
         }
 
         #ai-chat-input-area button {
@@ -324,21 +374,19 @@
         /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
         #bottom-nav {
             position: fixed;
-            
             /* Позиционирование для эффекта "плавающей" плашки */
-            bottom: calc(10px + env(safe-area-inset-bottom)); 
+            bottom: calc(10px + env(safe-area-inset-bottom));
             left: 50%; 
             transform: translateX(-50%); 
             width: calc(100% - 30px); 
-            max-width: 500px; 
-            
+            max-width: 500px;
             /* ЭФФЕКТ LIQUID GLASS */
-            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
+            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent);
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px); 
             
             /* Стиль для "овальной" плашки */
-            border-top: none; 
+            border-top: none;
             border-radius: 25px; 
             
             display: flex;
@@ -346,8 +394,7 @@
             padding: 10px 0; 
             
             /* Улучшенная тень */
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
-            
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
         }
         
@@ -384,13 +431,13 @@
         }
         
         .nav-button-icon span {
-            font-size: 1.5em; 
+            font-size: 1.5em;
             line-height: 1;
         }
         
         /* Стиль активной иконки - только фон */
         .nav-button.active .nav-button-icon {
-            background-color: color-mix(in srgb, var(--link-color) 20%, transparent); 
+            background-color: color-mix(in srgb, var(--link-color) 20%, transparent);
             box-shadow: none; 
         }
     </style>
@@ -504,6 +551,7 @@
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
+        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat'; // <-- НОВАЯ РУЧКА AI CHAT
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
@@ -514,12 +562,18 @@
         const formTitle = document.getElementById('form-title');
         const bottomNav = document.getElementById('bottom-nav'); 
         
+        // --- ПЕРЕМЕННЫЕ AI CHAT ---
+        const aiChatInput = document.getElementById('aiChatInput');
+        const sendAiChatButton = document.getElementById('sendAiChat');
+        const aiChatMessages = document.getElementById('ai-chat-messages');
+        // --------------------------
+        
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
         let allTasksData = []; 
         
-        // --- НОВАЯ ФУНКЦИЯ: Установка значений по умолчанию ---
+        // --- Установка значений по умолчанию для формы ---
         function setDefaultFormValues() {
             const now = new Date();
             
@@ -556,11 +610,9 @@
             document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
             
             if (isExpanding) {
-                // Устанавливаем значения по умолчанию только при РАЗВОРАЧИВАНИИ
                 setDefaultFormValues();
             }
 
-            // Управление MainButton - только если мы на вкладке Tasks
             if (document.getElementById('tasks-content').classList.contains('active')) {
                 if (formSection.classList.contains('expanded')) {
                     if (!isEditing) {
@@ -573,27 +625,22 @@
                 }
             }
         }
-
-        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
         
+        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
         function enterEditMode(task) {
             if (!task) return;
-            
             isEditing = true;
             currentEditingId = task.id;
             
-            // Заполнение формы
             document.getElementById('taskInput').value = task.task_text || task.task;
             document.getElementById('dateInput').value = task.date;
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
             
-            // UI изменения
             formSection.classList.add('expanded');
             document.getElementById('form-arrow').textContent = '▲';
             formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
             
-            // MainButton
             tg.MainButton.setText('✍️ Сохранить изменения').show();
             tg.HapticFeedback.notificationOccurred('success');
         }
@@ -603,9 +650,8 @@
             currentEditingId = null;
             taskForm.reset(); 
             formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
-            setDefaultFormValues(); // Сброс и установка значений по умолчанию
+            setDefaultFormValues(); 
             
-            // MainButton
             if (document.getElementById('tasks-content').classList.contains('active') && formSection.classList.contains('expanded')) {
                 tg.MainButton.setText('➕ Добавить задачу').show();
             } else {
@@ -614,7 +660,6 @@
         }
         
         // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
-        
         async function sendTask() {
             
             const taskName = document.getElementById('taskInput').value.trim();
@@ -678,7 +723,7 @@
                         exitEditMode(); 
                     } else {
                         taskForm.reset(); 
-                        setDefaultFormValues(); // Сброс и установка значений по умолчанию
+                        setDefaultFormValues(); 
                     }
                     
                     formSection.classList.remove('expanded'); 
@@ -699,10 +744,9 @@
             }
         }
         
-        // Скрываем кнопку при старте
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
-        
+
         // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
         
         function showMenu(taskId, buttonElement) {
@@ -800,7 +844,7 @@
                 markTaskAsDone(currentTaskId);
             }
         });
-
+        
         // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
 
         function parseDate(dateStr) {
@@ -960,13 +1004,10 @@
             });
             
             buttonElement.classList.add('active');
-            // Передаем цвет через JS для динамической настройки
             const activeColor = tg.themeParams.link_color || '#007aff';
-            // Используем color-mix (CSS-функция) для создания активного фона, но через JS устанавливаем только цвет
             buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`; 
 
 
-            // Управление MainButton
             if (sectionId === 'tasks-content') {
                 if (formSection.classList.contains('expanded')) {
                     tg.MainButton.show();
@@ -974,7 +1015,6 @@
                 } else {
                     tg.MainButton.hide();
                 }
-                // Проверяем, чтобы при переключении обратно в задачи обновить список
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
@@ -983,11 +1023,119 @@
             }
         }
         
-        // Event Listeners для навигации
+        // --- 7. ЛОГИКА AI CHAT (ПОЛНАЯ ИНТЕГРАЦИЯ) ---
+        
+        // 7.1. ФУНКЦИИ ЧАТА UI
+        function appendMessage(text, sender) {
+            const welcome = document.querySelector('.ai-welcome');
+            if (welcome) welcome.remove();
+
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${sender}-message`;
+            
+            const bubbleElement = document.createElement('div');
+            bubbleElement.className = 'chat-bubble';
+            
+            // Замена \n на <br> для корректного отображения многострочного текста
+            bubbleElement.innerHTML = text.replace(/\n/g, '<br>'); 
+            
+            messageElement.appendChild(bubbleElement);
+            aiChatMessages.appendChild(messageElement);
+            
+            // Прокрутка вниз
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        function showAILoading() {
+            const loadingHtml = `<div id="ai-loading-placeholder" class="chat-message ai-message">
+                                    <div class="chat-bubble">...думаю</div>
+                                </div>`;
+            aiChatMessages.insertAdjacentHTML('beforeend', loadingHtml);
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+        
+        function hideAILoading() {
+            const loading = document.getElementById('ai-loading-placeholder');
+            if (loading) {
+                loading.remove();
+            }
+        }
+
+        // 7.2. ЛОГИКА ОТПРАВКИ СООБЩЕНИЯ
+        async function sendAiMessage() {
+            const messageText = aiChatInput.value.trim();
+            
+            if (messageText) {
+                // 1. Отображаем сообщение пользователя
+                appendMessage(messageText, 'user');
+                
+                // 2. Очистка поля и блокировка ввода
+                aiChatInput.value = '';
+                aiChatInput.disabled = true;
+                sendAiChatButton.disabled = true;
+                
+                // 3. Показываем индикатор загрузки AI
+                showAILoading();
+                
+                try {
+                    const response = await fetch(N8N_AI_CHAT_URL, {
+                        method: 'POST', 
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: messageText,
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответа)";
+
+                    // Проверка на ожидаемые поля в ответе
+                    if (result && result.aiResponse) {
+                        aiResponseText = result.aiResponse;
+                    } else if (result && result.response) { 
+                        aiResponseText = result.response;
+                    }
+                    
+                    // 4. Отображаем ответ AI
+                    hideAILoading();
+                    appendMessage(aiResponseText, 'ai');
+
+                } catch (error) {
+                    console.error('AI Chat Error:', error);
+                    hideAILoading();
+                    appendMessage(`❌ Ошибка: Не удалось подключиться к AI ассистенту. ${error.message}`, 'ai');
+                } finally {
+                    // 5. Разблокировка ввода
+                    aiChatInput.disabled = false;
+                    sendAiChatButton.disabled = false;
+                    aiChatInput.focus();
+                }
+            }
+        }
+        
+        // Event Listeners
         bottomNav.querySelectorAll('.nav-button').forEach(button => {
             button.addEventListener('click', () => {
                 switchSection(button.getAttribute('data-section'), button);
             });
+        });
+        
+        // Привязка обработчиков для AI Chat
+        sendAiChatButton.addEventListener('click', sendAiMessage);
+        aiChatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                sendAiMessage();
+            }
         });
 
         window.markTaskAsDone = markTaskAsDone;
@@ -995,14 +1143,13 @@
         window.toggleForm = toggleForm;
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
-        window.setDefaultFormValues = setDefaultFormValues; // Добавляем в глобальную область, если нужно
+        window.setDefaultFormValues = setDefaultFormValues; 
 
         // Инициализация при загрузке
         window.addEventListener('load', () => {
             const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
             switchSection('tasks-content', tasksButton); // Активируем вкладку Tasks при старте
             
-            // Устанавливаем значения по умолчанию при первой загрузке (если форма открыта)
             if (formSection.classList.contains('expanded')) {
                 setDefaultFormValues();
             }
