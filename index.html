@@ -42,7 +42,8 @@
         .content-section {
             display: none;
             padding: 15px;
-            padding-bottom: 75px; /* Отступ, чтобы контент не перекрывался нижним меню */
+            /* Отступ, чтобы контент не перекрывался нижним меню. Учитываем Safe Area */
+            padding-bottom: calc(75px + env(safe-area-inset-bottom)); 
         }
         .content-section.active {
             display: block;
@@ -254,13 +255,14 @@
 
         /* --- СТИЛИ AI CHAT --- */
         #ai-chat-content h1 {
-            border-color: #e74c3c; /* Для AI можно выделить другим цветом */
+            border-color: #e74c3c; 
         }
         
         #ai-chat-messages {
             min-height: 200px;
             overflow-y: auto;
-            margin-bottom: 100px; /* Отступ от нижнего поля ввода */
+            /* Отступ от нижнего поля ввода с учетом Safe Area */
+            margin-bottom: calc(60px + 60px + env(safe-area-inset-bottom)); 
         }
 
         /* Стили для приветственного сообщения */
@@ -274,7 +276,8 @@
         /* --- СТИЛИ ПОЛЯ ВВОДА AI CHAT --- */
         #ai-chat-input-area {
             position: fixed;
-            bottom: 60px; /* Поднимаем выше, чтобы не перекрывать нижнюю навигацию */
+            /* Поднимаем выше, чтобы не перекрывать нижнюю навигацию, + учитываем Safe Area */
+            bottom: calc(60px + env(safe-area-inset-bottom)); 
             left: 0;
             right: 0;
             padding: 10px 15px;
@@ -296,7 +299,7 @@
             border: none;
             outline: none;
             font-size: 1em;
-            height: 40px; /* Фиксированная высота */
+            height: 40px; 
         }
 
         #ai-chat-input-area button {
@@ -310,23 +313,34 @@
             transition: background-color 0.2s;
             line-height: 1.2;
             white-space: nowrap;
-            /* Используем эмодзи ракеты из скриншота */
             font-size: 1.1em;
         }
         
-        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED) --- */
+        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass) --- */
         #bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--secondary-bg-color); 
-            border-top: 1px solid var(--input-border-color);
+            
+            /* ЭФФЕКТ LIQUID GLASS */
+            /* Полупрозрачный фон */
+            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
+            /* Размытие для создания эффекта стекла */
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            
+            /* Мягкий разделитель */
+            border-top: 1px solid color-mix(in srgb, var(--input-border-color) 50%, transparent); 
+            
             display: flex;
             justify-content: space-around;
             padding: 5px 0;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 -1px 8px rgba(0, 0, 0, 0.05);
             z-index: 1000;
+            
+            /* Добавляем отступ для "безопасной зоны" на современных iPhone */
+            padding-bottom: calc(5px + env(safe-area-inset-bottom)); 
         }
         
         .nav-button {
@@ -334,7 +348,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: none;
+            background: none; /* Кнопки сами не должны иметь фона */
             border: none;
             cursor: pointer;
             padding: 5px 10px;
@@ -358,7 +372,7 @@
             height: 45px;
             border-radius: 50%;
             margin-bottom: 2px;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, box-shadow 0.2s;
         }
         
         .nav-button-icon span {
@@ -366,10 +380,10 @@
             line-height: 1;
         }
         
-        /* Стиль "свечения" активной иконки */
+        /* Стиль активной иконки - только фон */
         .nav-button.active .nav-button-icon {
             background-color: color-mix(in srgb, var(--link-color) 20%, transparent); 
-            box-shadow: 0 0 10px rgba(0, 122, 255, 0.5); /* Базовый эффект, будет переопределен JS */
+            box-shadow: none; /* Убираем агрессивную тень */
         }
     </style>
 </head>
@@ -490,7 +504,7 @@
         const formSection = document.getElementById('form-section');
         const contextMenu = document.getElementById('context-menu');
         const formTitle = document.getElementById('form-title');
-        const bottomNav = document.getElementById('bottom-nav'); // Новый элемент
+        const bottomNav = document.getElementById('bottom-nav'); 
         
         let currentTaskId = null; 
         let isEditing = false;
@@ -899,10 +913,15 @@
             document.querySelectorAll('.nav-button').forEach(button => {
                 button.classList.remove('active');
                 button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
+                button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
             });
             
             buttonElement.classList.add('active');
-            buttonElement.querySelector('.nav-button-icon').style.boxShadow = `0 0 10px ${tg.themeParams.link_color || '#007aff'}`; 
+            // Передаем цвет через JS для динамической настройки
+            const activeColor = tg.themeParams.link_color || '#007aff';
+            // Используем color-mix (CSS-функция) для создания активного фона, но через JS устанавливаем только цвет
+            buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`; 
+
 
             // Управление MainButton
             if (sectionId === 'tasks-content') {
@@ -912,7 +931,10 @@
                 } else {
                     tg.MainButton.hide();
                 }
-                fetchTasks(); 
+                // Проверяем, чтобы при переключении обратно в задачи обновить список
+                if (document.getElementById('tasks-list').children.length < 2) {
+                    fetchTasks(); 
+                }
             } else {
                 tg.MainButton.hide();
             }
