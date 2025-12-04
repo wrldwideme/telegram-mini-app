@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>Персональный ассистент To Do Bot 😎</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -100,6 +100,7 @@
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            /* Иконка стрелки для селекта */
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8l4-4H2z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 10px center;
@@ -121,20 +122,6 @@
             cursor: pointer; 
         }
 
-        .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); 
-        }
-        
-        .task-card.high { border-left-color: var(--tg-theme-destructive-text-color, #e74c3c); }
-        .task-card.medium { border-left-color: var(--tg-theme-link-color, #f39c12); }
-        .task-card.low { border-left-color: #2ecc71; }
-
-        .task-card.expired {
-            opacity: 0.6;
-            background-color: var(--tg-theme-secondary-bg-color, #1f1f1f);
-        }
-
         .task-info { flex-grow: 1; }
         .task-header { display: flex; align-items: center; margin-bottom: 5px; }
         
@@ -152,6 +139,11 @@
             margin-left: 10px;
         }
         
+        /* Цветовые стили для левой границы и тегов */
+        .task-card.high { border-left-color: var(--tg-theme-destructive-text-color, #e74c3c); }
+        .task-card.medium { border-left-color: #f39c12; }
+        .task-card.low { border-left-color: #2ecc71; }
+        
         .importance-tag { 
             font-size: 0.7em; 
             font-weight: 700; 
@@ -167,6 +159,12 @@
         .importance-tag.medium { background-color: #f39c12; }
         .importance-tag.low { background-color: #2ecc71; }
 
+        /* Стиль для просроченных задач */
+        .task-card.expired {
+            opacity: 0.7;
+            background-color: var(--tg-theme-secondary-bg-color, #1f1f1f);
+        }
+        
         /* --- 5. Стили для Контекстного Меню (Popover) --- */
         #context-menu {
             position: absolute;
@@ -286,11 +284,11 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         
-        // --- ПЕРЕМЕННЫЕ N8N ---
+        // --- ПЕРЕМЕННЫЕ N8N (ОБНОВИТЕ, ЕСЛИ НУЖНО) ---
         const N8N_GET_URL = 'https://worldonme.app.n8n.cloud/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://worldonme.app.n8n.cloud/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://worldonme.app.n8n.cloud/webhook/update-task-status'; 
-        //const N8N_DELETE_URL = 'https://worldonme.app.n8n.cloud/webhook/delete-task'; // Разблокировать, когда настроишь
+        // const N8N_DELETE_URL = 'https://worldonme.app.n8n.cloud/webhook/delete-task'; // Для удаления
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
@@ -371,41 +369,30 @@
         // --- 3. ЛОГИКА КОНТЕКСТНОГО МЕНЮ И ОБНОВЛЕНИЯ СТАТУСА ---
         
         // *******************************************************
-        // * ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ МЕНЮ *
+        // * ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОЗИЦИОНИРОВАНИЯ МЕНЮ (FIX FOR IOS) *
         // *******************************************************
         function showMenu(taskId, buttonElement) {
-            contextMenu.style.display = 'none'; // Сначала скрываем
+            // 1. Сначала скрываем
+            contextMenu.style.display = 'none'; 
             currentTaskId = taskId; 
 
-            const rect = buttonElement.getBoundingClientRect();
             const viewportWidth = window.innerWidth;
             
-            // Показываем блок, чтобы получить его реальную ширину (offsetWidth)
+            // 2. Делаем блок видимым, чтобы получить его реальную ширину
             contextMenu.style.display = 'block';
 
             const menuWidth = contextMenu.offsetWidth; 
-            const offset = 5; // Небольшой отступ от края
+            const rect = buttonElement.getBoundingClientRect();
+            const offset = 10; // Отступ 10px от правого края экрана
 
             let leftPosition;
             
-            // Расчет позиции LEFT (открываем влево от кнопки, чтобы избежать выхода за край)
-            // Позиция: (Правый край кнопки) - (ширина меню) + (небольшой отступ)
-            leftPosition = rect.right - menuWidth + offset; 
+            // 3. Расчет: Выравниваем правый край меню по правому краю экрана минус отступ.
+            leftPosition = viewportWidth - menuWidth - offset; 
 
-            // Проверка: Если меню выходит за правый край экрана, сдвигаем его влево.
-            if (leftPosition + menuWidth > viewportWidth - offset) {
-                leftPosition = viewportWidth - menuWidth - offset;
-            }
-            
-            // Если leftPosition оказалась слишком маленькой (например, если кнопка совсем слева),
-            // то просто привязываем к левому краю.
-            if (leftPosition < offset) {
-                leftPosition = offset;
-            }
-
-            // Применяем стили
-            contextMenu.style.top = `${rect.bottom + 5}px`;
-            contextMenu.style.left = `${leftPosition}px`; 
+            // 4. Применяем стили
+            contextMenu.style.top = `${rect.bottom + 5}px`; // Открываем немного ниже кнопки
+            contextMenu.style.left = `${leftPosition}px`; // Новая, фиксированная позиция
         }
 
         // Функция скрытия меню при клике вне его
@@ -475,27 +462,19 @@
         // --- 4. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (GET) ---
 
         /**
-         * Парсит дату и возвращает объект Date.
+         * Парсит дату и возвращает объект Date, учитывая разные форматы.
          */
         function parseDate(dateStr) {
             if (!dateStr) return null;
 
+            // Предполагаем, что dateStr приходит в формате ГГГГ-ММ-ДД (стандарт input type="date")
             if (dateStr.includes('-')) {
                 const parts = dateStr.split('-');
                 if (parts.length === 3 && parts[0].length === 4) {
-                    // Формат ГГГГ-ММ-ДД
                     return new Date(parts[0], parts[1] - 1, parts[2]);
                 }
             }
-            if (dateStr.includes('.')) {
-                const parts = dateStr.split('.');
-                if (parts.length === 3 && parts[2].length === 4) {
-                    // Формат ДД.ММ.ГГГГ
-                    return new Date(parts[2], parts[1] - 1, parts[0]);
-                }
-            }
             
-            // Попытка парсинга стандартным способом
             const date = new Date(dateStr);
             return isNaN(date.getTime()) ? null : date;
         }
@@ -507,13 +486,12 @@
             const dateOnly = parseDate(dateStr);
             
             if (!dateOnly || !timeStr) {
-                // Обработка случая, когда нет данных или они невалидны
                 return { formattedText: '📅 INVALID DATE в ⏰ 00:00', isExpired: false };
             }
 
             const timeParts = timeStr.split(':');
             const taskDateTime = new Date(dateOnly.getTime()); 
-            // setHours может сбросить дату, поэтому используем setFullYear, setMonth, setDate
+            
             taskDateTime.setFullYear(dateOnly.getFullYear(), dateOnly.getMonth(), dateOnly.getDate());
             taskDateTime.setHours(timeParts[0] || 0, timeParts[1] || 0, 0, 0);
 
@@ -605,6 +583,7 @@
                     const importance = (taskData.importance || 'low').toLowerCase();
                     const taskCard = document.createElement('div');
                     
+                    // Поле task_text используется для совместимости с n8n, но если оно пустое, используем task
                     const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
                     const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
                     const taskId = taskData.id; 
