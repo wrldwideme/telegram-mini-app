@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To Do Bot :)</title>
+    <title>To Do Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Общие стили и стили карточек (как раньше) */
+        /* Общие стили и стили карточек */
         :root {
-            /* Переменные для светлой темы (на случай, если пользователь использует ее) */
             --bg-color: var(--tg-theme-bg-color, #ffffff);
             --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
             --text-color: var(--tg-theme-text-color, #000000);
@@ -16,7 +15,6 @@
             --link-color: var(--tg-theme-link-color, #007aff);
         }
 
-        /* Адаптация для темной темы */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: var(--tg-theme-bg-color, #1a1a1a);
@@ -35,7 +33,6 @@
             transition: background-color 0.3s, color 0.3s;
         }
         
-        /* Стилизация заголовка приложения */
         h1 {
             color: var(--link-color);
             font-size: 1.6em;
@@ -46,19 +43,57 @@
             font-weight: 700;
         }
 
-        /* --- СТИЛИ ФОРМЫ (НОВАЯ ЛОГИКА ДИЗАЙНА) --- */
+        /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
         .form-section {
             background: var(--secondary-bg-color);
-            border-radius: 12px; /* Чуть более скругленные углы */
+            border-radius: 12px; 
             margin-bottom: 20px;
-            overflow: hidden;
-            /* Плавный переход для раскрытия/сворачивания */
+            overflow: hidden; 
             transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
             max-height: 60px; 
-            /* Мягкая тень для эффекта "подъема" (Soft UI) */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
         }
 
+        .form-section.expanded {
+            max-height: 500px; 
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); 
+        }
+
+        /* --- УЛУЧШЕНИЕ ДИЗАЙНА ЗАГОЛОВКА "Новая задача" --- */
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 20px;
+            height: 60px; 
+            box-sizing: border-box;
+            background: var(--secondary-bg-color); /* Фон для интерактивности */
+            transition: background-color 0.2s;
+        }
+
+        /* Эффект при наведении/нажатии */
+        .form-header:hover {
+            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
+        }
+        
+        .form-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            /* Современный и более четкий шрифт для заголовка */
+            font-size: 1.1em;
+            font-weight: 600; 
+            color: var(--text-color);
+        }
+
+        .form-header h2 span#form-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+            color: var(--link-color); /* Выделим иконку цветом */
+        }
+
+        /* --- СТИЛИ СОДЕРЖИМОГО ФОРМЫ --- */
         .form-section-content {
             padding: 20px;
             padding-top: 15px; 
@@ -69,43 +104,11 @@
             overflow: hidden;
         }
 
-        .form-section.expanded {
-            max-height: 500px; 
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); /* Тень чуть глубже в открытом состоянии */
-        }
-
         .form-section.expanded .form-section-content {
             visibility: visible;
             opacity: 1;
             height: auto;
             overflow: visible;
-        }
-
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            color: var(--text-color);
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 0;
-            padding: 20px;
-            height: 60px; 
-            box-sizing: border-box;
-        }
-        
-        .form-header h2 {
-            margin: 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-section label {
-            display: block;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: var(--hint-color);
         }
         
         .form-section input, .form-section select {
@@ -114,102 +117,104 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            /* Более заметная граница по умолчанию */
             border: 1px solid var(--hint-color, #777777); 
-            border-radius: 6px; /* Чуть более скругленные инпуты */
+            border-radius: 6px; 
             background: var(--bg-color);
             color: var(--text-color);
             transition: border-color 0.3s, box-shadow 0.3s;
-            /* Убрать стандартные стрелки */
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
         }
 
-        /* Стильный фокус (очень важно для UX) */
         .form-section input:focus, .form-section select:focus {
             border-color: var(--link-color, #007aff);
-            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3); /* Красивый "светящийся" фокус */
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.3); 
             outline: none;
         }
-
-        /* Устранение бага с цветом стрелки для select */
+        
         .form-section select {
-            /* Фиксированная стрелка, которая видна в обеих темах */
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="%23777777" d="M7 10l5 5 5-5z"/></svg>');
             background-repeat: no-repeat;
             background-position: right 10px center;
             padding-right: 30px;
         }
 
-        
         /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ --- */
         .task-card { 
-            border-left: 6px solid #444; /* Чуть толще */
+            border-left: 6px solid #444; 
             padding: 15px; 
-            margin-bottom: 15px; /* Больше отступ */
-            border-radius: 12px; /* Скругленные углы */
+            margin-bottom: 15px; 
+            border-radius: 12px; 
             background: var(--secondary-bg-color); 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Мягкая тень */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
             display: flex;
             justify-content: space-between;
             align-items: center;
-            /* Для лучшего отклика на нажатие */
             transition: transform 0.2s, box-shadow 0.2s;
         }
         
         .task-card:active {
-            /* Эффект нажатия */
             transform: scale(0.99);
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .task-card.expired {
-            border-left-color: #e74c3c; /* Красный для просроченных */
-            opacity: 0.9;
-        }
-
+        .task-card.expired { border-left-color: #e74c3c; opacity: 0.9; }
         .task-info { flex-grow: 1; }
         .task-header { display: flex; align-items: flex-start; margin-bottom: 5px; }
-        .task-text { 
-            font-weight: 600; /* Немного тоньше жирный шрифт */
-            font-size: 1.15em; 
-            word-wrap: break-word; 
-            flex-grow: 1; 
-        }
+        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1; }
         .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0; }
         .task-card.expired p { color: #ff5555; font-weight: bold; } 
         
-        .importance-tag { 
-            font-size: 0.7em; 
-            font-weight: bold; 
-            padding: 3px 8px; 
-            border-radius: 12px; /* Более скругленные теги */
-            margin-right: 12px; 
-            color: white; 
-            text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); 
-            min-width: 60px; 
-            text-align: center; 
-        }
+        .importance-tag { font-size: 0.7em; font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); min-width: 60px; text-align: center; }
         .importance-tag.high { background-color: #e74c3c; }
         .importance-tag.medium { background-color: #f39c12; }
         .importance-tag.low { background-color: #2ecc71; }
         .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color); }
         
-        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
+        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ (ИСПРАВЛЕНЫ) --- */
+        .menu-button {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            margin-left: 10px;
+            line-height: 1; 
+            /* Добавим небольшой отступ, чтобы троеточие было более заметно */
+            margin-top: -5px; 
+        }
+
         #context-menu {
-            border-radius: 12px; /* Скругленное меню */
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); /* Более глубокая тень для меню */
+            position: fixed; 
+            background: var(--bg-color);
+            border: 1px solid var(--secondary-bg-color);
+            border-radius: 12px; 
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); 
+            z-index: 1000;
+            min-width: 180px;
+            display: none; 
+            overflow: hidden;
         }
-        .menu-item:hover {
-            background-color: var(--secondary-bg-color);
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+            font-size: 0.95em;
+            border-bottom: 1px solid var(--secondary-bg-color);
         }
+
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background-color: var(--secondary-bg-color); }
+        .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6; }
 
     </style>
 </head>
 <body>
 
-    <h1>📋 [ВСТАВЬТЕ НОВОЕ НАЗВАНИЕ ЗДЕСЬ]</h1>
+    <h1>📋 To Do Bot</h1>
     
     <div class="form-section" id="form-section">
         <div class="form-header" onclick="toggleForm()">
@@ -276,14 +281,12 @@
 
         // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
         function toggleForm() {
-            // Если мы выходим из режима редактирования по клику на заголовок, то очищаем форму
             if (formSection.classList.contains('expanded') && isEditing) {
                 exitEditMode(); 
             }
             formSection.classList.toggle('expanded');
             document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
             
-            // Управление MainButton
             if (formSection.classList.contains('expanded')) {
                  if (!isEditing) {
                     tg.MainButton.setText('➕ Добавить задачу').show();
@@ -301,13 +304,11 @@
             isEditing = true;
             currentEditingId = task.id;
             
-            // Заполнение формы
             document.getElementById('taskInput').value = task.task_text || task.task;
             document.getElementById('dateInput').value = task.date;
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
             
-            // UI изменения
             formSection.classList.add('expanded');
             document.getElementById('form-arrow').textContent = '▲';
             formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
@@ -391,7 +392,6 @@
                         taskForm.reset(); 
                     }
                     
-                    // Сворачиваем форму и скрываем кнопку после успеха
                     formSection.classList.remove('expanded'); 
                     document.getElementById('form-arrow').textContent = '▼';
                     tg.MainButton.hide(); 
@@ -410,11 +410,10 @@
             }
         }
         
-        // Кнопка MainButton показывается, только если форма открыта
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
         
-        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ И ОБНОВЛЕНИЯ СТАТУСА ---
+        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ (ИСПРАВЛЕНА) ---
         
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
@@ -440,12 +439,15 @@
                 leftPosition = offset;
             }
 
+            // Позиционируем меню ниже кнопки
             contextMenu.style.top = `${rect.bottom + 5}px`; 
             contextMenu.style.left = `${leftPosition}px`;
         }
 
         document.addEventListener('click', (event) => {
-            if (contextMenu.style.display === 'block' && !contextMenu.contains(event.target) && !event.target.classList.contains('menu-button')) {
+            if (contextMenu.style.display === 'block' && 
+                !contextMenu.contains(event.target) && 
+                !event.target.classList.contains('menu-button')) {
                 contextMenu.style.display = 'none';
                 currentTaskId = null;
             }
