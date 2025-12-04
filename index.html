@@ -21,6 +21,12 @@
             --ai-bubble-color: var(--tg-theme-secondary-bg-color, #e5e5ea);
             --user-text-color: var(--tg-theme-bg-color, #ffffff);
             --ai-text-color: var(--tg-theme-text-color, #000000);
+            /* Цвета важности */
+            --low-color: #2ecc71;
+            --medium-color: #f39c12;
+            --high-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -35,6 +41,11 @@
                 --ai-bubble-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
                 --user-text-color: var(--tg-theme-bg-color, #ffffff);
                 --ai-text-color: var(--tg-theme-text-color, #ecf0f1);
+                --low-color: #27ae60;
+                --medium-color: #f1c40f;
+                --high-color: #c0392b;
+                --success-color: #27ae60;
+                --warning-color: #f1c40f;
             }
         }
 
@@ -42,13 +53,14 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 0; /* Удаляем основной padding, чтобы контейнеры могли занимать всю ширину */
+            padding: 0; 
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
             min-height: 100vh;
             box-sizing: border-box;
             display: flex;
-            flex-direction: column;
+            flex-direction: column; /* Основной контейнер - flex-столбец */
+            touch-action: pan-y; /* Для swipe жестов */
         }
         
         /* ИСПРАВЛЕНИЕ 3: Стильный заголовок */
@@ -69,57 +81,313 @@
             padding: 0 15px; 
         }
 
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ (Tasks View) --- */
-        #tasks-view {
-            padding-bottom: 80px; /* Отступ для нижней панели */
+        /* --- СТИЛИ НАВИГАЦИИ (Fix: Корректное переключение View) --- */
+        .view { 
+            display: none; 
+            flex-grow: 1;
+            position: relative;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        .form-section { background: transparent; margin: 0 15px 20px 15px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); max-height: 60px; }
-        .form-section.expanded { max-height: 500px; }
-        .form-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 20px; height: 60px; box-sizing: border-box; background: var(--secondary-bg-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); transition: background-color 0.2s; }
-        .form-section.expanded .form-header { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-        .form-section-content { padding: 0; visibility: hidden; opacity: 0; transition: opacity 0.3s ease-out, visibility 0.3s ease-out; height: 0; overflow: hidden; background: var(--input-bg-color); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-        .form-section.expanded .form-section-content { visibility: visible; opacity: 1; height: auto; overflow: visible; }
-        .ios-group { border-radius: 12px; overflow: hidden; }
-        .ios-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--input-border-color); background: var(--input-bg-color); min-height: 44px; box-sizing: border-box; }
-        .ios-row:last-child { border-bottom: none; }
-        .ios-label { color: var(--text-color); font-size: 1em; font-weight: 400; flex-shrink: 0; width: 90px; margin-right: 15px; }
-        .ios-row input, .ios-row select { flex-grow: 1; padding: 0; margin: 0; box-sizing: border-box; background: transparent; color: var(--text-color); border: none; outline: none; font-size: 1em; text-align: right; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         
+        .active-view { 
+            display: flex; 
+            flex-direction: column; 
+            flex-grow: 1;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Fix: Tasks View должен прокручиваться сам по себе */
+        #tasks-view.active-view { 
+            display: block; 
+            flex-grow: 1;
+            overflow-y: auto; 
+            padding-bottom: 80px; /* Отступ для нижней панели навигации */
+        }
+        
+        /* Fix: AI View должен быть flex-контейнером с отступом для статического ввода */
+        #ai-view.active-view {
+            display: flex; 
+            flex-direction: column; 
+            flex-grow: 1;
+            padding-bottom: 130px; /* Отступ для Chat Input Container и Nav */
+        }
+        
+        /* --- ПУЛЛ-ТУ-РЕФРЕШ стили --- */
+        #pull-to-refresh {
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--hint-color);
+            font-size: 0.9em;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+        
+        .refresh-icon {
+            margin-right: 8px;
+            transition: transform 0.3s ease;
+        }
+        
+        .pull-refreshing .refresh-icon {
+            animation: rotate 1s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ (Tasks View) --- */
+        .form-section { 
+            background: transparent; 
+            margin: 0 15px 20px 15px; 
+            overflow: hidden; 
+            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            max-height: 60px; 
+        }
+        
+        .form-section.expanded { max-height: 500px; }
+        
+        .form-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            cursor: pointer; 
+            padding: 20px; 
+            height: 60px; 
+            box-sizing: border-box; 
+            background: var(--secondary-bg-color); 
+            border-radius: 12px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            transition: background-color 0.2s; 
+        }
+        
+        .form-section.expanded .form-header { 
+            border-bottom-left-radius: 0; 
+            border-bottom-right-radius: 0; 
+        }
+        
+        .form-section-content { 
+            padding: 0; 
+            visibility: hidden; 
+            opacity: 0; 
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out; 
+            height: 0; 
+            overflow: hidden; 
+            background: var(--input-bg-color); 
+            border-bottom-left-radius: 12px; 
+            border-bottom-right-radius: 12px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+        }
+        
+        .form-section.expanded .form-section-content { 
+            visibility: visible; 
+            opacity: 1; 
+            height: auto; 
+            overflow: visible; 
+        }
+        
+        .ios-group { 
+            border-radius: 12px; 
+            overflow: hidden; 
+        }
+        
+        .ios-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 12px 15px; 
+            border-bottom: 1px solid var(--input-border-color); 
+            background: var(--input-bg-color); 
+            min-height: 44px; 
+            box-sizing: border-box; 
+        }
+        
+        .ios-row:last-child { 
+            border-bottom: none; 
+        }
+        
+        .ios-label { 
+            color: var(--text-color); 
+            font-size: 1em; 
+            font-weight: 400; 
+            flex-shrink: 0; 
+            width: 90px; 
+            margin-right: 15px; 
+        }
+        
+        .ios-row input, .ios-row select { 
+            flex-grow: 1; 
+            padding: 0; 
+            margin: 0; 
+            box-sizing: border-box; 
+            background: transparent; 
+            color: var(--text-color); 
+            border: none; 
+            outline: none; 
+            font-size: 1em; 
+            text-align: right; 
+            -webkit-appearance: none; 
+            -moz-appearance: none; 
+            appearance: none; 
+        }
+        
+        /* --- АНИМАЦИИ ДЛЯ ЗАДАЧ --- */
         .task-card { 
             border-left: 6px solid #444; 
             padding: 15px; 
-            margin: 0 0 15px 0; /* Удаляем боковые отступы, чтобы использовать .content-padding */
+            margin: 0 0 15px 0; 
             border-radius: 12px; 
             background: var(--secondary-bg-color); 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
             display: flex; 
             justify-content: space-between; 
-            align-items: flex-start;
+            align-items: flex-start; 
+            animation: slideIn 0.3s ease-out;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
-        .task-info { flex-grow: 1; margin-right: 10px; }
-        .task-header { display: flex; align-items: flex-start; margin-bottom: 5px; }
-        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1; }
-        .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0; }
         
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+        }
+        
+        .task-card.removing {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+        
+        .task-card.slide-up {
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideOut {
+            to {
+                opacity: 0;
+                transform: translateX(-100%);
+                height: 0;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .task-info { 
+            flex-grow: 1; 
+            margin-right: 10px; 
+        }
+        
+        .task-header { 
+            display: flex; 
+            align-items: flex-start; 
+            margin-bottom: 5px; 
+            gap: 8px; 
+        }
+        
+        .task-text { 
+            font-weight: 600; 
+            font-size: 1.15em; 
+            word-wrap: break-word; 
+            flex-grow: 1; 
+        }
+        
+        .task-card p { 
+            font-size: 0.9em; 
+            color: var(--hint-color); 
+            margin: 5px 0 0 0; 
+        }
+        
+        /* Fix: Стиль для тега важности */
+        .importance-tag {
+            font-size: 0.75em;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 6px;
+            color: var(--bg-color);
+            flex-shrink: 0;
+            align-self: flex-start;
+            transition: transform 0.2s ease;
+        }
+        
+        .task-card:hover .importance-tag {
+            transform: scale(1.05);
+        }
+        
+        .importance-tag.high { background-color: var(--high-color); }
+        .importance-tag.medium { background-color: var(--medium-color); }
+        .importance-tag.low { background-color: var(--low-color); }
+
         .menu-button { 
-            background: transparent; border: none; color: var(--hint-color);
-            font-size: 1.5em; padding: 0 5px; line-height: 1; cursor: pointer;
-            align-self: flex-start; margin-top: -5px; 
-            position: relative; z-index: 1001; /* Выше контекстного меню */
+            background: transparent; 
+            border: none; 
+            color: var(--hint-color);
+            font-size: 1.5em; 
+            padding: 0 5px; 
+            line-height: 1; 
+            cursor: pointer;
+            align-self: flex-start; 
+            margin-top: -5px; 
+            position: relative; 
+            z-index: 1001;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
-        .menu-button:active { opacity: 0.7; }
         
-        /* ИСПРАВЛЕНИЕ 1: СТИЛИ КОНТЕКСТНОГО МЕНЮ */
+        .menu-button:hover { 
+            color: var(--link-color);
+            transform: scale(1.1);
+        }
+        
+        .menu-button:active { 
+            opacity: 0.7; 
+        }
+        
+        /* ИСПРАВЛЕНИЕ 1: Контекстное меню (всплывающее) */
         #context-menu {
             position: absolute;
             background: var(--secondary-bg-color);
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 1000;
-            display: none;
+            display: none; 
             overflow: hidden;
             min-width: 200px;
+            animation: fadeIn 0.2s ease-out;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .menu-item {
             padding: 12px 15px;
             font-size: 0.95em;
@@ -128,32 +396,67 @@
             border-bottom: 1px solid var(--input-border-color);
             transition: background-color 0.1s;
         }
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--link-color) 10%); }
-        .delete-item { color: var(--danger-color); }
-
-        /* --- СТИЛИ ЧАТА (ИСПРАВЛЕНИЕ 2: Статический ввод) --- */
-        #ai-view {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            height: 100vh; /* Используем полную высоту viewport */
-            padding: 0;
-            padding-bottom: 80px; /* Отступ для нижней панели навигации */
+        
+        .menu-item:last-child { 
+            border-bottom: none; 
         }
-
+        
+        .menu-item:hover { 
+            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--link-color) 10%); 
+        }
+        
+        .delete-item { 
+            color: var(--danger-color); 
+        }
+        
+        /* --- СТИЛИ ЧАТА (ИСПРАВЛЕНИЕ 2: Статический ввод и прокрутка) --- */
+        
         /* Контейнер для прокручиваемых сообщений */
         #chat-content-wrapper {
             flex-grow: 1;
-            overflow-y: auto; /* САМЫЙ ВАЖНЫЙ ЭЛЕМЕНТ: прокрутка сообщений */
+            overflow-y: auto; 
             padding: 15px; 
-            padding-bottom: 10px; /* Дополнительный отступ сверху, чтобы сообщения не прилипали */
+            scroll-behavior: smooth;
         }
-
+        
+        /* Индикатор "печатает" для AI */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: var(--ai-bubble-color);
+            border-radius: 18px;
+            margin: 5px 0;
+            width: fit-content;
+            animation: typingPulse 1.5s infinite;
+        }
+        
+        @keyframes typingPulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--hint-color);
+            margin: 0 2px;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
         /* Поле ввода прикрепленное к низу */
         #chat-input-container {
             position: fixed;
-            bottom: 70px; /* Выше навигационной панели (высота панели ~ 60px) */
+            bottom: 70px; /* Выше навигационной панели (~60px) */
             left: 0;
             width: 100%;
             background: var(--bg-color); 
@@ -161,86 +464,214 @@
             box-sizing: border-box;
             border-top: 1px solid var(--input-border-color);
             z-index: 99;
+            display: none; /* Скрыто по умолчанию */
+            transition: transform 0.3s ease;
         }
+        
+        #chat-input-container.keyboard-active {
+            transform: translateY(-250px); /* Поднимаем при открытии клавиатуры */
+        }
+        
         #chat-input-container .ios-row {
             padding: 5px 15px;
             border-radius: 12px;
             background: var(--input-bg-color);
             border: 1px solid var(--input-border-color);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: border-color 0.2s ease;
         }
-
+        
+        #chat-input-container .ios-row:focus-within {
+            border-color: var(--link-color);
+        }
+        
         .message-bubble { 
             max-width: 85%; 
             padding: 10px 15px; 
-            margin: 5px 0;
+            margin: 5px 0; 
             border-radius: 18px; 
             font-size: 0.95em; 
             line-height: 1.4; 
             word-wrap: break-word; 
             box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            white-space: pre-wrap; /* Обеспечивает корректный перенос строк */
+            animation: messageAppear 0.3s ease-out;
         }
+        
+        @keyframes messageAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
         .user-message { 
             align-self: flex-end; 
             background-color: var(--user-bubble-color); 
             color: var(--user-text-color); 
-            margin-right: 0;
-            border-bottom-right-radius: 4px;
+            margin-right: 0; 
+            border-bottom-right-radius: 4px; 
+            margin-left: auto;
         }
+        
         .ai-message { 
             align-self: flex-start; 
             background-color: var(--ai-bubble-color); 
             color: var(--ai-text-color); 
-            margin-left: 0;
+            margin-left: 0; 
             border-bottom-left-radius: 4px; 
+            margin-right: auto;
         }
+        
         .ai-greeting { 
             background-color: transparent; 
             color: var(--hint-color); 
             text-align: center; 
             margin: 20px auto; 
-            font-style: italic;
+            font-style: italic; 
             box-shadow: none;
+            animation: fadeIn 1s ease-out;
         }
-
-        /* --- СТИЛИ НАВИГАЦИИ (Остаются прежними) --- */
-        .view { display: none; transition: opacity 0.3s; flex-grow: 1; }
-        .active-view { display: flex; flex-direction: column; flex-grow: 1; }
-        #tasks-view.active-view, #info-view.active-view { display: block; }
-
+        
+        /* Стили для уведомлений */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--secondary-bg-color);
+            color: var(--text-color);
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .notification.success { border-left: 4px solid var(--success-color); }
+        .notification.error { border-left: 4px solid var(--danger-color); }
+        .notification.info { border-left: 4px solid var(--link-color); }
+        
+        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (Остаются прежними) --- */
         #bottom-nav-container {
-            position: fixed; bottom: 0; left: 0; width: 100%;
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%;
             padding: 5px 15px 10px 15px; 
-            box-sizing: border-box; z-index: 999;
+            box-sizing: border-box; 
+            z-index: 999;
         }
 
         #bottom-nav {
-            display: flex; justify-content: space-around; align-items: center;
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center;
             padding: 5px 0; 
             background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
             border: 1px solid color-mix(in srgb, var(--hint-color) 10%, transparent); 
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
             border-radius: 20px; 
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
         }
 
         .nav-button {
-            background: transparent; border: none; color: var(--text-color);
-            padding: 8px 12px; margin: 0 5px; 
-            font-size: 0.85em; font-weight: 500; cursor: pointer;
-            text-align: center; transition: all 0.2s ease-in-out;
+            background: transparent; 
+            border: none; 
+            color: var(--text-color);
+            padding: 8px 12px; 
+            margin: 0 5px; 
+            font-size: 0.85em; 
+            font-weight: 500; 
+            cursor: pointer;
+            text-align: center; 
+            transition: all 0.2s ease-in-out;
             border-radius: 50px; 
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 2px;
         }
 
-        .nav-button.active { background: var(--link-color); color: var(--bg-color); box-shadow: 0 2px 10px var(--link-color); }
-        .nav-button-icon { font-size: 1.2em; }
+        .nav-button.active { 
+            background: var(--link-color); 
+            color: var(--bg-color); 
+            box-shadow: 0 2px 10px var(--link-color); 
+        }
+        
+        .nav-button-icon { 
+            font-size: 1.2em; 
+        }
+        
+        /* Стили для состояния загрузки */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: color-mix(in srgb, var(--bg-color) 80%, transparent);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--input-border-color);
+            border-top-color: var(--link-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Оптимизация для анимаций */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
         
     </style>
 </head>
 <body>
 
     <div id="tasks-view" class="view active-view">
+        <div id="pull-to-refresh">
+            <span class="refresh-icon">↻</span>
+            <span>Потяните для обновления</span>
+        </div>
         <h1 class="page-header content-padding">Task Assistant 📋</h1>
         
         <div class="form-section" id="form-section">
@@ -252,7 +683,6 @@
             </div>
             <div class="form-section-content">
                 <form id="task-form">
-                    
                     <div class="ios-group">
                         <div class="ios-row">
                             <label for="taskInput" class="ios-label">Текст задачи</label>
@@ -293,15 +723,6 @@
                 <div class="message-bubble ai-greeting">
                     Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
                 </div>
-                </div>
-        </div>
-        
-        <div id="chat-input-container">
-            <div class="ios-row">
-                <input type="text" id="ai-prompt-input" placeholder="Введите ваш вопрос или задачу..." style="text-align: left; padding: 10px 0;">
-                <button id="send-prompt-btn" class="nav-button active" style="margin-left: 10px; width: auto; padding: 5px 15px;">
-                    <span class="nav-button-icon">🚀</span> Отправить
-                </button>
             </div>
         </div>
         
@@ -314,13 +735,35 @@
         </div>
     </div>
 
-
+    <!-- Контекстное меню -->
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
         <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
         <div class="menu-item delete-item" id="menu-delete">🗑️ Удалить задачу</div>
     </div>
 
+    <!-- Поле ввода чата -->
+    <div id="chat-input-container">
+        <div class="ios-row">
+            <input type="text" id="ai-prompt-input" placeholder="Введите ваш вопрос или задачу..." style="text-align: left; padding: 10px 0;">
+            <button id="send-prompt-btn" class="nav-button active" style="margin-left: 10px; width: auto; padding: 5px 15px;">
+                <span class="nav-button-icon">🚀</span> Отправить
+            </button>
+        </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notification" class="notification">
+        <span id="notification-icon">ℹ️</span>
+        <span id="notification-text">Сообщение</span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Нижняя навигация -->
     <div id="bottom-nav-container">
         <nav id="bottom-nav">
             <button class="nav-button active" data-view="tasks" onclick="navigateTo('tasks', this)">
@@ -338,12 +781,12 @@
         </nav>
     </div>
 
-
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
+        tg.expand();
         
-        // --- ПЕРЕМЕННЫЕ N8N ---
+        // --- ПЕРЕМЕННЫЕ N8N (Используйте свои URL) ---
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
@@ -353,6 +796,7 @@
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
+        // DOM элементы
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
         const formSection = document.getElementById('form-section');
@@ -362,65 +806,278 @@
         const aiPromptInput = document.getElementById('ai-prompt-input');
         const sendPromptBtn = document.getElementById('send-prompt-btn');
         const chatContentWrapper = document.getElementById('chat-content-wrapper');
+        const chatInputContainer = document.getElementById('chat-input-container');
+        const notification = document.getElementById('notification');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const pullToRefresh = document.getElementById('pull-to-refresh');
 
+        // --- ЛОКАЛЬНОЕ КЭШИРОВАНИЕ ---
+        let tasksCache = {
+            data: null,
+            timestamp: 0,
+            userId: null
+        };
+        const CACHE_TTL = 30000; // 30 секунд
+        
+        // --- DEBOUNCE ТАЙМЕРЫ ---
+        let fetchTasksDebounceTimer;
+        let searchDebounceTimer;
+        let notificationTimer;
+        
+        // --- СТЕЙТ ПРИЛОЖЕНИЯ ---
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
-        let allTasksData = []; 
+        let allTasksData = [];
+        let isRefreshing = false;
+        let touchStart = { x: 0, y: 0 };
+        let currentView = 'tasks';
         
         const views = document.querySelectorAll('.view');
         const navButtons = document.querySelectorAll('.nav-button');
 
-        // --- ЛОГИКА НАВИГАЦИИ ---
+        // --- УТИЛИТЫ ---
+        
+        // Дебаунс функция
+        function debounce(func, delay) {
+            return function(...args) {
+                clearTimeout(fetchTasksDebounceTimer);
+                fetchTasksDebounceTimer = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+        
+        // Санитизация ввода
+        function sanitizeInput(text, maxLength = 1000) {
+            if (!text) return '';
+            return text
+                .replace(/[<>]/g, '') // Защита от XSS
+                .trim()
+                .substring(0, maxLength);
+        }
+        
+        // Показ уведомлений
+        function showNotification(message, type = 'info', duration = 3000) {
+            clearTimeout(notificationTimer);
+            
+            notification.className = `notification ${type}`;
+            notification.querySelector('#notification-text').textContent = message;
+            
+            let icon = 'ℹ️';
+            switch(type) {
+                case 'success': icon = '✅'; break;
+                case 'error': icon = '❌'; break;
+                case 'warning': icon = '⚠️'; break;
+            }
+            notification.querySelector('#notification-icon').textContent = icon;
+            
+            notification.classList.add('show');
+            
+            notificationTimer = setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+        
+        // Показать/скрыть индикатор загрузки
+        function setLoading(show) {
+            if (show) {
+                loadingOverlay.classList.add('show');
+            } else {
+                loadingOverlay.classList.remove('show');
+            }
+        }
+        
+        // --- ЛОГИКА НАВИГАЦИИ С SWIPE ЖЕСТАМИ ---
+        
         function navigateTo(viewId, clickedButton) {
+            currentView = viewId;
+            
+            // Анимация перехода
             views.forEach(view => {
                 view.classList.remove('active-view');
             });
-            document.getElementById(viewId + '-view').classList.add('active-view');
+            
+            const targetView = document.getElementById(viewId + '-view');
+            targetView.classList.add('active-view');
 
+            // Обновление активной кнопки
             navButtons.forEach(button => {
                 button.classList.remove('active');
             });
             clickedButton.classList.add('active');
             
-            if (viewId === 'tasks' && formSection.classList.contains('expanded')) {
+            // Управление UI элементами
+            const isTaskViewActive = viewId === 'tasks';
+            const isFormExpanded = formSection.classList.contains('expanded');
+            const isAiViewActive = viewId === 'ai';
+
+            // MainButton
+            if (isTaskViewActive && isFormExpanded) {
                 tg.MainButton.show();
             } else {
-                tg.MainButton.hide();
+                tg.MainButton.hide(); 
             }
             
-            if (viewId === 'tasks') {
+            // Поле ввода чата
+            if (isAiViewActive) {
+                chatInputContainer.style.display = 'block';
+                setTimeout(() => {
+                    chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
+                    aiPromptInput.focus();
+                }, 100);
+            } else {
+                chatInputContainer.style.display = 'none';
+            }
+            
+            // Загрузка данных для текущего вида
+            if (isTaskViewActive) {
                 fetchTasks();
             }
             
+            // Закрытие контекстного меню
             contextMenu.style.display = 'none';
         }
         
-        // --- ЛОГИКА ЧАТА ---
+        // Инициализация swipe жестов
+        function initSwipeGestures() {
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let touchEndY = 0;
+            
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            });
+            
+            document.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
+                handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
+            });
+        }
+        
+        function handleSwipe(startX, startY, endX, endY) {
+            const minSwipeDistance = 50;
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            
+            // Проверяем, что свайп был горизонтальным, а не вертикальным
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                const viewsOrder = ['tasks', 'ai', 'info'];
+                const currentIndex = viewsOrder.indexOf(currentView);
+                
+                if (deltaX > 0 && currentIndex > 0) {
+                    // Свайп вправо - предыдущий вид
+                    const prevView = viewsOrder[currentIndex - 1];
+                    const button = document.querySelector(`.nav-button[data-view="${prevView}"]`);
+                    navigateTo(prevView, button);
+                    tg.HapticFeedback.impactOccurred('light');
+                } else if (deltaX < 0 && currentIndex < viewsOrder.length - 1) {
+                    // Свайп влево - следующий вид
+                    const nextView = viewsOrder[currentIndex + 1];
+                    const button = document.querySelector(`.nav-button[data-view="${nextView}"]`);
+                    navigateTo(nextView, button);
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+            }
+        }
+        
+        // --- ПУЛЛ-ТУ-РЕФРЕШ ---
+        
+        function initPullToRefresh() {
+            let startY = 0;
+            let currentY = 0;
+            let isPulling = false;
+            
+            const tasksView = document.getElementById('tasks-view');
+            
+            tasksView.addEventListener('touchstart', e => {
+                if (tasksView.scrollTop === 0) {
+                    startY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            });
+            
+            tasksView.addEventListener('touchmove', e => {
+                if (!isPulling) return;
+                
+                currentY = e.touches[0].clientY;
+                const pullDistance = currentY - startY;
+                
+                if (pullDistance > 0) {
+                    e.preventDefault();
+                    const pullProgress = Math.min(pullDistance / 100, 1);
+                    pullToRefresh.style.transform = `translateY(${pullDistance}px)`;
+                    pullToRefresh.style.opacity = pullProgress;
+                    
+                    if (pullDistance > 80 && !isRefreshing) {
+                        startRefresh();
+                    }
+                }
+            });
+            
+            tasksView.addEventListener('touchend', () => {
+                if (isPulling) {
+                    isPulling = false;
+                    pullToRefresh.style.transform = 'translateY(0)';
+                    pullToRefresh.style.opacity = '0';
+                    pullToRefresh.classList.remove('pull-refreshing');
+                }
+            });
+        }
+        
+        function startRefresh() {
+            isRefreshing = true;
+            pullToRefresh.classList.add('pull-refreshing');
+            pullToRefresh.querySelector('span:nth-child(2)').textContent = 'Обновление...';
+            
+            fetchTasks(true).finally(() => {
+                setTimeout(() => {
+                    isRefreshing = false;
+                    pullToRefresh.classList.remove('pull-refreshing');
+                    pullToRefresh.querySelector('span:nth-child(2)').textContent = 'Потяните для обновления';
+                }, 1000);
+            });
+        }
+        
+        // --- ЛОГИКА ЧАТА С ИНДИКАТОРОМ ЗАГРУЗКИ ---
         
         function addMessageToChat(text, sender) {
             const bubble = document.createElement('div');
             bubble.className = `message-bubble ${sender}-message`;
-            
             bubble.innerHTML = text.replace(/\n/g, '<br>');
             chatContainer.appendChild(bubble);
-            
-            // Прокрутка вниз
             chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
         }
-
+        
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator ai-message';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
+            return typingDiv;
+        }
+        
         async function sendAiPrompt() {
-            const prompt = aiPromptInput.value.trim();
-            if (!prompt) return;
+            const prompt = sanitizeInput(aiPromptInput.value);
+            if (!prompt) {
+                showNotification('Введите сообщение', 'warning');
+                return;
+            }
 
             addMessageToChat(prompt, 'user');
             aiPromptInput.value = ''; 
             aiPromptInput.disabled = true;
             sendPromptBtn.disabled = true;
 
-            try {
-                tg.MainButton.showProgress(true); 
+            const typingIndicator = showTypingIndicator();
 
+            try {
                 const response = await fetch(N8N_AI_URL, {
                     method: 'POST',
                     headers: {
@@ -437,34 +1094,196 @@
 
                 const result = await response.json();
                 
+                typingIndicator.remove();
+                
                 if (result.success && result.response) {
                     addMessageToChat(result.response, 'ai');
                 } else {
-                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ или сервер вернул неполные данные.', 'ai');
-                    console.error('AI Response failed:', result);
+                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ.', 'ai');
+                    showNotification('Ошибка генерации ответа', 'error');
                 }
 
             } catch (error) {
                 console.error('AI Chat Error:', error);
-                tg.showAlert(`Ошибка соединения: ${error.message}. Проверьте логи Webhook в n8n.`);
-                addMessageToChat(`Ошибка соединения: ${error.message}.`, 'ai');
+                typingIndicator.remove();
+                addMessageToChat('Извините, произошла ошибка. Попробуйте еще раз.', 'ai');
+                showNotification('Ошибка соединения', 'error');
             } finally {
-                tg.MainButton.hideProgress(); 
                 aiPromptInput.disabled = false;
                 sendPromptBtn.disabled = false;
                 aiPromptInput.focus();
+                chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
             }
         }
         
-        aiPromptInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendAiPrompt();
+        // Обработка клавиатуры
+        function handleKeyboard() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                aiPromptInput.addEventListener('focus', () => {
+                    chatInputContainer.classList.add('keyboard-active');
+                    setTimeout(() => {
+                        chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
+                    }, 300);
+                });
+                
+                aiPromptInput.addEventListener('blur', () => {
+                    chatInputContainer.classList.remove('keyboard-active');
+                });
             }
-        });
-        sendPromptBtn.addEventListener('click', sendAiPrompt);
+        }
+        
+        // --- ЛОГИКА ЗАДАЧ С КЭШИРОВАНИЕМ И ОПТИМИЗАЦИЕЙ ---
+        
+        // Оптимизированный рендеринг задач
+        function renderTasks(tasks) {
+            const fragment = document.createDocumentFragment();
+            
+            tasks.forEach(taskData => {
+                const taskCard = createTaskCardElement(taskData);
+                fragment.appendChild(taskCard);
+            });
+            
+            // Используем requestAnimationFrame для плавного рендеринга
+            requestAnimationFrame(() => {
+                tasksList.innerHTML = '';
+                tasksList.appendChild(fragment);
+            });
+        }
+        
+        function createTaskCardElement(taskData) {
+            const importance = (taskData.importance || 'low').toLowerCase();
+            const taskCard = document.createElement('div');
+            
+            const taskText = sanitizeInput(taskData.task_text || taskData.task || 'Нет текста задачи');
+            const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
+            const taskId = taskData.id; 
 
+            let cardClasses = `task-card ${importance}`;
+            if (dateTimeInfo.isExpired) {
+                cardClasses += ' expired';
+            }
+            
+            taskCard.className = cardClasses;
+            taskCard.setAttribute('data-task-id', taskId);
+            
+            taskCard.innerHTML = `
+                <div class="task-info">
+                    <div class="task-header">
+                        <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
+                        <span class="task-text">${taskText}</span>
+                    </div>
+                    <p>${dateTimeInfo.formattedText}</p>
+                </div>
+                <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
+                    ⋮
+                </button>
+            `;
+            
+            return taskCard;
+        }
+        
+        // Дебаунсированная загрузка задач
+        const debouncedFetchTasks = debounce((forceRefresh = false) => {
+            fetchTasks(forceRefresh);
+        }, 300);
+        
+        async function fetchTasks(forceRefresh = false) {
+            if (!document.getElementById('tasks-view').classList.contains('active-view') && !forceRefresh) {
+                return;
+            }
+            
+            if (!tg.initData) {
+                showNotification('Ошибка авторизации', 'error');
+                return;
+            }
 
-        // --- ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
+            // Проверка кэша
+            const now = Date.now();
+            const userId = tg.initDataUnsafe.user?.id || 'unknown';
+            
+            if (!forceRefresh && 
+                tasksCache.data && 
+                tasksCache.userId === userId &&
+                (now - tasksCache.timestamp) < CACHE_TTL) {
+                renderTasks(tasksCache.data);
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const response = await fetch(N8N_GET_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const tasks = await response.json();
+
+                if (!Array.isArray(tasks)) {
+                    throw new Error('Некорректный формат данных');
+                }
+                
+                allTasksData = tasks; 
+                
+                const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
+
+                if (activeTasks.length === 0) {
+                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
+                    tasksCache.data = [];
+                    tasksCache.timestamp = now;
+                    tasksCache.userId = userId;
+                    return;
+                }
+                
+                // Сортировка
+                activeTasks.sort((a, b) => {
+                    const aTimeStr = a.date + ' ' + (a.time || '00:00');
+                    const bTimeStr = b.date + ' ' + (b.time || '00:00');
+
+                    const aDate = new Date(aTimeStr);
+                    const bDate = new Date(bTimeStr);
+                    
+                    if (isNaN(aDate.getTime())) return 1; 
+                    if (isNaN(bDate.getTime())) return -1;
+                    
+                    return aDate.getTime() - bDate.getTime();
+                });
+                
+                // Обновление кэша
+                tasksCache.data = activeTasks;
+                tasksCache.timestamp = now;
+                tasksCache.userId = userId;
+                
+                // Рендеринг
+                renderTasks(activeTasks);
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showNotification('Ошибка загрузки задач', 'error');
+                
+                // Показ кэшированных данных при ошибке
+                if (tasksCache.data && tasksCache.data.length > 0) {
+                    renderTasks(tasksCache.data);
+                    showNotification('Показаны кэшированные данные', 'warning');
+                } else {
+                    tasksList.innerHTML = '<p class="error-message">Не удалось загрузить задачи</p>';
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+        
+        // --- ОСТАЛЬНАЯ ЛОГИКА (без изменений, но с использованием новых функций) ---
+        
         function toggleForm() {
             if (formSection.classList.contains('expanded') && isEditing) {
                 exitEditMode(); 
@@ -480,14 +1299,14 @@
                 tg.MainButton.hide(); 
             }
         }
-
+        
         function enterEditMode(task) {
             if (!task) return;
             
             isEditing = true;
             currentEditingId = task.id;
             
-            document.getElementById('taskInput').value = task.task_text || task.task;
+            document.getElementById('taskInput').value = sanitizeInput(task.task_text || task.task);
             document.getElementById('dateInput').value = task.date;
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
@@ -509,14 +1328,13 @@
         }
         
         async function sendTask() {
-            
-            const taskName = document.getElementById('taskInput').value.trim();
+            const taskName = sanitizeInput(document.getElementById('taskInput').value);
             const date = document.getElementById('dateInput').value;
             const time = document.getElementById('timeInput').value;
             const importance = document.getElementById('importanceInput').value;
             
             if (!taskName || !date || !time) {
-                tg.showAlert('Пожалуйста, заполните все поля задачи.');
+                showNotification('Заполните все поля', 'warning');
                 return;
             }
             
@@ -527,16 +1345,14 @@
                 importance: importance,
             };
             
-            let url, method, isUpdate;
+            let url, isUpdate;
 
             if (isEditing) {
                 url = N8N_EDIT_URL;
-                method = 'POST';
                 isUpdate = true;
                 taskData.id = currentEditingId; 
             } else {
                 url = N8N_POST_URL;
-                method = 'POST';
                 isUpdate = false;
             }
 
@@ -544,7 +1360,7 @@
                 tg.MainButton.showProgress(true); 
                 
                 const response = await fetch(url, {
-                    method: method,
+                    method: 'POST',
                     headers: {
                         'Authorization': N8N_AUTH_HEADER,
                         'X-Init-Data': tg.initData,
@@ -553,19 +1369,8 @@
                     body: JSON.stringify(taskData)
                 });
 
-                let result = {};
                 if (response.ok) {
-                    if (!isUpdate) {
-                       try { result = await response.json(); } catch (e) { result = { success: true }; }
-                    } else {
-                       result = { success: true };
-                    }
-                } else {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                if (result.success || response.ok) {
-                    tg.showAlert(isUpdate ? 'Задача успешно обновлена!' : 'Задача успешно добавлена!');
+                    showNotification(isUpdate ? 'Задача обновлена!' : 'Задача добавлена!', 'success');
                     
                     if (isEditing) {
                         exitEditMode(); 
@@ -577,68 +1382,43 @@
                     document.getElementById('form-arrow').textContent = '▼';
                     tg.MainButton.hide(); 
 
-                    await fetchTasks(); 
+                    // Инвалидация кэша
+                    tasksCache.data = null;
+                    await fetchTasks(true);
 
                 } else {
-                    throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
             } catch (error) {
                 console.error('Operation error:', error);
-                tg.showAlert(`Ошибка: ${error.message}`);
+                showNotification('Ошибка операции', 'error');
             } finally {
                 tg.MainButton.hideProgress();
             }
         }
         
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
         
-        // --- ЛОГИКА КОНТЕКСТНОГО МЕНЮ И УДАЛЕНИЯ (ИСПРАВЛЕНИЕ 1) ---
-        
-        function showMenu(taskId, buttonElement) {
-            contextMenu.style.display = 'none';
-            currentTaskId = taskId; 
-
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const rect = buttonElement.getBoundingClientRect();
-            const offset = 10; 
-
-            contextMenu.style.display = 'block';
-            const menuWidth = contextMenu.offsetWidth; 
-            const menuHeight = contextMenu.offsetHeight; 
-
-            // Позиционирование по горизонтали (справа от кнопки)
-            let leftPosition = rect.right - menuWidth; 
-            if (leftPosition < offset) {
-                leftPosition = offset; // Защита от выхода за левый край
-            }
-            if (leftPosition + menuWidth > viewportWidth - offset) {
-                leftPosition = viewportWidth - menuWidth - offset; // Защита от выхода за правый край
-            }
-
-            // Позиционирование по вертикали (под кнопкой, но не ниже дна экрана)
-            let topPosition = rect.bottom + 5; 
-            if (topPosition + menuHeight > viewportHeight - 80) { // 80px - запас над нижней панелью
-                // Если не помещается, открываем вверх
-                topPosition = rect.top - menuHeight - 5;
-            }
-            
-            contextMenu.style.top = `${topPosition}px`; 
-            contextMenu.style.left = `${leftPosition}px`;
-        }
-
-        document.addEventListener('click', (event) => {
-            // Закрыть меню, если клик был не по кнопке меню и не внутри самого меню
-            if (contextMenu.style.display === 'block' && 
-                !contextMenu.contains(event.target) && 
-                !event.target.classList.contains('menu-button')) {
-                contextMenu.style.display = 'none';
-                currentTaskId = null;
+        // Обработчики событий
+        aiPromptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAiPrompt();
             }
         });
-
+        
+        sendPromptBtn.addEventListener('click', sendAiPrompt);
+        
+        document.getElementById('menu-done').addEventListener('click', () => {
+            if (currentTaskId) {
+                markTaskAsDone(currentTaskId);
+            }
+        });
+        
         document.getElementById('menu-edit').addEventListener('click', () => {
             if (currentTaskId) {
                 contextMenu.style.display = 'none';
@@ -646,80 +1426,8 @@
                 if (taskToEdit) {
                     enterEditMode(taskToEdit);
                 } else {
-                    tg.showAlert('Не удалось найти задачу для редактирования.');
+                    showNotification('Задача не найдена', 'error');
                 }
-            }
-        });
-        
-        // Функции markTaskAsDone и deleteTask остаются прежними... (пропущены для краткости)
-        async function markTaskAsDone(taskId) {
-            const performUpdate = async () => {
-                try {
-                    tg.MainButton.showProgress(true); 
-                    const response = await fetch(N8N_UPDATE_URL, {
-                        method: 'POST', 
-                        headers: {
-                            'Authorization': N8N_AUTH_HEADER,
-                            'X-Init-Data': tg.initData,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id: taskId, done: 'yes' })
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    await fetchTasks(); 
-                    tg.showAlert('Задача успешно отмечена как выполненная!');
-                } catch (error) {
-                    console.error('UPDATE error:', error);
-                    tg.showAlert(`Ошибка обновления: ${error.message}.`);
-                } finally {
-                    tg.MainButton.hideProgress();
-                }
-            };
-            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
-                if (confirmed) {
-                    contextMenu.style.display = 'none'; 
-                    await performUpdate();
-                }
-            });
-        }
-        
-        async function deleteTask(taskId) {
-            if (!taskId) return;
-            tg.showConfirm('Вы уверены, что хотите безвозвратно удалить эту задачу? Это действие необратимо.', async (confirmed) => {
-                if (confirmed) {
-                    contextMenu.style.display = 'none';
-                    try {
-                        tg.MainButton.showProgress(true); 
-                        const response = await fetch(N8N_DELETE_URL, {
-                            method: 'POST', 
-                            headers: {
-                                'Authorization': N8N_AUTH_HEADER,
-                                'X-Init-Data': tg.initData,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ id: taskId })
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        tg.showAlert('Задача успешно удалена!');
-                        await fetchTasks(); 
-                    } catch (error) {
-                        console.error('DELETE error:', error);
-                        tg.showAlert(`Ошибка при удалении: ${error.message}.`);
-                    } finally {
-                        tg.MainButton.hideProgress();
-                    }
-                }
-            });
-        }
-        // ... (конец функций)
-
-        document.getElementById('menu-done').addEventListener('click', () => {
-            if (currentTaskId) {
-                markTaskAsDone(currentTaskId);
             }
         });
         
@@ -728,21 +1436,17 @@
                 deleteTask(currentTaskId);
             }
         });
-
-        // --- ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
-        // (ОСТАЕТСЯ ПРЕЖНЕЙ)
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            if (dateStr.includes('-')) {
-                const parts = dateStr.split('-');
-                if (parts.length === 3 && parts[0].length === 4) {
-                    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-                }
+        
+        document.addEventListener('click', (event) => {
+            if (contextMenu.style.display === 'block' && 
+                !contextMenu.contains(event.target) && 
+                !event.target.classList.contains('menu-button')) {
+                contextMenu.style.display = 'none';
+                currentTaskId = null;
             }
-            const date = new Date(dateStr);
-            return isNaN(date.getTime()) ? null : date;
-        }
-
+        });
+        
+        // Вспомогательные функции (без изменений)
         function formatTaskDateTime(dateStr, timeStr) {
             const dateOnly = parseDate(dateStr);
             const timeParts = (timeStr || '00:00').split(':');
@@ -780,104 +1484,148 @@
                 isExpired: isExpired 
             };
         }
-
-        function displayError(message) {
-            tasksList.innerHTML = `<p class="error-message">API Error: ${message}</p>`;
-            tg.showAlert('Ошибка загрузки задач.');
+        
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            if (dateStr.includes('-')) {
+                const parts = dateStr.split('-');
+                if (parts.length === 3 && parts[0].length === 4) {
+                    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+                }
+            }
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? null : date;
         }
-
-        async function fetchTasks() {
-            if (!document.getElementById('tasks-view').classList.contains('active-view')) {
-                return;
-            }
-            
-            if (!tg.initData) {
-                displayError('Telegram initData is missing. Cannot authorize.');
-                return;
-            }
-
-            tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
-            
-            try {
-                const response = await fetch(N8N_GET_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                const tasks = await response.json();
-
-                if (!Array.isArray(tasks)) {
-                    throw new Error('Некорректный формат данных от API.');
-                }
-                
-                allTasksData = tasks; 
-
-                const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
-
-                if (activeTasks.length === 0) {
-                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
-                    return;
-                }
-                
-                activeTasks.sort((a, b) => {
-                    const aTimeStr = a.date + ' ' + (a.time || '00:00');
-                    const bTimeStr = b.date + ' ' + (b.time || '00:00');
-
-                    const aDate = new Date(aTimeStr);
-                    const bDate = new Date(bTimeStr);
+        
+        async function markTaskAsDone(taskId) {
+            const performUpdate = async () => {
+                try {
+                    tg.MainButton.showProgress(true); 
+                    const response = await fetch(N8N_UPDATE_URL, {
+                        method: 'POST', 
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: taskId, done: 'yes' })
+                    });
                     
-                    if (isNaN(aDate.getTime())) return 1; 
-                    if (isNaN(bDate.getTime())) return -1;
-                    
-                    return aDate.getTime() - bDate.getTime();
-                });
-
-                tasksList.innerHTML = ''; 
-
-                activeTasks.forEach(taskData => {
-                    const importance = (taskData.importance || 'low').toLowerCase();
-                    const taskCard = document.createElement('div');
-                    
-                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
-                    const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
-                    const taskId = taskData.id; 
-
-                    let cardClasses = `task-card ${importance}`;
-                    if (dateTimeInfo.isExpired) {
-                        cardClasses += ' expired';
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-                    taskCard.className = cardClasses;
-                    taskCard.setAttribute('data-task-id', taskId);
-
-                    taskCard.innerHTML = `
-                        <div class="task-info">
-                            <div class="task-header">
-                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
-                                <span class="task-text">${taskText}</span>
-                            </div>
-                            
-                            <p>${dateTimeInfo.formattedText}</p>
-                        </div>
-                        <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
-                            ⋮
-                        </button>
-                    `;
-                    tasksList.appendChild(taskCard);
-                });
-
-            } catch (error) {
-                console.error('Fetch error:', error);
-                displayError(error.message);
-            }
+                    
+                    // Анимация удаления
+                    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                    if (taskCard) {
+                        taskCard.classList.add('removing');
+                        setTimeout(() => {
+                            tasksCache.data = null;
+                            fetchTasks(true);
+                        }, 300);
+                    } else {
+                        tasksCache.data = null;
+                        await fetchTasks(true);
+                    }
+                    
+                    showNotification('Задача выполнена!', 'success');
+                } catch (error) {
+                    console.error('UPDATE error:', error);
+                    showNotification('Ошибка обновления', 'error');
+                } finally {
+                    tg.MainButton.hideProgress();
+                }
+            };
+            
+            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none'; 
+                    await performUpdate();
+                }
+            });
         }
+        
+        async function deleteTask(taskId) {
+            if (!taskId) return;
+            
+            tg.showConfirm('Удалить задачу?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none';
+                    try {
+                        tg.MainButton.showProgress(true); 
+                        const response = await fetch(N8N_DELETE_URL, {
+                            method: 'POST', 
+                            headers: {
+                                'Authorization': N8N_AUTH_HEADER,
+                                'X-Init-Data': tg.initData,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ id: taskId })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        
+                        // Анимация удаления
+                        const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                        if (taskCard) {
+                            taskCard.classList.add('removing');
+                            setTimeout(() => {
+                                tasksCache.data = null;
+                                fetchTasks(true);
+                            }, 300);
+                        } else {
+                            tasksCache.data = null;
+                            await fetchTasks(true);
+                        }
+                        
+                        showNotification('Задача удалена!', 'success');
+                    } catch (error) {
+                        console.error('DELETE error:', error);
+                        showNotification('Ошибка удаления', 'error');
+                    } finally {
+                        tg.MainButton.hideProgress();
+                    }
+                }
+            });
+        }
+        
+        function showMenu(taskId, buttonElement) {
+            contextMenu.style.display = 'none';
+            currentTaskId = taskId; 
 
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const rect = buttonElement.getBoundingClientRect();
+            const offset = 10; 
+
+            contextMenu.style.display = 'block';
+            const menuWidth = contextMenu.offsetWidth; 
+            const menuHeight = contextMenu.offsetHeight; 
+
+            // Позиционирование
+            let leftPosition = rect.right - menuWidth; 
+            if (leftPosition < offset) {
+                leftPosition = offset;
+            }
+            if (leftPosition + menuWidth > viewportWidth - offset) {
+                leftPosition = viewportWidth - menuWidth - offset;
+            }
+
+            let topPosition = rect.bottom + 5; 
+            if (topPosition + menuHeight > viewportHeight - 80) { 
+                topPosition = rect.top - menuHeight - 5;
+                if (topPosition < 0) { 
+                    topPosition = rect.bottom + 5;
+                }
+            }
+            
+            contextMenu.style.top = `${topPosition}px`; 
+            contextMenu.style.left = `${leftPosition}px`;
+        }
+        
+        // Глобальные функции
         window.markTaskAsDone = markTaskAsDone;
         window.showMenu = showMenu;
         window.toggleForm = toggleForm;
@@ -885,9 +1633,24 @@
         window.exitEditMode = exitEditMode; 
         window.navigateTo = navigateTo; 
         window.deleteTask = deleteTask; 
-        window.sendAiPrompt = sendAiPrompt; 
-
-        fetchTasks();
+        window.sendAiPrompt = sendAiPrompt;
+        window.fetchTasks = () => fetchTasks(true);
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateTo('tasks', document.querySelector('.nav-button[data-view="tasks"]'));
+            initSwipeGestures();
+            initPullToRefresh();
+            handleKeyboard();
+            
+            // Авто-фокус на поле ввода при открытии AI чата
+            aiPromptInput.addEventListener('focus', () => {
+                setTimeout(() => {
+                    chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
+                }, 100);
+            });
+        });
+        
     </script>
 </body>
 </html>
