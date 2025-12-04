@@ -13,6 +13,9 @@
             --text-color: var(--tg-theme-text-color, #000000);
             --hint-color: var(--tg-theme-hint-color, #777777);
             --link-color: var(--tg-theme-link-color, #007aff);
+            /* Новые переменные для стиля iOS */
+            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); /* Фон для полей */
+            --input-border-color: var(--tg-theme-hint-color, #e0e0e0); /* Разделитель ячеек */
         }
 
         @media (prefers-color-scheme: dark) {
@@ -21,11 +24,13 @@
                 --secondary-bg-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
                 --text-color: var(--tg-theme-text-color, #ecf0f1);
                 --hint-color: var(--tg-theme-hint-color, #aaa);
+                --input-bg-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
+                --input-border-color: var(--tg-theme-hint-color, #4a4a4a);
             }
         }
 
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 15px;
@@ -45,18 +50,16 @@
 
         /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
         .form-section {
-            background: var(--secondary-bg-color);
-            border-radius: 12px; 
+            /* Теперь сама форма-карточка будет иметь фон */
+            background: transparent; 
             margin-bottom: 20px;
             overflow: hidden; 
             transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
             max-height: 60px; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); 
         }
 
         .form-section.expanded {
             max-height: 500px; 
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); 
         }
 
         /* Улучшенный Заголовок */
@@ -69,7 +72,14 @@
             height: 60px; 
             box-sizing: border-box;
             background: var(--secondary-bg-color); 
+            border-radius: 12px; /* Закругляем заголовок */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Немного тени */
             transition: background-color 0.2s;
+        }
+        
+        .form-section.expanded .form-header {
+             border-bottom-left-radius: 0;
+             border-bottom-right-radius: 0;
         }
 
         .form-header:hover {
@@ -92,13 +102,16 @@
         }
 
         .form-section-content {
-            padding: 20px;
-            padding-top: 15px; 
+            padding: 0; /* Удаляем паддинг тут, переносим его внутрь ячеек */
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
             height: 0;
             overflow: hidden;
+            background: var(--input-bg-color); /* Фон для содержимого формы */
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
         }
 
         .form-section.expanded .form-section-content {
@@ -108,70 +121,78 @@
             overflow: visible;
         }
 
-        /* --- НОВЫЕ ТРЕНДОВЫЕ СТИЛИ ПОЛЕЙ ВВОДА (INPUT GROUP) --- */
+        /* --- НОВЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
+
+        .ios-group {
+            border-radius: 12px; 
+            overflow: hidden;
+            /* Убрали фон здесь, т.к. он на form-section-content */
+        }
         
-        .input-group {
-            position: relative;
-            margin-bottom: 25px; /* Увеличим отступ */
-            padding-top: 15px; /* Место для поднятой метки */
+        .ios-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px; /* Внутренний отступ ячейки */
+            border-bottom: 1px solid var(--input-border-color); /* Разделительная линия */
+            background: var(--input-bg-color); 
+            min-height: 44px; /* Стандартная высота ячейки iOS */
+            box-sizing: border-box;
         }
 
-        .input-group label {
-            position: absolute;
-            left: 0;
-            top: 30px; /* Изначальное положение метки внутри поля */
-            color: var(--hint-color);
+        .ios-row:last-child {
+            border-bottom: none; /* Убираем линию у последнего элемента */
+        }
+
+        .ios-label {
+            color: var(--text-color);
             font-size: 1em;
-            transition: 0.3s ease all; 
-            pointer-events: none; /* Чтобы не мешать клику на поле */
+            font-weight: 400; /* Стандартный шрифт iOS */
+            flex-shrink: 0; /* Чтобы не сжимался */
+            width: 90px; /* Фиксированная ширина для метки */
+            margin-right: 15px;
         }
         
-        .input-group input, .input-group select {
-            /* Переопределяем стандартные стили */
-            width: 100%;
-            padding: 8px 0; /* Меньше вертикальный паддинг */
-            margin: 0; /* Обнуляем margin */
+        .ios-row input, .ios-row select {
+            flex-grow: 1;
+            padding: 0; 
+            margin: 0; 
             box-sizing: border-box;
             background: transparent;
             color: var(--text-color);
             border: none;
-            border-bottom: 2px solid var(--hint-color, #777777); /* Только нижняя рамка */
-            border-radius: 0;
-            transition: border-bottom-color 0.3s, box-shadow 0.3s;
             outline: none;
             font-size: 1em;
-            /* Убрать стандартные стрелки для select */
+            text-align: right; /* Ввод справа */
+            /* Убрать стандартные стрелки для select и date/time в iOS */
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
         }
+        
+        /* Исправление цвета текста для полей ввода (чтобы не был как hint-color) */
+        .ios-row input, .ios-row select {
+             color: var(--text-color); 
+        }
 
-        /* Анимация при фокусе: метка поднимается и рамка становится акцентной */
-        .input-group input:focus ~ label, 
-        .input-group input:valid ~ label, 
-        .input-group select:focus ~ label,
-        .input-group select:valid ~ label {
-            top: 0; /* Поднимаем метку вверх */
-            font-size: 0.8em; /* Уменьшаем шрифт */
-            color: var(--link-color); 
+        /* Стиль для select */
+        .ios-row select {
+            /* Убираем стрелку вправо */
+            text-align: right; 
+            padding-right: 5px; 
         }
         
-        .input-group input:focus, .input-group select:focus {
-            border-bottom-color: var(--link-color); /* Акцентная рамка */
-            box-shadow: none; /* Убираем glow, т.к. есть анимация рамки */
+        /* Стилизация placeholder (можно оставить для date/time) */
+        .ios-row input::placeholder {
+            color: var(--hint-color); 
+            opacity: 1;
+        }
+        
+        /* Фокусное состояние: можно подсветить фон, как в iOS */
+        .ios-row:focus-within {
+             background-color: color-mix(in srgb, var(--input-bg-color) 90%, var(--link-color) 5%); 
         }
 
-        /* Стилизация select (Важность) */
-        .input-group select {
-            /* Убедимся, что стрелка видна */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="%23777777" d="M7 10l5 5 5-5z"/></svg>');
-            background-repeat: no-repeat;
-            background-position: right 0 center; /* Прижмем стрелку к краю */
-            padding-right: 25px; 
-            padding-bottom: 5px; 
-        }
-
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ --- (Остаются без изменений для единообразия) */
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ --- (оставляем без изменений) */
         .task-card { 
             border-left: 6px solid #444; 
             padding: 15px; 
@@ -199,7 +220,7 @@
         .importance-tag.low { background-color: #2ecc71; }
         .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color); }
         
-        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
+        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ (без изменений) --- */
         .menu-button {
             background: none;
             border: none;
@@ -252,30 +273,33 @@
         <div class="form-section-content">
             <form id="task-form">
                 
-                <div class="input-group">
-                    <input type="text" id="taskInput" placeholder=" " required>
-                    <label for="taskInput">Текст задачи</label>
-                </div>
-                
-                <div class="input-group">
-                    <input type="date" id="dateInput" placeholder=" " required>
-                    <label for="dateInput">Дата (ГГГГ-ММ-ДД)</label>
-                </div>
-                
-                <div class="input-group">
-                    <input type="time" id="timeInput" placeholder=" " required>
-                    <label for="timeInput">Время (ЧЧ:ММ)</label>
-                </div>
+                <div class="ios-group">
+                    
+                    <div class="ios-row">
+                        <label for="taskInput" class="ios-label">Текст задачи</label>
+                        <input type="text" id="taskInput" placeholder="Введите задачу" required>
+                    </div>
+                    
+                    <div class="ios-row">
+                        <label for="dateInput" class="ios-label">Дата</label>
+                        <input type="date" id="dateInput" required>
+                    </div>
+                    
+                    <div class="ios-row">
+                        <label for="timeInput" class="ios-label">Время</label>
+                        <input type="time" id="timeInput" required>
+                    </div>
 
-                <div class="input-group">
-                    <select id="importanceInput" required>
-                        <option value="medium">Средняя (MEDIUM)</option>
-                        <option value="high">Высокая (HIGH)</option>
-                        <option value="low">Низкая (LOW)</option>
-                    </select>
-                    <label for="importanceInput">Важность</label>
-                </div>
-            </form>
+                    <div class="ios-row">
+                        <label for="importanceInput" class="ios-label">Важность</label>
+                        <select id="importanceInput" required>
+                            <option value="medium">Средняя</option>
+                            <option value="high">Высокая</option>
+                            <option value="low">Низкая</option>
+                        </select>
+                    </div>
+
+                </div> </form>
         </div>
     </div>
 
@@ -314,6 +338,8 @@
         let currentEditingId = null; 
         let allTasksData = []; 
 
+        // !!! Удалена функция updateFloatingLabels, так как теперь используется статический iOS-стиль с Label слева.
+
         // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
         function toggleForm() {
             if (formSection.classList.contains('expanded') && isEditing) {
@@ -344,10 +370,6 @@
             document.getElementById('dateInput').value = task.date;
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
-            
-            // Важно: для Floating Labels нужно, чтобы поля "засветились" как :valid
-            // Для <input type="date/time"> и <select> они всегда valid при наличии value.
-            // Для <input type="text"> это работает через :valid и JS не требуется.
             
             // UI изменения
             formSection.classList.add('expanded');
@@ -454,7 +476,7 @@
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
         
-        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
+        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ (БЕЗ ИЗМЕНЕНИЙ) ---
         
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
@@ -552,7 +574,7 @@
             }
         });
 
-        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (БЕЗ ИЗМЕНЕНИЙ) ---
 
         function parseDate(dateStr) {
             if (!dateStr) return null;
