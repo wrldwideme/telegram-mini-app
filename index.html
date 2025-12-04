@@ -118,7 +118,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
             transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s; 
             border-left: 5px solid;
-            cursor: pointer;
+            cursor: pointer; /* Делаем кликабельной */
         }
 
         .task-card:hover {
@@ -167,22 +167,48 @@
         .importance-tag.medium { background-color: #f39c12; }
         .importance-tag.low { background-color: #2ecc71; }
 
-        /* Стили для кнопки "Выполнено" */
-        .complete-button {
+        /* --- 5. Стили для Контекстного Меню (Popover) --- */
+        #context-menu {
+            position: absolute;
+            z-index: 1000; 
+            background: var(--tg-theme-secondary-bg-color, #2a2a2a);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            min-width: 200px;
+            border: 1px solid var(--tg-theme-bg-color, #333);
+            /* Скрыто по умолчанию */
+            display: none;
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            font-size: 0.9em;
+            color: var(--tg-theme-text-color, #fff);
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .menu-item:hover {
+            background-color: var(--tg-theme-bg-color, #333); 
+        }
+
+        /* Кнопка открытия меню (⋮) */
+        .menu-button {
             background: none;
             border: none;
-            color: #2ecc71; /* Зеленый цвет для галочки */
-            font-size: 1.6em;
+            color: var(--tg-theme-hint-color, #aaa);
+            font-size: 1.4em; 
             cursor: pointer;
             padding: 0 5px;
             margin-left: 15px;
             flex-shrink: 0;
-            transition: color 0.2s, transform 0.1s;
+            transition: color 0.2s;
             line-height: 1; 
         }
 
-        .complete-button:active {
-            transform: scale(0.9);
+        .menu-button:active {
+            color: var(--tg-theme-text-color, #fff);
         }
 
         .loading-message, .empty-message, .error-message { 
@@ -238,6 +264,12 @@
         <p class="loading-message">Загрузка задач...</p>
     </div>
 
+    <div id="context-menu" style="display: none;">
+        <div class="menu-item" id="menu-done">✔️ Отметить как выполненную</div>
+        <div class="menu-item disabled-item" id="menu-edit" style="color: gray;">✍️ Редактировать (TBD)</div>
+        <div class="menu-item disabled-item" id="menu-delete" style="color: gray;">🗑️ Удалить (TBD)</div>
+    </div>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
@@ -245,7 +277,6 @@
         // --- ПЕРЕМЕННЫЕ N8N ---
         const N8N_GET_URL = 'https://worldonme.app.n8n.cloud/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://worldonme.app.n8n.cloud/webhook/add-task'; 
-        // ВАЖНО: Убедись, что этот URL соответствует твоему Webhook для обновления статуса
         const N8N_UPDATE_URL = 'https://worldonme.app.n8n.cloud/webhook/update-task-status'; 
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
@@ -253,6 +284,9 @@
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
         const formSection = document.getElementById('form-section');
+        const contextMenu = document.getElementById('context-menu');
+        
+        let currentTaskId = null; // Для хранения ID задачи, для которой открыто меню
         
         // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
         function toggleForm() {
@@ -261,6 +295,7 @@
 
         // --- 2. ЛОГИКА ДОБАВЛЕНИЯ ЗАДАЧИ (POST) ---
         async function sendTask() {
+            // ... (КОД sendTask ОСТАЕТСЯ БЕЗ ИЗМЕНЕНИЙ) ...
             
             const taskName = document.getElementById('taskInput').value.trim();
             const date = document.getElementById('dateInput').value;
@@ -321,7 +356,33 @@
         tg.MainButton.setText('➕ Добавить задачу').show();
         tg.onEvent('mainButtonClicked', sendTask);
 
-        // --- 3. ЛОГИКА ОТМЕТКИ ЗАДАЧИ КАК ВЫПОЛНЕННОЙ (UPDATE) ---
+        // --- 3. ЛОГИКА КОНТЕКСТНОГО МЕНЮ И ОБНОВЛЕНИЯ СТАТУСА ---
+
+        // Функция показа меню
+        function showMenu(taskId, buttonElement) {
+            contextMenu.style.display = 'none'; // Скрываем, если было открыто
+
+            currentTaskId = taskId; // Сохраняем ID задачи, для которой открыто меню
+
+            // Позиционирование меню рядом с кнопкой
+            const rect = buttonElement.getBoundingClientRect();
+            // Вычисляем позицию так, чтобы меню открывалось влево и вниз от кнопки
+            const menuWidth = contextMenu.offsetWidth; 
+            
+            contextMenu.style.top = `${rect.bottom + 5}px`;
+            contextMenu.style.left = `${rect.left - menuWidth + rect.width}px`; 
+            contextMenu.style.display = 'block';
+        }
+
+        // Функция скрытия меню при клике вне его
+        document.addEventListener('click', (event) => {
+            if (contextMenu.style.display === 'block' && !contextMenu.contains(event.target) && !event.target.classList.contains('menu-button')) {
+                contextMenu.style.display = 'none';
+                currentTaskId = null;
+            }
+        });
+
+        // Функция отметки задачи как выполненной (Она же вызывается из меню)
         async function markTaskAsDone(taskId) {
             
             const performUpdate = async () => {
@@ -360,15 +421,30 @@
             // Используем встроенное подтверждение Telegram Web App
             tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
                 if (confirmed) {
+                    contextMenu.style.display = 'none'; // Скрываем меню после выбора
                     await performUpdate();
                 }
             });
         }
         
+        // Назначение действия кнопке "Отметить как выполненную" в меню
+        document.getElementById('menu-done').addEventListener('click', () => {
+            if (currentTaskId) {
+                markTaskAsDone(currentTaskId);
+                // Скрытие меню происходит внутри markTaskAsDone после подтверждения
+            }
+        });
+        
+        // Привязываем функции к глобальному объекту, чтобы они были доступны из onclick в HTML
+        window.markTaskAsDone = markTaskAsDone;
+        window.showMenu = showMenu;
+        window.toggleForm = toggleForm;
+
+
         // --- 4. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (GET) ---
 
         /**
-         * Парсит дату в формате ГГГГ-ММ-ДД или ДД.ММ.ГГГГ и возвращает объект Date.
+         * Парсит дату и возвращает объект Date.
          */
         function parseDate(dateStr) {
             if (!dateStr) return null;
@@ -376,14 +452,12 @@
             if (dateStr.includes('-')) {
                 const parts = dateStr.split('-');
                 if (parts.length === 3 && parts[0].length === 4) {
-                    // YYYY-MM-DD
                     return new Date(parts[0], parts[1] - 1, parts[2]);
                 }
             }
             if (dateStr.includes('.')) {
                 const parts = dateStr.split('.');
                 if (parts.length === 3 && parts[2].length === 4) {
-                    // DD.MM.YYYY
                     return new Date(parts[2], parts[1] - 1, parts[0]);
                 }
             }
@@ -513,8 +587,8 @@
                             
                             <p>${dateTimeInfo.formattedText}</p>
                         </div>
-                        <button class="complete-button" onclick="markTaskAsDone('${taskId}')" title="Отметить как выполненную">
-                             ✔️
+                        <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
+                             ⋮
                         </button>
                     `;
                     tasksList.appendChild(taskCard);
@@ -525,9 +599,6 @@
                 displayError(error.message);
             }
         }
-
-        // Привязываем функцию markTaskAsDone к глобальному объекту, чтобы она была доступна из onclick
-        window.markTaskAsDone = markTaskAsDone;
 
         // Запуск при загрузке
         fetchTasks();
