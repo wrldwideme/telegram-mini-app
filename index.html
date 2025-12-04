@@ -14,19 +14,21 @@
             --hint-color: var(--tg-theme-hint-color, #777777);
             --link-color: var(--tg-theme-link-color, #007aff);
             --danger-color: #e74c3c;
-            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); 
-            --input-border-color: var(--tg-theme-hint-color, #e0e0e0); 
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
+            --input-border-color: var(--tg-theme-hint-color, #e0e0e0);
             --chat-bg-color: var(--tg-theme-bg-color, #f8f8f8);
             --user-bubble-color: var(--tg-theme-link-color, #007aff);
             --ai-bubble-color: var(--tg-theme-secondary-bg-color, #e5e5ea);
             --user-text-color: var(--tg-theme-bg-color, #ffffff);
             --ai-text-color: var(--tg-theme-text-color, #000000);
-            /* Цвета важности */
-            --low-color: #2ecc71;
-            --medium-color: #f39c12;
-            --high-color: #e74c3c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -41,641 +43,821 @@
                 --ai-bubble-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
                 --user-text-color: var(--tg-theme-bg-color, #ffffff);
                 --ai-text-color: var(--tg-theme-text-color, #ecf0f1);
-                --low-color: #27ae60;
-                --medium-color: #f1c40f;
-                --high-color: #c0392b;
-                --success-color: #27ae60;
-                --warning-color: #f1c40f;
             }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 0; 
             margin: 0;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
             min-height: 100vh;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column; /* Основной контейнер - flex-столбец */
-            touch-action: pan-y; /* Для swipe жестов */
-            overflow-x: hidden; /* Предотвращает горизонтальный скролл */
+            overflow-x: hidden;
         }
         
-        /* ИСПРАВЛЕНИЕ 3: Стильный заголовок */
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes loading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Стильный заголовок */
         .page-header {
             font-size: 1.6em;
             margin: 15px 15px 25px 15px;
             padding-bottom: 5px;
             font-weight: 700;
-            /* Градиентный текст */
             background: linear-gradient(45deg, var(--link-color) 30%, #4a90e2 80%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             border-bottom: 2px solid var(--input-border-color);
+            animation: fadeIn 0.6s ease-out;
         }
 
-        /* Общий контейнер для контента с отступами */
         .content-padding {
-            padding: 0 15px; 
+            padding: 0 15px;
         }
 
-        /* --- СТИЛИ НАВИГАЦИИ (Fix: Корректное переключение View) --- */
-        .view { 
-            display: none; 
-            flex-grow: 1;
-            position: relative;
-            opacity: 0;
-            transform: translateX(20px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            width: 100%;
+        /* Стили для задач */
+        #tasks-view {
+            padding-bottom: 80px;
         }
         
-        .active-view { 
-            display: flex; 
-            flex-direction: column; 
-            flex-grow: 1;
+        .form-section {
+            background: transparent;
+            margin: 0 15px 20px 15px;
+            overflow: hidden;
+            transition: all var(--transition-normal);
+            max-height: 60px;
+            border-radius: 16px;
+            opacity: 0.95;
+        }
+        
+        .form-section.expanded {
+            max-height: 500px;
             opacity: 1;
-            transform: translateX(0);
+            animation: slideInRight 0.4s ease-out;
         }
         
-        /* Fix: Tasks View должен прокручиваться сам по себе */
-        #tasks-view.active-view { 
-            display: block; 
-            flex-grow: 1;
-            overflow-y: auto; 
-            padding-bottom: 80px; /* Отступ для нижней панели навигации */
-            -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 20px;
+            height: 60px;
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
         }
         
-        /* Fix: AI View должен быть flex-контейнером с отступом для статического ввода */
-        #ai-view.active-view {
-            display: flex; 
-            flex-direction: column; 
-            flex-grow: 1;
-            padding-bottom: 130px; /* Отступ для Chat Input Container и Nav */
-        }
-        
-        /* --- ПУЛЛ-ТУ-РЕФРЕШ стили --- */
-        #pull-to-refresh {
+        .form-header::before {
+            content: '';
             position: absolute;
-            top: -50px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            height: 50px;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left var(--transition-slow);
+        }
+        
+        .form-header:hover::before {
+            left: 100%;
+        }
+        
+        .form-header:hover {
+            background: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--link-color) 10%);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .form-section.expanded .form-header {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            box-shadow: none;
+        }
+        
+        .form-section-content {
+            padding: 0;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all var(--transition-normal);
+            height: 0;
+            overflow: hidden;
+            background: var(--input-bg-color);
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+        
+        .form-section.expanded .form-section-content {
+            opacity: 1;
+            transform: translateY(0);
+            height: auto;
+            padding: 20px 0;
+            box-shadow: var(--shadow-md);
+            animation: slideInRight 0.3s ease-out 0.1s both;
+        }
+        
+        .ios-group {
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+        
+        .ios-row {
             display: flex;
             align-items: center;
-            justify-content: center;
-            color: var(--hint-color);
-            font-size: 0.9em;
-            z-index: 1;
-            transition: transform 0.3s ease;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--input-border-color);
+            background: var(--input-bg-color);
+            min-height: 44px;
+            transition: background-color var(--transition-fast);
         }
         
-        .refresh-icon {
-            margin-right: 8px;
-            transition: transform 0.3s ease;
+        .ios-row:focus-within {
+            background: color-mix(in srgb, var(--input-bg-color) 90%, var(--link-color) 10%);
         }
         
-        .pull-refreshing .refresh-icon {
-            animation: rotate 1s linear infinite;
+        .ios-row:last-child {
+            border-bottom: none;
         }
         
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .ios-label {
+            color: var(--text-color);
+            font-size: 1em;
+            font-weight: 400;
+            flex-shrink: 0;
+            width: 100px;
+            margin-right: 15px;
+            opacity: 0.9;
         }
         
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ (Tasks View) --- */
-        .form-section { 
-            background: transparent; 
-            margin: 0 15px 20px 15px; 
-            overflow: hidden; 
-            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            max-height: 60px; 
+        .ios-row input,
+        .ios-row select {
+            flex-grow: 1;
+            padding: 0;
+            margin: 0;
+            background: transparent;
+            color: var(--text-color);
+            border: none;
+            outline: none;
+            font-size: 1em;
+            text-align: right;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: color var(--transition-fast);
         }
         
-        .form-section.expanded { max-height: 500px; }
-        
-        .form-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            cursor: pointer; 
-            padding: 20px; 
-            height: 60px; 
-            box-sizing: border-box; 
-            background: var(--secondary-bg-color); 
-            border-radius: 12px; 
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-            transition: background-color 0.2s; 
+        .ios-row input:focus,
+        .ios-row select:focus {
+            color: var(--link-color);
         }
         
-        .form-section.expanded .form-header { 
-            border-bottom-left-radius: 0; 
-            border-bottom-right-radius: 0; 
+        /* Карточки задач с анимациями */
+        .task-card {
+            border-left: 6px solid;
+            padding: 18px;
+            margin: 0 15px 15px 15px;
+            border-radius: 16px;
+            background: var(--secondary-bg-color);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
         }
         
-        .form-section-content { 
-            padding: 0; 
-            visibility: hidden; 
-            opacity: 0; 
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out; 
-            height: 0; 
-            overflow: hidden; 
-            background: var(--input-bg-color); 
-            border-bottom-left-radius: 12px; 
-            border-bottom-right-radius: 12px; 
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+        .task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
         }
         
-        .form-section.expanded .form-section-content { 
-            visibility: visible; 
-            opacity: 1; 
-            height: auto; 
-            overflow: visible; 
-        }
-        
-        .ios-group { 
-            border-radius: 12px; 
-            overflow: hidden; 
-        }
-        
-        .ios-row { 
-            display: flex; 
-            align-items: center; 
-            padding: 12px 15px; 
-            border-bottom: 1px solid var(--input-border-color); 
-            background: var(--input-bg-color); 
-            min-height: 44px; 
-            box-sizing: border-box; 
-        }
-        
-        .ios-row:last-child { 
-            border-bottom: none; 
-        }
-        
-        .ios-label { 
-            color: var(--text-color); 
-            font-size: 1em; 
-            font-weight: 400; 
-            flex-shrink: 0; 
-            width: 90px; 
-            margin-right: 15px; 
-        }
-        
-        .ios-row input, .ios-row select { 
-            flex-grow: 1; 
-            padding: 0; 
-            margin: 0; 
-            box-sizing: border-box; 
-            background: transparent; 
-            color: var(--text-color); 
-            border: none; 
-            outline: none; 
-            font-size: 1em; 
-            text-align: right; 
-            -webkit-appearance: none; 
-            -moz-appearance: none; 
-            appearance: none; 
-        }
-        
-        /* --- АНИМАЦИИ ДЛЯ ЗАДАЧ --- */
-        .task-card { 
-            border-left: 6px solid #444; 
-            padding: 15px; 
-            margin: 0 0 15px 0; 
-            border-radius: 12px; 
-            background: var(--secondary-bg-color); 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            animation: slideIn 0.3s ease-out;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+        .task-card:hover::before {
+            opacity: 1;
+            animation: shimmer 2s infinite;
         }
         
         .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .task-card:active {
+            transform: translateY(-1px);
+            transition: transform var(--transition-fast);
+        }
+        
+        .task-card.high { border-left-color: var(--danger-color); }
+        .task-card.medium { border-left-color: var(--warning-color); }
+        .task-card.low { border-left-color: var(--success-color); }
+        
+        .task-card.expired {
+            animation: pulse 2s infinite;
+            border-left-color: #95a5a6;
+            opacity: 0.7;
         }
         
         .task-card.removing {
-            animation: slideOut 0.3s ease-in forwards;
+            animation: slideInLeft 0.3s ease-in reverse forwards;
+            opacity: 0;
+            transform: translateX(-20px);
         }
         
-        .task-card.slide-up {
-            animation: slideUp 0.3s ease-out;
+        .task-info {
+            flex-grow: 1;
+            margin-right: 15px;
+            animation: fadeIn 0.5s ease-out 0.1s both;
         }
         
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .task-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            gap: 10px;
         }
         
-        @keyframes slideOut {
-            to {
-                opacity: 0;
-                transform: translateX(-100%);
-                height: 0;
-                margin: 0;
-                padding: 0;
-                overflow: hidden;
-            }
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .task-info { 
-            flex-grow: 1; 
-            margin-right: 10px; 
-        }
-        
-        .task-header { 
-            display: flex; 
-            align-items: flex-start; 
-            margin-bottom: 5px; 
-            gap: 8px; 
-        }
-        
-        .task-text { 
-            font-weight: 600; 
-            font-size: 1.15em; 
-            word-wrap: break-word; 
-            flex-grow: 1; 
-        }
-        
-        .task-card p { 
-            font-size: 0.9em; 
-            color: var(--hint-color); 
-            margin: 5px 0 0 0; 
-        }
-        
-        /* Fix: Стиль для тега важности */
         .importance-tag {
-            font-size: 0.75em;
-            font-weight: 700;
-            padding: 3px 6px;
-            border-radius: 6px;
-            color: var(--bg-color);
-            flex-shrink: 0;
-            align-self: flex-start;
-            transition: transform 0.2s ease;
+            font-size: 0.7em;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            transition: all var(--transition-fast);
         }
         
-        .task-card:hover .importance-tag {
-            transform: scale(1.05);
+        .importance-tag.high {
+            background: color-mix(in srgb, var(--danger-color) 20%, transparent);
+            color: var(--danger-color);
         }
         
-        .importance-tag.high { background-color: var(--high-color); }
-        .importance-tag.medium { background-color: var(--medium-color); }
-        .importance-tag.low { background-color: var(--low-color); }
-
-        .menu-button { 
-            background: transparent; 
-            border: none; 
+        .importance-tag.medium {
+            background: color-mix(in srgb, var(--warning-color) 20%, transparent);
+            color: var(--warning-color);
+        }
+        
+        .importance-tag.low {
+            background: color-mix(in srgb, var(--success-color) 20%, transparent);
+            color: var(--success-color);
+        }
+        
+        .task-text {
+            font-weight: 600;
+            font-size: 1.1em;
+            line-height: 1.4;
+            word-wrap: break-word;
+            flex-grow: 1;
+            transition: color var(--transition-fast);
+        }
+        
+        .task-card p {
+            font-size: 0.9em;
             color: var(--hint-color);
-            font-size: 1.5em; 
-            padding: 0 5px; 
-            line-height: 1; 
+            margin: 8px 0 0 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color var(--transition-fast);
+        }
+        
+        /* Меню с анимацией */
+        .menu-button {
+            background: transparent;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.5em;
+            padding: 0 8px;
+            line-height: 1;
             cursor: pointer;
-            align-self: flex-start; 
-            margin-top: -5px; 
-            position: relative; 
+            align-self: flex-start;
+            margin-top: -5px;
+            position: relative;
             z-index: 1001;
-            transition: color 0.2s ease, transform 0.2s ease;
+            transition: all var(--transition-fast);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .menu-button:hover { 
-            color: var(--link-color);
-            transform: scale(1.1);
+        .menu-button:hover {
+            background: var(--input-bg-color);
+            color: var(--text-color);
+            transform: rotate(90deg);
+            animation: bounce 0.5s ease;
         }
         
-        .menu-button:active { 
-            opacity: 0.7; 
+        .menu-button:active {
+            transform: scale(0.9);
         }
         
-        /* ИСПРАВЛЕНИЕ 1: Контекстное меню (всплывающее) */
+        /* Контекстное меню с анимацией */
         #context-menu {
-            position: absolute;
+            position: fixed;
             background: var(--secondary-bg-color);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 14px;
+            box-shadow: var(--shadow-lg);
             z-index: 1000;
-            display: none; 
+            display: none;
             overflow: hidden;
-            min-width: 200px;
+            min-width: 220px;
             animation: fadeIn 0.2s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .menu-item {
-            padding: 12px 15px;
+            padding: 14px 18px;
             font-size: 0.95em;
             cursor: pointer;
             color: var(--text-color);
             border-bottom: 1px solid var(--input-border-color);
-            transition: background-color 0.1s;
-        }
-        
-        .menu-item:last-child { 
-            border-bottom: none; 
-        }
-        
-        .menu-item:hover { 
-            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--link-color) 10%); 
-        }
-        
-        .delete-item { 
-            color: var(--danger-color); 
-        }
-        
-        /* --- СТИЛИ ЧАТА (ИСПРАВЛЕНИЕ 2: Статический ввод и прокрутка) --- */
-        
-        /* Контейнер для прокручиваемых сообщений */
-        #chat-content-wrapper {
-            flex-grow: 1;
-            overflow-y: auto; 
-            padding: 15px; 
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
-        }
-        
-        /* Индикатор "печатает" для AI */
-        .typing-indicator {
+            transition: all var(--transition-fast);
             display: flex;
             align-items: center;
-            padding: 10px 15px;
-            background-color: var(--ai-bubble-color);
-            border-radius: 18px;
-            margin: 5px 0;
-            width: fit-content;
-            animation: typingPulse 1.5s infinite;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
         }
         
-        @keyframes typingPulse {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.6s;
+        }
+        
+        .menu-item:hover::before {
+            left: 100%;
+        }
+        
+        .menu-item:hover {
+            background-color: color-mix(in srgb, var(--secondary-bg-color) 85%, var(--link-color) 15%);
+            padding-left: 22px;
+        }
+        
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .delete-item {
+            color: var(--danger-color);
+        }
+        
+        /* Чат с улучшенными анимациями */
+        #ai-view {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100vh;
+            padding: 0;
+            padding-bottom: 80px;
+        }
+        
+        #chat-content-wrapper {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            scroll-behavior: smooth;
+        }
+        
+        #chat-input-container {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            width: 100%;
+            background: var(--bg-color);
+            padding: 15px;
+            box-sizing: border-box;
+            border-top: 1px solid var(--input-border-color);
+            z-index: 99;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        #ai-prompt-input {
+            flex-grow: 1;
+            padding: 12px 18px;
+            border-radius: 25px;
+            background: var(--input-bg-color);
+            border: 1px solid var(--input-border-color);
+            color: var(--text-color);
+            font-size: 1em;
+            transition: all var(--transition-fast);
+            outline: none;
+        }
+        
+        #ai-prompt-input:focus {
+            border-color: var(--link-color);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--link-color) 30%, transparent);
+        }
+        
+        #send-prompt-btn {
+            padding: 12px 20px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--link-color), #4a90e2);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        #send-prompt-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            animation: pulse 1s infinite;
+        }
+        
+        #send-prompt-btn:active {
+            transform: translateY(0);
+        }
+        
+        #send-prompt-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Пузыри сообщений с анимациями */
+        .message-bubble {
+            max-width: 85%;
+            padding: 14px 18px;
+            margin: 10px 0;
+            border-radius: 20px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            word-wrap: break-word;
+            box-shadow: var(--shadow-sm);
+            animation: fadeIn 0.3s ease-out;
+            position: relative;
+            transition: transform var(--transition-fast);
+        }
+        
+        .message-bubble:hover {
+            transform: translateY(-2px);
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--user-bubble-color), color-mix(in srgb, var(--user-bubble-color) 80%, white));
+            color: var(--user-text-color);
+            border-bottom-right-radius: 5px;
+            animation: slideInLeft 0.3s ease-out;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: var(--ai-bubble-color);
+            color: var(--ai-text-color);
+            border-bottom-left-radius: 5px;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        .ai-greeting {
+            background: transparent;
+            color: var(--hint-color);
+            text-align: center;
+            margin: 20px auto;
+            font-style: italic;
+            box-shadow: none;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        /* Индикатор загрузки для AI */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 15px;
+            background: var(--ai-bubble-color);
+            border-radius: 20px;
+            width: fit-content;
+            margin: 10px 0;
+            animation: fadeIn 0.3s ease-out;
         }
         
         .typing-dot {
             width: 8px;
             height: 8px;
+            background: var(--hint-color);
             border-radius: 50%;
-            background-color: var(--hint-color);
-            margin: 0 2px;
-            animation: typingBounce 1.4s infinite ease-in-out both;
+            animation: typing 1.4s infinite ease-in-out;
         }
         
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         
-        @keyframes typingBounce {
+        @keyframes typing {
             0%, 80%, 100% { transform: scale(0); }
             40% { transform: scale(1); }
         }
         
-        /* Поле ввода прикрепленное к низу */
-        #chat-input-container {
+        /* Навигация с анимациями */
+        .view {
+            display: none;
+            flex-grow: 1;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        .active-view {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        
+        #tasks-view.active-view,
+        #info-view.active-view {
+            display: block;
+        }
+        
+        #bottom-nav-container {
             position: fixed;
-            bottom: 70px; /* Выше навигационной панели (~60px) */
+            bottom: 0;
             left: 0;
             width: 100%;
-            background: var(--bg-color); 
-            padding: 10px 15px;
+            padding: 10px 15px 15px 15px;
             box-sizing: border-box;
-            border-top: 1px solid var(--input-border-color);
-            z-index: 99;
-            display: none; /* Скрыто по умолчанию */
-            transition: bottom 0.3s ease; /* Используем bottom вместо transform */
-        }
-        
-        #chat-input-container.keyboard-active {
-            bottom: calc(70px + 250px); /* Поднимаем на высоту клавиатуры */
-        }
-        
-        #chat-input-container .ios-row {
-            padding: 5px 15px;
-            border-radius: 12px;
-            background: var(--input-bg-color);
-            border: 1px solid var(--input-border-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: border-color 0.2s ease;
-        }
-        
-        #chat-input-container .ios-row:focus-within {
-            border-color: var(--link-color);
-        }
-        
-        .message-bubble { 
-            max-width: 85%; 
-            padding: 10px 15px; 
-            margin: 5px 0; 
-            border-radius: 18px; 
-            font-size: 0.95em; 
-            line-height: 1.4; 
-            word-wrap: break-word; 
-            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-            white-space: pre-wrap; /* Обеспечивает корректный перенос строк */
-            animation: messageAppear 0.3s ease-out;
-        }
-        
-        @keyframes messageAppear {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .user-message { 
-            align-self: flex-end; 
-            background-color: var(--user-bubble-color); 
-            color: var(--user-text-color); 
-            margin-right: 0; 
-            border-bottom-right-radius: 4px; 
-            margin-left: auto;
-        }
-        
-        .ai-message { 
-            align-self: flex-start; 
-            background-color: var(--ai-bubble-color); 
-            color: var(--ai-text-color); 
-            margin-left: 0; 
-            border-bottom-left-radius: 4px; 
-            margin-right: auto;
-        }
-        
-        .ai-greeting { 
-            background-color: transparent; 
-            color: var(--hint-color); 
-            text-align: center; 
-            margin: 20px auto; 
-            font-style: italic; 
-            box-shadow: none;
-            animation: fadeIn 1s ease-out;
-        }
-        
-        /* Стили для уведомлений */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--secondary-bg-color);
-            color: var(--text-color);
-            padding: 12px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-        
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .notification.success { border-left: 4px solid var(--success-color); }
-        .notification.error { border-left: 4px solid var(--danger-color); }
-        .notification.info { border-left: 4px solid var(--link-color); }
-        
-        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (Остаются прежними) --- */
-        #bottom-nav-container {
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%;
-            padding: 5px 15px 10px 15px; 
-            box-sizing: border-box; 
             z-index: 999;
+            animation: slideInRight 0.5s ease-out;
         }
-
+        
         #bottom-nav {
-            display: flex; 
-            justify-content: space-around; 
+            display: flex;
+            justify-content: space-around;
             align-items: center;
-            padding: 5px 0; 
-            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
-            border: 1px solid color-mix(in srgb, var(--hint-color) 10%, transparent); 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 20px; 
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
+            padding: 8px 0;
+            background: color-mix(in srgb, var(--secondary-bg-color) 85%, transparent);
+            border: 1px solid color-mix(in srgb, var(--hint-color) 10%, transparent);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: var(--shadow-lg);
         }
-
+        
         .nav-button {
-            background: transparent; 
-            border: none; 
+            background: transparent;
+            border: none;
             color: var(--text-color);
-            padding: 8px 12px; 
-            margin: 0 5px; 
-            font-size: 0.85em; 
-            font-weight: 500; 
+            padding: 12px 16px;
+            margin: 0 2px;
+            font-size: 0.85em;
+            font-weight: 500;
             cursor: pointer;
-            text-align: center; 
-            transition: all 0.2s ease-in-out;
-            border-radius: 50px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 2px;
-        }
-
-        .nav-button.active { 
-            background: var(--link-color); 
-            color: var(--bg-color); 
-            box-shadow: 0 2px 10px var(--link-color); 
+            text-align: center;
+            transition: all var(--transition-normal);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+            overflow: hidden;
         }
         
-        .nav-button-icon { 
-            font-size: 1.2em; 
-        }
-        
-        /* Стили для состояния загрузки */
-        .loading-overlay {
-            position: fixed;
+        .nav-button::before {
+            content: '';
+            position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: color-mix(in srgb, var(--bg-color) 80%, transparent);
-            backdrop-filter: blur(5px);
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--link-color) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+        
+        .nav-button.active::before {
+            opacity: 0.15;
+        }
+        
+        .nav-button.active {
+            color: var(--link-color);
+            transform: translateY(-2px);
+        }
+        
+        .nav-button:hover:not(.active) {
+            background: color-mix(in srgb, var(--secondary-bg-color) 70%, transparent);
+            transform: translateY(-1px);
+        }
+        
+        .nav-button:active {
+            transform: scale(0.95);
+        }
+        
+        .nav-button-icon {
+            font-size: 1.3em;
+            transition: all var(--transition-normal);
+        }
+        
+        .nav-button.active .nav-button-icon {
+            animation: bounce 0.6s ease;
+        }
+        
+        /* Кнопка действия */
+        .action-button {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--link-color), #4a90e2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 998;
+            transition: all var(--transition-normal);
+            animation: fadeIn 0.5s ease-out 0.2s both;
         }
         
-        .loading-overlay.show {
-            opacity: 1;
-            visibility: visible;
+        .action-button:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 20px color-mix(in srgb, var(--link-color) 40%, transparent);
         }
         
-        .spinner {
-            width: 40px;
-            height: 40px;
+        .action-button:active {
+            transform: scale(0.95);
+        }
+        
+        /* Утилиты */
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
             border: 3px solid var(--input-border-color);
             border-top-color: var(--link-color);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: loading 1s linear infinite;
         }
         
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .skeleton {
+            background: linear-gradient(90deg, var(--secondary-bg-color) 25%, var(--input-bg-color) 50%, var(--secondary-bg-color) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
         }
         
-        /* Оптимизация для анимаций */
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-                scroll-behavior: auto !important;
-            }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--hint-color);
+            animation: fadeIn 0.6s ease-out;
         }
         
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+            animation: bounce 2s infinite;
+        }
+        
+        /* Индикатор важности */
+        .priority-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        
+        .priority-high { background: var(--danger-color); box-shadow: 0 0 8px var(--danger-color); }
+        .priority-medium { background: var(--warning-color); box-shadow: 0 0 6px var(--warning-color); }
+        .priority-low { background: var(--success-color); box-shadow: 0 0 4px var(--success-color); }
+        
+        /* Плавные переходы */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+        
+        .fade-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .fade-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--hint-color);
+            border-radius: 3px;
+            opacity: 0.5;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--link-color);
+        }
     </style>
 </head>
 <body>
 
+    <!-- Кнопка быстрого действия -->
+    <button id="quick-action-btn" class="action-button" style="display: none;">
+        <span>+</span>
+    </button>
+
     <div id="tasks-view" class="view active-view">
-        <div id="pull-to-refresh">
-            <span class="refresh-icon">↻</span>
-            <span>Потяните для обновления</span>
-        </div>
         <h1 class="page-header content-padding">Task Assistant 📋</h1>
         
         <div class="form-section" id="form-section">
@@ -708,14 +890,15 @@
                                 <option value="low">Низкая</option>
                             </select>
                         </div>
-                    </div> 
+                    </div>
                 </form>
             </div>
         </div>
 
-        <h2 class="content-padding">📝 Активные задачи</h2>
+        <h2 class="content-padding" style="margin-bottom: 15px; animation: fadeIn 0.5s ease-out 0.2s both;">📝 Активные задачи</h2>
         <div id="tasks-list" class="content-padding">
-            <p class="loading-message">Загрузка задач...</p>
+            <div class="skeleton" style="height: 100px; margin: 0 15px 15px 15px; border-radius: 16px;"></div>
+            <div class="skeleton" style="height: 100px; margin: 0 15px 15px 15px; border-radius: 16px;"></div>
         </div>
     </div>
     
@@ -730,44 +913,48 @@
             </div>
         </div>
         
+        <div id="chat-input-container">
+            <div class="input-wrapper">
+                <input type="text" id="ai-prompt-input" placeholder="Введите ваш вопрос или задачу...">
+                <button id="send-prompt-btn">
+                    <span id="send-icon">🚀</span>
+                    <span id="send-text">Отправить</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="info-view" class="view">
         <h1 class="page-header content-padding">Информация ℹ️</h1>
         <div class="content-padding">
-            <p class="empty-message">Раздел с общей информацией и инструкциями о Task Assistant.</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">📱</div>
+                <h3 style="margin-bottom: 10px; color: var(--text-color);">Task AI Assistant</h3>
+                <p style="margin-bottom: 20px; line-height: 1.5;">Умный планировщик задач с искусственным интеллектом, созданный специально для Telegram</p>
+                <div style="background: var(--secondary-bg-color); padding: 20px; border-radius: 16px; text-align: left;">
+                    <p style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;"><span style="font-size: 1.2em;">✅</span> Создавайте задачи с датой и временем</p>
+                    <p style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;"><span style="font-size: 1.2em;">🤖</span> Получайте советы от ИИ</p>
+                    <p style="margin-bottom: 0; display: flex; align-items: center; gap: 10px;"><span style="font-size: 1.2em;">🎯</span> Устанавливайте приоритеты</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Контекстное меню -->
     <div id="context-menu">
-        <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
-        <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
-        <div class="menu-item delete-item" id="menu-delete">🗑️ Удалить задачу</div>
-    </div>
-
-    <!-- Поле ввода чата -->
-    <div id="chat-input-container">
-        <div class="ios-row">
-            <input type="text" id="ai-prompt-input" placeholder="Введите ваш вопрос или задачу..." style="text-align: left; padding: 10px 0;">
-            <button id="send-prompt-btn" class="nav-button active" style="margin-left: 10px; width: auto; padding: 5px 15px;">
-                <span class="nav-button-icon">🚀</span> Отправить
-            </button>
+        <div class="menu-item" id="menu-done">
+            <span>✅</span>
+            <span>Отметить как выполненную</span>
+        </div>
+        <div class="menu-item" id="menu-edit">
+            <span>✍️</span>
+            <span>Редактировать</span>
+        </div>
+        <div class="menu-item delete-item" id="menu-delete">
+            <span>🗑️</span>
+            <span>Удалить задачу</span>
         </div>
     </div>
 
-    <!-- Уведомления -->
-    <div id="notification" class="notification">
-        <span id="notification-icon">ℹ️</span>
-        <span id="notification-text">Сообщение</span>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="spinner"></div>
-    </div>
-
-    <!-- Нижняя навигация -->
     <div id="bottom-nav-container">
         <nav id="bottom-nav">
             <button class="nav-button active" data-view="tasks" onclick="navigateTo('tasks', this)">
@@ -790,7 +977,7 @@
         tg.ready();
         tg.expand();
         
-        // --- ПЕРЕМЕННЫЕ N8N (Используйте свои URL) ---
+        // --- ПЕРЕМЕННЫЕ N8N ---
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
@@ -800,7 +987,6 @@
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
-        // DOM элементы
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
         const formSection = document.getElementById('form-section');
@@ -810,296 +996,94 @@
         const aiPromptInput = document.getElementById('ai-prompt-input');
         const sendPromptBtn = document.getElementById('send-prompt-btn');
         const chatContentWrapper = document.getElementById('chat-content-wrapper');
-        const chatInputContainer = document.getElementById('chat-input-container');
-        const notification = document.getElementById('notification');
-        const loadingOverlay = document.getElementById('loading-overlay');
-        const pullToRefresh = document.getElementById('pull-to-refresh');
+        const quickActionBtn = document.getElementById('quick-action-btn');
+        const sendIcon = document.getElementById('send-icon');
+        const sendText = document.getElementById('send-text');
 
-        // --- ЛОКАЛЬНОЕ КЭШИРОВАНИЕ ---
-        let tasksCache = {
-            data: null,
-            timestamp: 0,
-            userId: null
-        };
-        const CACHE_TTL = 30000; // 30 секунд
-        
-        // --- DEBOUNCE ТАЙМЕРЫ ---
-        let fetchTasksDebounceTimer;
-        let notificationTimer;
-        
-        // --- СТЕЙТ ПРИЛОЖЕНИЯ ---
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
         let allTasksData = [];
-        let isRefreshing = false;
-        let currentView = 'tasks';
-        let isKeyboardOpen = false;
-
+        let isLoading = false;
+        
         const views = document.querySelectorAll('.view');
         const navButtons = document.querySelectorAll('.nav-button');
 
-        // --- УТИЛИТЫ ---
-        
-        // Дебаунс функция
-        function debounce(func, delay) {
-            let timeoutId;
-            return function(...args) {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => func.apply(this, args), delay);
-            };
-        }
-        
-        // Санитизация ввода
-        function sanitizeInput(text, maxLength = 1000) {
-            if (!text) return '';
-            return text
-                .replace(/[<>]/g, '') // Защита от XSS
-                .trim()
-                .substring(0, maxLength);
-        }
-        
-        // Показ уведомлений
-        function showNotification(message, type = 'info', duration = 3000) {
-            clearTimeout(notificationTimer);
-            
-            notification.className = `notification ${type}`;
-            notification.querySelector('#notification-text').textContent = message;
-            
-            let icon = 'ℹ️';
-            switch(type) {
-                case 'success': icon = '✅'; break;
-                case 'error': icon = '❌'; break;
-                case 'warning': icon = '⚠️'; break;
-            }
-            notification.querySelector('#notification-icon').textContent = icon;
-            
-            notification.classList.add('show');
-            
-            notificationTimer = setTimeout(() => {
-                notification.classList.remove('show');
-            }, duration);
-        }
-        
-        // Показать/скрыть индикатор загрузки
-        function setLoading(show) {
-            if (show) {
-                loadingOverlay.classList.add('show');
-            } else {
-                loadingOverlay.classList.remove('show');
-            }
-        }
-        
-        // --- ЛОГИКА НАВИГАЦИИ С SWIPE ЖЕСТАМИ ---
-        
+        // --- ЛОГИКА НАВИГАЦИИ С АНИМАЦИЯМИ ---
         function navigateTo(viewId, clickedButton) {
-            currentView = viewId;
-            
             // Анимация перехода
-            views.forEach(view => {
-                view.classList.remove('active-view');
-            });
-            
-            const targetView = document.getElementById(viewId + '-view');
-            targetView.classList.add('active-view');
-
-            // Обновление активной кнопки
-            navButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-            clickedButton.classList.add('active');
-            
-            // Управление UI элементами
-            const isTaskViewActive = viewId === 'tasks';
-            const isFormExpanded = formSection.classList.contains('expanded');
-            const isAiViewActive = viewId === 'ai';
-
-            // MainButton
-            if (isTaskViewActive && isFormExpanded) {
-                tg.MainButton.setText('➕ Добавить задачу').show();
-            } else {
-                tg.MainButton.hide(); 
-            }
-            
-            // Поле ввода чата
-            if (isAiViewActive) {
-                chatInputContainer.style.display = 'block';
+            const currentView = document.querySelector('.view.active-view');
+            if (currentView) {
+                currentView.style.animation = 'fadeIn 0.3s ease-out reverse forwards';
                 setTimeout(() => {
-                    chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
-                    // Только если клавиатура не открыта
-                    if (!isKeyboardOpen) {
-                        aiPromptInput.focus();
-                    }
-                }, 100);
-            } else {
-                chatInputContainer.style.display = 'none';
+                    currentView.classList.remove('active-view');
+                    currentView.style.animation = '';
+                }, 150);
             }
-            
-            // Загрузка данных для текущего вида
-            if (isTaskViewActive) {
-                fetchTasks(); // Просто вызываем без дебаунса при навигации
-            }
-            
-            // Закрытие контекстного меню
-            contextMenu.style.display = 'none';
-        }
-        
-        // Инициализация swipe жестов
-        function initSwipeGestures() {
-            let touchStartX = 0;
-            let touchStartY = 0;
-            let touchEndX = 0;
-            let touchEndY = 0;
-            let isSwiping = false;
-            
-            document.addEventListener('touchstart', e => {
-                // Исключаем свайпы в поле ввода чата
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                    return;
-                }
-                
-                touchStartX = e.changedTouches[0].screenX;
-                touchStartY = e.changedTouches[0].screenY;
-                isSwiping = true;
-            });
-            
-            document.addEventListener('touchmove', e => {
-                if (!isSwiping) return;
-                
-                // Предотвращаем вертикальный скролл при горизонтальном свайпе
-                const deltaX = Math.abs(e.changedTouches[0].screenX - touchStartX);
-                const deltaY = Math.abs(e.changedTouches[0].screenY - touchStartY);
-                
-                if (deltaX > deltaY && deltaX > 10) {
-                    e.preventDefault();
-                }
-            });
-            
-            document.addEventListener('touchend', e => {
-                if (!isSwiping) return;
-                isSwiping = false;
-                
-                touchEndX = e.changedTouches[0].screenX;
-                touchEndY = e.changedTouches[0].screenY;
-                handleSwipe(touchStartX, touchStartY, touchEndX, touchEndY);
-            });
-        }
-        
-        function handleSwipe(startX, startY, endX, endY) {
-            const minSwipeDistance = 50;
-            const deltaX = endX - startX;
-            const deltaY = endY - startY;
-            
-            // Проверяем, что свайп был преимущественно горизонтальным
-            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
-                const viewsOrder = ['tasks', 'ai', 'info'];
-                const currentIndex = viewsOrder.indexOf(currentView);
-                
-                if (deltaX > 0 && currentIndex > 0) {
-                    // Свайп вправо - предыдущий вид
-                    const prevView = viewsOrder[currentIndex - 1];
-                    const button = document.querySelector(`.nav-button[data-view="${prevView}"]`);
-                    if (button) {
-                        navigateTo(prevView, button);
-                        tg.HapticFeedback.impactOccurred('light');
-                    }
-                } else if (deltaX < 0 && currentIndex < viewsOrder.length - 1) {
-                    // Свайп влево - следующий вид
-                    const nextView = viewsOrder[currentIndex + 1];
-                    const button = document.querySelector(`.nav-button[data-view="${nextView}"]`);
-                    if (button) {
-                        navigateTo(nextView, button);
-                        tg.HapticFeedback.impactOccurred('light');
-                    }
-                }
-            }
-        }
-        
-        // --- ПУЛЛ-ТУ-РЕФРЕШ ---
-        
-        function initPullToRefresh() {
-            let startY = 0;
-            let currentY = 0;
-            let isPulling = false;
-            
-            const tasksView = document.getElementById('tasks-view');
-            
-            tasksView.addEventListener('touchstart', e => {
-                if (tasksView.scrollTop === 0) {
-                    startY = e.touches[0].clientY;
-                    isPulling = true;
-                }
-            });
-            
-            tasksView.addEventListener('touchmove', e => {
-                if (!isPulling) return;
-                
-                currentY = e.touches[0].clientY;
-                const pullDistance = currentY - startY;
-                
-                if (pullDistance > 0) {
-                    e.preventDefault();
-                    const pullProgress = Math.min(pullDistance / 100, 1);
-                    pullToRefresh.style.transform = `translateY(${pullDistance}px)`;
-                    pullToRefresh.style.opacity = pullProgress;
-                    
-                    if (pullDistance > 80 && !isRefreshing) {
-                        startRefresh();
-                    }
-                }
-            });
-            
-            tasksView.addEventListener('touchend', () => {
-                if (isPulling) {
-                    isPulling = false;
-                    pullToRefresh.style.transform = 'translateY(0)';
-                    pullToRefresh.style.opacity = '0';
-                    pullToRefresh.classList.remove('pull-refreshing');
-                }
-            });
-        }
-        
-        function startRefresh() {
-            isRefreshing = true;
-            pullToRefresh.classList.add('pull-refreshing');
-            pullToRefresh.querySelector('span:nth-child(2)').textContent = 'Обновление...';
-            
-            fetchTasks(true).finally(() => {
-                setTimeout(() => {
-                    isRefreshing = false;
-                    pullToRefresh.classList.remove('pull-refreshing');
-                    pullToRefresh.querySelector('span:nth-child(2)').textContent = 'Потяните для обновления';
-                }, 1000);
-            });
-        }
-        
-        // --- ЛОГИКА ЧАТА С ИНДИКАТОРОМ ЗАГРУЗКИ ---
-        
-        function addMessageToChat(text, sender) {
-            const bubble = document.createElement('div');
-            bubble.className = `message-bubble ${sender}-message`;
-            bubble.innerHTML = text.replace(/\n/g, '<br>');
-            chatContainer.appendChild(bubble);
-            
-            // Плавный скролл вниз
+
+            // Показать новое представление
             setTimeout(() => {
-                chatContentWrapper.scrollTo({
-                    top: chatContentWrapper.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 50);
+                views.forEach(view => view.classList.remove('active-view'));
+                const newView = document.getElementById(viewId + '-view');
+                newView.classList.add('active-view');
+                newView.style.animation = 'fadeIn 0.3s ease-out forwards';
+
+                // Обновить навигацию
+                navButtons.forEach(button => button.classList.remove('active'));
+                clickedButton.classList.add('active');
+
+                // Управление кнопками
+                if (viewId === 'tasks') {
+                    fetchTasks();
+                    quickActionBtn.style.display = 'flex';
+                    quickActionBtn.innerHTML = '<span>+</span>';
+                    quickActionBtn.onclick = toggleForm;
+                } else if (viewId === 'ai') {
+                    quickActionBtn.style.display = 'flex';
+                    quickActionBtn.innerHTML = '<span>🤖</span>';
+                    quickActionBtn.onclick = () => {
+                        aiPromptInput.focus();
+                        tg.HapticFeedback.impactOccurred('light');
+                    };
+                    aiPromptInput.focus();
+                } else {
+                    quickActionBtn.style.display = 'none';
+                }
+
+                if (viewId === 'tasks' && formSection.classList.contains('expanded')) {
+                    tg.MainButton.show();
+                } else {
+                    tg.MainButton.hide();
+                }
+                
+                contextMenu.style.display = 'none';
+                tg.HapticFeedback.selectionChanged();
+            }, 150);
         }
         
+        // --- УЛУЧШЕННАЯ ЛОГИКА ЧАТА ---
         function showTypingIndicator() {
             const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator ai-message';
+            typingDiv.className = 'typing-indicator';
             typingDiv.innerHTML = `
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
                 <div class="typing-dot"></div>
             `;
             chatContainer.appendChild(typingDiv);
+            chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
+            return typingDiv;
+        }
+
+        function addMessageToChat(text, sender) {
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble ${sender}-message`;
+            bubble.style.animationDelay = `${Math.random() * 0.1}s`;
             
+            bubble.innerHTML = text.replace(/\n/g, '<br>');
+            chatContainer.appendChild(bubble);
+            
+            // Плавная прокрутка
             setTimeout(() => {
                 chatContentWrapper.scrollTo({
                     top: chatContentWrapper.scrollHeight,
@@ -1107,22 +1091,28 @@
                 });
             }, 50);
             
-            return typingDiv;
-        }
-        
-        async function sendAiPrompt() {
-            const prompt = sanitizeInput(aiPromptInput.value);
-            if (!prompt) {
-                showNotification('Введите сообщение', 'warning');
-                return;
+            // Тактильный отклик
+            if (sender === 'user') {
+                tg.HapticFeedback.impactOccurred('light');
             }
+        }
+
+        async function sendAiPrompt() {
+            const prompt = aiPromptInput.value.trim();
+            if (!prompt || isLoading) return;
 
             addMessageToChat(prompt, 'user');
-            aiPromptInput.value = ''; 
+            aiPromptInput.value = '';
             aiPromptInput.disabled = true;
             sendPromptBtn.disabled = true;
-
+            isLoading = true;
+            
+            // Показать индикатор загрузки
             const typingIndicator = showTypingIndicator();
+            
+            // Изменить кнопку на состояние загрузки
+            sendIcon.textContent = '⏳';
+            sendText.textContent = 'Отправка...';
 
             try {
                 const response = await fetch(N8N_AI_URL, {
@@ -1135,110 +1125,434 @@
                     body: JSON.stringify({ prompt: prompt })
                 });
 
+                // Удалить индикатор набора
+                typingIndicator.remove();
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
                 const result = await response.json();
                 
-                typingIndicator.remove();
-                
                 if (result.success && result.response) {
-                    addMessageToChat(result.response, 'ai');
+                    // Имитация набора текста
+                    const responseText = result.response;
+                    const words = responseText.split(' ');
+                    let currentText = '';
+                    
+                    const aiBubble = document.createElement('div');
+                    aiBubble.className = 'message-bubble ai-message';
+                    chatContainer.appendChild(aiBubble);
+                    
+                    for (let i = 0; i < words.length; i++) {
+                        currentText += words[i] + ' ';
+                        aiBubble.innerHTML = currentText.replace(/\n/g, '<br>');
+                        
+                        chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
+                        
+                        // Случайная задержка для имитации набора
+                        await new Promise(resolve => setTimeout(resolve, Math.random() * 30 + 20));
+                    }
+                    
+                    tg.HapticFeedback.notificationOccurred('success');
                 } else {
-                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ.', 'ai');
-                    showNotification('Ошибка генерации ответа', 'error');
+                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ. Попробуйте еще раз.', 'ai');
                 }
 
             } catch (error) {
                 console.error('AI Chat Error:', error);
-                typingIndicator.remove();
-                addMessageToChat('Извините, произошла ошибка. Попробуйте еще раз.', 'ai');
-                showNotification('Ошибка соединения', 'error');
+                addMessageToChat(`Ошибка соединения. Проверьте подключение к интернету.`, 'ai');
             } finally {
                 aiPromptInput.disabled = false;
                 sendPromptBtn.disabled = false;
-                // Не фокусируем автоматически, чтобы не открывать клавиатуру
+                isLoading = false;
+                sendIcon.textContent = '🚀';
+                sendText.textContent = 'Отправить';
+                aiPromptInput.focus();
             }
         }
         
-        // Обработка клавиатуры
-        function handleKeyboard() {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        aiPromptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendAiPrompt();
+            }
+        });
+        sendPromptBtn.addEventListener('click', sendAiPrompt);
+
+        // Автофокус при открытии чата
+        aiPromptInput.addEventListener('focus', () => {
+            aiPromptInput.style.transform = 'scale(1.02)';
+        });
+        
+        aiPromptInput.addEventListener('blur', () => {
+            aiPromptInput.style.transform = 'scale(1)';
+        });
+
+        // --- ЛОГИКА ФОРМЫ С АНИМАЦИЯМИ ---
+        function toggleForm() {
+            const isExpanding = !formSection.classList.contains('expanded');
             
-            if (isMobile) {
-                let initialHeight = window.innerHeight;
+            if (isExpanding && isEditing) {
+                exitEditMode();
+            }
+            
+            formSection.classList.toggle('expanded');
+            document.getElementById('form-arrow').textContent = 
+                formSection.classList.contains('expanded') ? '▲' : '▼';
+            
+            // Анимация иконки
+            const formIcon = document.getElementById('form-icon');
+            if (isExpanding) {
+                formIcon.style.transform = 'rotate(180deg)';
+                formIcon.textContent = '✏️';
+            } else {
+                formIcon.style.transform = 'rotate(0deg)';
+                formIcon.textContent = '💡';
+            }
+            
+            if (formSection.classList.contains('expanded')) {
+                if (!isEditing) {
+                    tg.MainButton.setText('➕ Добавить задачу').show();
+                }
+                // Автофокус на первое поле
+                setTimeout(() => document.getElementById('taskInput').focus(), 300);
+            } else {
+                tg.MainButton.hide();
+            }
+            
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function enterEditMode(task) {
+            if (!task) return;
+            
+            isEditing = true;
+            currentEditingId = task.id;
+            
+            // Анимация перехода в режим редактирования
+            formSection.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                formSection.style.transform = 'scale(1)';
+            }, 150);
+            
+            // Заполнить форму
+            document.getElementById('taskInput').value = task.task_text || task.task;
+            document.getElementById('dateInput').value = task.date;
+            document.getElementById('timeInput').value = task.time;
+            document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
+            
+            // Показать форму
+            formSection.classList.add('expanded');
+            document.getElementById('form-arrow').textContent = '▲';
+            formTitle.innerHTML = '<span id="form-icon" style="transform: rotate(180deg)">✏️</span> Редактирование задачи';
+            
+            tg.MainButton.setText('💾 Сохранить изменения').show();
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            // Прокрутить к форме
+            formSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function exitEditMode() {
+            isEditing = false;
+            currentEditingId = null;
+            taskForm.reset();
+            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
+            tg.MainButton.setText('➕ Добавить задачу').show();
+        }
+        
+        async function sendTask() {
+            const taskName = document.getElementById('taskInput').value.trim();
+            const date = document.getElementById('dateInput').value;
+            const time = document.getElementById('timeInput').value;
+            const importance = document.getElementById('importanceInput').value;
+            
+            if (!taskName || !date || !time) {
+                tg.showAlert('Пожалуйста, заполните все поля задачи.');
+                tg.HapticFeedback.notificationOccurred('error');
+                return;
+            }
+            
+            const taskData = {
+                taskName: taskName,
+                date: date,
+                time: time,
+                importance: importance,
+            };
+            
+            let url, method, isUpdate;
+
+            if (isEditing) {
+                url = N8N_EDIT_URL;
+                method = 'POST';
+                isUpdate = true;
+                taskData.id = currentEditingId;
+            } else {
+                url = N8N_POST_URL;
+                method = 'POST';
+                isUpdate = false;
+            }
+
+            try {
+                tg.MainButton.showProgress(true);
                 
-                aiPromptInput.addEventListener('focus', () => {
-                    isKeyboardOpen = true;
-                    chatInputContainer.classList.add('keyboard-active');
-                    
-                    // Плавный скролл с задержкой
-                    setTimeout(() => {
-                        chatContentWrapper.scrollTo({
-                            top: chatContentWrapper.scrollHeight,
-                            behavior: 'smooth'
-                        });
-                    }, 300);
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(taskData)
                 });
-                
-                aiPromptInput.addEventListener('blur', () => {
-                    isKeyboardOpen = false;
-                    chatInputContainer.classList.remove('keyboard-active');
-                });
-                
-                // Обработка изменения размера окна (клавиатура появляется/исчезает)
-                window.addEventListener('resize', () => {
-                    const newHeight = window.innerHeight;
+
+                let result = {};
+                if (response.ok) {
+                    if (!isUpdate) {
+                       try { result = await response.json(); } catch (e) { result = { success: true }; }
+                    } else {
+                       result = { success: true };
+                    }
+                } else {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                if (result.success || response.ok) {
+                    tg.showAlert(isUpdate ? 'Задача успешно обновлена!' : 'Задача успешно добавлена!');
+                    tg.HapticFeedback.notificationOccurred('success');
                     
-                    if (newHeight < initialHeight) {
-                        isKeyboardOpen = true;
-                        chatInputContainer.classList.add('keyboard-active');
-                    } else if (newHeight > initialHeight) {
-                        isKeyboardOpen = false;
-                        chatInputContainer.classList.remove('keyboard-active');
+                    if (isEditing) {
+                        exitEditMode();
+                    } else {
+                        taskForm.reset();
                     }
                     
-                    initialHeight = newHeight;
-                });
+                    formSection.classList.remove('expanded');
+                    document.getElementById('form-arrow').textContent = '▼';
+                    tg.MainButton.hide();
+
+                    await fetchTasks();
+
+                } else {
+                    throw new Error(result.message || 'Не удалось выполнить операцию.');
+                }
+
+            } catch (error) {
+                console.error('Operation error:', error);
+                tg.showAlert(`Ошибка: ${error.message}`);
+                tg.HapticFeedback.notificationOccurred('error');
+            } finally {
+                tg.MainButton.hideProgress();
             }
         }
         
-        // --- ЛОГИКА ЗАДАЧ С КЭШИРОВАНИЕМ И ОПТИМИЗАЦИЕЙ ---
+        tg.MainButton.setText('➕ Добавить задачу').hide();
+        tg.onEvent('mainButtonClicked', sendTask);
+
+        // --- УЛУЧШЕННОЕ КОНТЕКСТНОЕ МЕНЮ ---
+        function showMenu(taskId, buttonElement) {
+            event.stopPropagation();
+            contextMenu.style.display = 'none';
+            currentTaskId = taskId;
+
+            const rect = buttonElement.getBoundingClientRect();
+            const offset = 10;
+
+            contextMenu.style.display = 'block';
+            const menuWidth = contextMenu.offsetWidth;
+            const menuHeight = contextMenu.offsetHeight;
+
+            let leftPosition = rect.right - menuWidth;
+            if (leftPosition < offset) leftPosition = offset;
+            if (leftPosition + menuWidth > window.innerWidth - offset) {
+                leftPosition = window.innerWidth - menuWidth - offset;
+            }
+
+            let topPosition = rect.bottom + 5;
+            if (topPosition + menuHeight > window.innerHeight - 80) {
+                topPosition = rect.top - menuHeight - 5;
+            }
+            
+            contextMenu.style.top = `${topPosition}px`;
+            contextMenu.style.left = `${leftPosition}px`;
+            
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        document.addEventListener('click', (event) => {
+            if (contextMenu.style.display === 'block' && 
+                !contextMenu.contains(event.target) && 
+                !event.target.classList.contains('menu-button')) {
+                contextMenu.style.display = 'none';
+                currentTaskId = null;
+            }
+        });
+
+        document.getElementById('menu-edit').addEventListener('click', () => {
+            if (currentTaskId) {
+                contextMenu.style.display = 'none';
+                const taskToEdit = allTasksData.find(t => t.id == currentTaskId);
+                if (taskToEdit) {
+                    enterEditMode(taskToEdit);
+                } else {
+                    tg.showAlert('Не удалось найти задачу для редактирования.');
+                }
+            }
+        });
         
-        // Дебаунсированная загрузка задач
-        const debouncedFetchTasks = debounce((forceRefresh = false) => {
-            fetchTasks(forceRefresh);
-        }, 300);
+        // --- АНИМИРОВАННЫЕ ДЕЙСТВИЯ С ЗАДАЧАМИ ---
+        async function markTaskAsDone(taskId) {
+            const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+            if (taskCard) {
+                taskCard.style.animation = 'fadeIn 0.3s ease-out reverse forwards';
+                setTimeout(() => {
+                    taskCard.style.opacity = '0.5';
+                    taskCard.style.transform = 'translateX(100px)';
+                }, 150);
+            }
+
+            try {
+                const response = await fetch(N8N_UPDATE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: taskId, done: 'yes' })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                await fetchTasks();
+                tg.showAlert('✅ Задача выполнена!');
+                tg.HapticFeedback.notificationOccurred('success');
+            } catch (error) {
+                console.error('UPDATE error:', error);
+                tg.showAlert(`Ошибка обновления: ${error.message}.`);
+                if (taskCard) {
+                    taskCard.style.animation = '';
+                    taskCard.style.opacity = '';
+                    taskCard.style.transform = '';
+                }
+            }
+        }
         
-        async function fetchTasks(forceRefresh = false) {
-            // Простая проверка - если мы не в tasks view, не загружаем
-            const isTasksViewActive = document.getElementById('tasks-view').classList.contains('active-view');
-            if (!isTasksViewActive && !forceRefresh) {
+        async function deleteTask(taskId) {
+            const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+            if (taskCard) {
+                taskCard.classList.add('removing');
+            }
+
+            try {
+                const response = await fetch(N8N_DELETE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: taskId })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                
+                // Дать время для анимации удаления
+                setTimeout(async () => {
+                    await fetchTasks();
+                    tg.showAlert('🗑️ Задача удалена!');
+                    tg.HapticFeedback.notificationOccurred('warning');
+                }, 300);
+                
+            } catch (error) {
+                console.error('DELETE error:', error);
+                tg.showAlert(`Ошибка при удалении: ${error.message}.`);
+                if (taskCard) {
+                    taskCard.classList.remove('removing');
+                }
+            }
+        }
+
+        document.getElementById('menu-done').addEventListener('click', () => {
+            if (currentTaskId) {
+                tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
+                    if (confirmed) {
+                        contextMenu.style.display = 'none';
+                        await markTaskAsDone(currentTaskId);
+                    }
+                });
+            }
+        });
+        
+        document.getElementById('menu-delete').addEventListener('click', () => {
+            if (currentTaskId) {
+                tg.showConfirm('Удалить задачу безвозвратно?', async (confirmed) => {
+                    if (confirmed) {
+                        contextMenu.style.display = 'none';
+                        await deleteTask(currentTaskId);
+                    }
+                });
+            }
+        });
+
+        // --- УЛУЧШЕННАЯ ЗАГРУЗКА ЗАДАЧ ---
+        function formatTaskDateTime(dateStr, timeStr) {
+            const dateOnly = new Date(dateStr);
+            const timeParts = (timeStr || '00:00').split(':');
+
+            if (isNaN(dateOnly.getTime())) {
+                return { formattedText: `📅 Некорректная дата в ⏰ ${timeStr || '00:00'}`, isExpired: false };
+            }
+
+            const taskDateTime = new Date(dateOnly);
+            taskDateTime.setHours(parseInt(timeParts[0] || 0), parseInt(timeParts[1] || 0));
+
+            const now = new Date();
+            const isExpired = taskDateTime < now;
+
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const taskDateOnly = new Date(taskDateTime.getFullYear(), taskDateTime.getMonth(), taskDateTime.getDate());
+            
+            let dateDisplay;
+            const dayDifference = Math.round((taskDateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+
+            if (dayDifference === 0) {
+                dateDisplay = 'Сегодня';
+            } else if (dayDifference === 1) {
+                dateDisplay = 'Завтра';
+            } else if (dayDifference === -1) {
+                dateDisplay = 'Вчера';
+            } else if (dayDifference < -1) {
+                dateDisplay = 'Просрочено';
+            } else {
+                const options = { day: 'numeric', month: 'short' };
+                dateDisplay = taskDateOnly.toLocaleDateString('ru-RU', options).replace('.', '');
+            }
+
+            const priorityIndicator = `<span class="priority-indicator priority-${(taskData.importance || 'low').toLowerCase()}"></span>`;
+            
+            return { 
+                formattedText: `${priorityIndicator}📅 ${dateDisplay} в ⏰ ${timeStr}`, 
+                isExpired: isExpired 
+            };
+        }
+
+        async function fetchTasks() {
+            if (!document.getElementById('tasks-view').classList.contains('active-view')) {
                 return;
             }
             
             if (!tg.initData) {
-                showNotification('Ошибка авторизации', 'error');
+                tasksList.innerHTML = '<p class="empty-message">Ошибка авторизации Telegram</p>';
                 return;
             }
 
-            // Проверка кэша
-            const now = Date.now();
-            const userId = tg.initDataUnsafe.user?.id || 'unknown';
-            
-            if (!forceRefresh && 
-                tasksCache.data && 
-                tasksCache.userId === userId &&
-                (now - tasksCache.timestamp) < CACHE_TTL) {
-                renderTasks(tasksCache.data);
-                return;
-            }
-            
-            // Показываем индикатор загрузки только если нет кэша
-            if (!tasksCache.data || forceRefresh) {
-                setLoading(true);
-            }
+            // Показать скелетоны
+            tasksList.innerHTML = `
+                <div class="skeleton" style="height: 100px; margin: 0 15px 15px 15px; border-radius: 16px;"></div>
+                <div class="skeleton" style="height: 100px; margin: 0 15px 15px 15px; border-radius: 16px;"></div>
+            `;
             
             try {
                 const response = await fetch(N8N_GET_URL, {
@@ -1256,476 +1570,126 @@
                 const tasks = await response.json();
 
                 if (!Array.isArray(tasks)) {
-                    throw new Error('Некорректный формат данных');
+                    throw new Error('Некорректный формат данных от API.');
                 }
                 
-                allTasksData = tasks; 
-                
+                allTasksData = tasks;
                 const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
 
                 if (activeTasks.length === 0) {
-                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
-                    tasksCache.data = [];
-                    tasksCache.timestamp = now;
-                    tasksCache.userId = userId;
+                    tasksList.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🎉</div>
+                            <h3>Нет активных задач</h3>
+                            <p>Добавьте первую задачу, нажав на форму выше</p>
+                        </div>
+                    `;
                     return;
                 }
                 
-                // Сортировка
                 activeTasks.sort((a, b) => {
-                    const aTimeStr = a.date + ' ' + (a.time || '00:00');
-                    const bTimeStr = b.date + ' ' + (b.time || '00:00');
-
-                    const aDate = new Date(aTimeStr);
-                    const bDate = new Date(bTimeStr);
-                    
-                    if (isNaN(aDate.getTime())) return 1; 
-                    if (isNaN(bDate.getTime())) return -1;
-                    
-                    return aDate.getTime() - bDate.getTime();
+                    const aTime = new Date(a.date + 'T' + (a.time || '00:00'));
+                    const bTime = new Date(b.date + 'T' + (b.time || '00:00'));
+                    return aTime - bTime;
                 });
-                
-                // Обновление кэша
-                tasksCache.data = activeTasks;
-                tasksCache.timestamp = now;
-                tasksCache.userId = userId;
-                
-                // Рендеринг
-                renderTasks(activeTasks);
-                
-            } catch (error) {
-                console.error('Fetch error:', error);
-                showNotification('Ошибка загрузки задач', 'error');
-                
-                // Показ кэшированных данных при ошибке
-                if (tasksCache.data && tasksCache.data.length > 0) {
-                    renderTasks(tasksCache.data);
-                    showNotification('Показаны кэшированные данные', 'warning');
-                } else {
-                    tasksList.innerHTML = '<p class="error-message">Не удалось загрузить задачи</p>';
-                }
-            } finally {
-                setLoading(false);
-            }
-        }
-        
-        // Оптимизированный рендеринг задач
-        function renderTasks(tasks) {
-            if (!tasks || tasks.length === 0) {
-                tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
-                return;
-            }
-            
-            const fragment = document.createDocumentFragment();
-            
-            tasks.forEach((taskData, index) => {
-                const taskCard = createTaskCardElement(taskData);
-                // Добавляем небольшую задержку для анимации
-                taskCard.style.animationDelay = `${index * 0.05}s`;
-                fragment.appendChild(taskCard);
-            });
-            
-            // Используем requestAnimationFrame для плавного рендеринга
-            requestAnimationFrame(() => {
+
                 tasksList.innerHTML = '';
-                tasksList.appendChild(fragment);
-            });
-        }
-        
-        function createTaskCardElement(taskData) {
-            const importance = (taskData.importance || 'low').toLowerCase();
-            const taskCard = document.createElement('div');
-            
-            const taskText = sanitizeInput(taskData.task_text || taskData.task || 'Нет текста задачи');
-            const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
-            const taskId = taskData.id; 
-
-            let cardClasses = `task-card ${importance}`;
-            if (dateTimeInfo.isExpired) {
-                cardClasses += ' expired';
-            }
-            
-            taskCard.className = cardClasses;
-            taskCard.setAttribute('data-task-id', taskId);
-            
-            taskCard.innerHTML = `
-                <div class="task-info">
-                    <div class="task-header">
-                        <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
-                        <span class="task-text">${taskText}</span>
-                    </div>
-                    <p>${dateTimeInfo.formattedText}</p>
-                </div>
-                <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
-                    ⋮
-                </button>
-            `;
-            
-            return taskCard;
-        }
-        
-        // --- ОСТАЛЬНАЯ ЛОГИКА ---
-        
-        function toggleForm() {
-            if (formSection.classList.contains('expanded') && isEditing) {
-                exitEditMode(); 
-            }
-            formSection.classList.toggle('expanded');
-            document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
-            
-            if (formSection.classList.contains('expanded')) {
-                 if (!isEditing) {
-                    tg.MainButton.setText('➕ Добавить задачу').show();
-                }
-            } else {
-                tg.MainButton.hide(); 
-            }
-        }
-        
-        function enterEditMode(task) {
-            if (!task) return;
-            
-            isEditing = true;
-            currentEditingId = task.id;
-            
-            document.getElementById('taskInput').value = sanitizeInput(task.task_text || task.task);
-            document.getElementById('dateInput').value = task.date;
-            document.getElementById('timeInput').value = task.time;
-            document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
-            
-            formSection.classList.add('expanded');
-            document.getElementById('form-arrow').textContent = '▲';
-            formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
-            
-            tg.MainButton.setText('✍️ Сохранить изменения').show();
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-        
-        function exitEditMode() {
-            isEditing = false;
-            currentEditingId = null;
-            taskForm.reset(); 
-            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
-            tg.MainButton.setText('➕ Добавить задачу').show();
-        }
-        
-        async function sendTask() {
-            const taskName = sanitizeInput(document.getElementById('taskInput').value);
-            const date = document.getElementById('dateInput').value;
-            const time = document.getElementById('timeInput').value;
-            const importance = document.getElementById('importanceInput').value;
-            
-            if (!taskName || !date || !time) {
-                showNotification('Заполните все поля', 'warning');
-                return;
-            }
-            
-            const taskData = {
-                taskName: taskName,
-                date: date,
-                time: time,
-                importance: importance,
-            };
-            
-            let url, isUpdate;
-
-            if (isEditing) {
-                url = N8N_EDIT_URL;
-                isUpdate = true;
-                taskData.id = currentEditingId; 
-            } else {
-                url = N8N_POST_URL;
-                isUpdate = false;
-            }
-
-            try {
-                tg.MainButton.showProgress(true); 
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(taskData)
-                });
-
-                if (response.ok) {
-                    showNotification(isUpdate ? 'Задача обновлена!' : 'Задача добавлена!', 'success');
+                activeTasks.forEach((taskData, index) => {
+                    const importance = (taskData.importance || 'low').toLowerCase();
+                    const taskCard = document.createElement('div');
                     
-                    if (isEditing) {
-                        exitEditMode(); 
-                    } else {
-                        taskForm.reset(); 
+                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи';
+                    const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
+                    const taskId = taskData.id;
+
+                    let cardClasses = `task-card ${importance}`;
+                    if (dateTimeInfo.isExpired) {
+                        cardClasses += ' expired';
                     }
                     
-                    formSection.classList.remove('expanded'); 
-                    document.getElementById('form-arrow').textContent = '▼';
-                    tg.MainButton.hide(); 
+                    taskCard.className = cardClasses;
+                    taskCard.setAttribute('data-task-id', taskId);
+                    taskCard.style.animationDelay = `${index * 0.05}s`;
 
-                    // Инвалидация кэша и обновление
-                    tasksCache.data = null;
-                    await fetchTasks(true);
-
-                } else {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-            } catch (error) {
-                console.error('Operation error:', error);
-                showNotification('Ошибка операции', 'error');
-            } finally {
-                tg.MainButton.hideProgress();
-            }
-        }
-        
-        // --- ИНИЦИАЛИЗАЦИЯ ---
-        
-        tg.MainButton.setText('➕ Добавить задачу').hide(); 
-        tg.onEvent('mainButtonClicked', sendTask);
-        
-        // Обработчики событий
-        aiPromptInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendAiPrompt();
-            }
-        });
-        
-        sendPromptBtn.addEventListener('click', sendAiPrompt);
-        
-        document.getElementById('menu-done').addEventListener('click', () => {
-            if (currentTaskId) {
-                markTaskAsDone(currentTaskId);
-            }
-        });
-        
-        document.getElementById('menu-edit').addEventListener('click', () => {
-            if (currentTaskId) {
-                contextMenu.style.display = 'none';
-                const taskToEdit = allTasksData.find(t => t.id == currentTaskId);
-                if (taskToEdit) {
-                    enterEditMode(taskToEdit);
-                } else {
-                    showNotification('Задача не найдена', 'error');
-                }
-            }
-        });
-        
-        document.getElementById('menu-delete').addEventListener('click', () => {
-            if (currentTaskId) {
-                deleteTask(currentTaskId);
-            }
-        });
-        
-        document.addEventListener('click', (event) => {
-            if (contextMenu.style.display === 'block' && 
-                !contextMenu.contains(event.target) && 
-                !event.target.classList.contains('menu-button')) {
-                contextMenu.style.display = 'none';
-                currentTaskId = null;
-            }
-        });
-        
-        // Вспомогательные функции
-        function formatTaskDateTime(dateStr, timeStr) {
-            const dateOnly = parseDate(dateStr);
-            const timeParts = (timeStr || '00:00').split(':');
-
-            if (!dateOnly) {
-                const formattedTime = timeStr || '00:00';
-                return { formattedText: `📅 НЕВЕРНАЯ ДАТА в ⏰ ${formattedTime}`, isExpired: false };
-            }
-
-            const taskDateTime = new Date(dateOnly.getTime()); 
-            taskDateTime.setHours(taskDateTime.getHours() + (new Date().getTimezoneOffset() / 60)); 
-            taskDateTime.setHours(taskDateTime.getHours() + parseInt(timeParts[0] || 0));
-            taskDateTime.setMinutes(taskDateTime.getMinutes() + parseInt(timeParts[1] || 0));
-
-            const now = new Date();
-            const isExpired = taskDateTime < now;
-
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const taskDateOnly = new Date(taskDateTime.getFullYear(), taskDateTime.getMonth(), taskDateTime.getDate());
-            
-            let dateDisplay;
-            const dayDifference = Math.round((taskDateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
-
-            if (dayDifference === 0) {
-                dateDisplay = 'Сегодня';
-            } else if (dayDifference === 1) {
-                dateDisplay = 'Завтра';
-            } else {
-                const options = { day: 'numeric', month: 'short' };
-                dateDisplay = taskDateOnly.toLocaleDateString('ru-RU', options).toUpperCase().replace(/\./g, '');
-            }
-
-            return { 
-                formattedText: `📅 ${dateDisplay} в ⏰ ${timeStr}`, 
-                isExpired: isExpired 
-            };
-        }
-        
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            if (dateStr.includes('-')) {
-                const parts = dateStr.split('-');
-                if (parts.length === 3 && parts[0].length === 4) {
-                    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-                }
-            }
-            const date = new Date(dateStr);
-            return isNaN(date.getTime()) ? null : date;
-        }
-        
-        async function markTaskAsDone(taskId) {
-            const performUpdate = async () => {
-                try {
-                    tg.MainButton.showProgress(true); 
-                    const response = await fetch(N8N_UPDATE_URL, {
-                        method: 'POST', 
-                        headers: {
-                            'Authorization': N8N_AUTH_HEADER,
-                            'X-Init-Data': tg.initData,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id: taskId, done: 'yes' })
+                    taskCard.innerHTML = `
+                        <div class="task-info">
+                            <div class="task-header">
+                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span>
+                                <span class="task-text">${taskText}</span>
+                            </div>
+                            <p>${dateTimeInfo.formattedText}</p>
+                        </div>
+                        <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
+                            ⋮
+                        </button>
+                    `;
+                    
+                    taskCard.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('menu-button')) {
+                            enterEditMode(taskData);
+                        }
                     });
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    
-                    // Анимация удаления
-                    const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-                    if (taskCard) {
-                        taskCard.classList.add('removing');
-                        setTimeout(() => {
-                            tasksCache.data = null;
-                            fetchTasks(true);
-                        }, 300);
-                    } else {
-                        tasksCache.data = null;
-                        await fetchTasks(true);
-                    }
-                    
-                    showNotification('Задача выполнена!', 'success');
-                } catch (error) {
-                    console.error('UPDATE error:', error);
-                    showNotification('Ошибка обновления', 'error');
-                } finally {
-                    tg.MainButton.hideProgress();
-                }
-            };
-            
-            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
-                if (confirmed) {
-                    contextMenu.style.display = 'none'; 
-                    await performUpdate();
-                }
-            });
-        }
-        
-        async function deleteTask(taskId) {
-            if (!taskId) return;
-            
-            tg.showConfirm('Удалить задачу?', async (confirmed) => {
-                if (confirmed) {
-                    contextMenu.style.display = 'none';
-                    try {
-                        tg.MainButton.showProgress(true); 
-                        const response = await fetch(N8N_DELETE_URL, {
-                            method: 'POST', 
-                            headers: {
-                                'Authorization': N8N_AUTH_HEADER,
-                                'X-Init-Data': tg.initData,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ id: taskId })
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        
-                        // Анимация удаления
-                        const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
-                        if (taskCard) {
-                            taskCard.classList.add('removing');
-                            setTimeout(() => {
-                                tasksCache.data = null;
-                                fetchTasks(true);
-                            }, 300);
-                        } else {
-                            tasksCache.data = null;
-                            await fetchTasks(true);
-                        }
-                        
-                        showNotification('Задача удалена!', 'success');
-                    } catch (error) {
-                        console.error('DELETE error:', error);
-                        showNotification('Ошибка удаления', 'error');
-                    } finally {
-                        tg.MainButton.hideProgress();
-                    }
-                }
-            });
-        }
-        
-        function showMenu(taskId, buttonElement) {
-            contextMenu.style.display = 'none';
-            currentTaskId = taskId; 
+                    tasksList.appendChild(taskCard);
+                });
 
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-            const rect = buttonElement.getBoundingClientRect();
-            const offset = 10; 
-
-            contextMenu.style.display = 'block';
-            const menuWidth = contextMenu.offsetWidth; 
-            const menuHeight = contextMenu.offsetHeight; 
-
-            // Позиционирование
-            let leftPosition = rect.right - menuWidth; 
-            if (leftPosition < offset) {
-                leftPosition = offset;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                tasksList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Ошибка загрузки</h3>
+                        <p>${error.message}</p>
+                        <button onclick="fetchTasks()" style="margin-top: 15px; padding: 10px 20px; background: var(--link-color); color: white; border: none; border-radius: 10px; cursor: pointer;">
+                            Повторить
+                        </button>
+                    </div>
+                `;
             }
-            if (leftPosition + menuWidth > viewportWidth - offset) {
-                leftPosition = viewportWidth - menuWidth - offset;
-            }
-
-            let topPosition = rect.bottom + 5; 
-            if (topPosition + menuHeight > viewportHeight - 80) { 
-                topPosition = rect.top - menuHeight - 5;
-                if (topPosition < 0) { 
-                    topPosition = rect.bottom + 5;
-                }
-            }
-            
-            contextMenu.style.top = `${topPosition}px`; 
-            contextMenu.style.left = `${leftPosition}px`;
         }
-        
-        // Глобальные функции
+
+        // Автоматическое заполнение даты и времени
+        function setDefaultDateTime() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const time = now.toTimeString().substring(0, 5);
+            
+            document.getElementById('dateInput').value = today;
+            document.getElementById('timeInput').value = time;
+            
+            // Установить минимальную дату как сегодня
+            document.getElementById('dateInput').min = today;
+        }
+
+        // Инициализация
+        window.addEventListener('DOMContentLoaded', () => {
+            setDefaultDateTime();
+            fetchTasks();
+            
+            // Анимация при загрузке
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+            
+            // Установить тему Telegram
+            if (tg.colorScheme === 'dark') {
+                document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+                document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color);
+            }
+        });
+
+        // Экспорт функций в глобальную область видимости
         window.markTaskAsDone = markTaskAsDone;
         window.showMenu = showMenu;
         window.toggleForm = toggleForm;
-        window.enterEditMode = enterEditMode; 
-        window.exitEditMode = exitEditMode; 
-        window.navigateTo = navigateTo; 
-        window.deleteTask = deleteTask; 
+        window.enterEditMode = enterEditMode;
+        window.exitEditMode = exitEditMode;
+        window.navigateTo = navigateTo;
+        window.deleteTask = deleteTask;
         window.sendAiPrompt = sendAiPrompt;
-        window.fetchTasks = () => fetchTasks(true);
-        
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', () => {
-            navigateTo('tasks', document.querySelector('.nav-button[data-view="tasks"]'));
-            initSwipeGestures();
-            initPullToRefresh();
-            handleKeyboard();
-        });
-        
+        window.fetchTasks = fetchTasks;
     </script>
 </body>
 </html>
