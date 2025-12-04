@@ -14,8 +14,14 @@
             --hint-color: var(--tg-theme-hint-color, #777777);
             --link-color: var(--tg-theme-link-color, #007aff);
             /* Новые переменные для стиля iOS */
-            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); /* Фон для полей */
-            --input-border-color: var(--tg-theme-hint-color, #e0e0e0); /* Разделитель ячеек */
+            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); 
+            --input-border-color: var(--tg-theme-hint-color, #e0e0e0); 
+            /* Стиль чата */
+            --chat-bg-color: var(--tg-theme-bg-color, #f8f8f8);
+            --user-bubble-color: var(--tg-theme-link-color, #007aff);
+            --ai-bubble-color: var(--tg-theme-secondary-bg-color, #e5e5ea);
+            --user-text-color: var(--tg-theme-bg-color, #ffffff);
+            --ai-text-color: var(--tg-theme-text-color, #000000);
         }
 
         @media (prefers-color-scheme: dark) {
@@ -26,6 +32,12 @@
                 --hint-color: var(--tg-theme-hint-color, #aaa);
                 --input-bg-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
                 --input-border-color: var(--tg-theme-hint-color, #4a4a4a);
+                /* Стиль чата (Dark Mode) */
+                --chat-bg-color: var(--tg-theme-bg-color, #1a1a1a);
+                --user-bubble-color: var(--tg-theme-link-color, #007aff);
+                --ai-bubble-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
+                --user-text-color: var(--tg-theme-bg-color, #ffffff);
+                --ai-text-color: var(--tg-theme-text-color, #ecf0f1);
             }
         }
 
@@ -36,7 +48,6 @@
             padding: 15px;
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
-            /* Добавляем padding-bottom для компенсации фиксированной навигационной панели */
             padding-bottom: 90px; 
         }
         
@@ -50,164 +61,27 @@
             font-weight: 700;
         }
 
-        /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
-        .form-section {
-            /* Теперь сама форма-карточка будет иметь фон */
-            background: transparent; 
-            margin-bottom: 20px;
-            overflow: hidden; 
-            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            max-height: 60px; 
-        }
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ (без изменений) --- */
+        .form-section { background: transparent; margin-bottom: 20px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); max-height: 60px; }
+        .form-section.expanded { max-height: 500px; }
+        .form-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 20px; height: 60px; box-sizing: border-box; background: var(--secondary-bg-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); transition: background-color 0.2s; }
+        .form-section.expanded .form-header { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+        .form-header:hover { background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%); }
+        .form-header h2 { margin: 0; display: flex; align-items: center; font-size: 1.1em; font-weight: 600; color: var(--text-color); }
+        .form-header h2 span#form-icon { font-size: 1.2em; margin-right: 10px; color: var(--link-color); }
+        .form-section-content { padding: 0; visibility: hidden; opacity: 0; transition: opacity 0.3s ease-out, visibility 0.3s ease-out; height: 0; overflow: hidden; background: var(--input-bg-color); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .form-section.expanded .form-section-content { visibility: visible; opacity: 1; height: auto; overflow: visible; }
+        .ios-group { border-radius: 12px; overflow: hidden; }
+        .ios-row { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--input-border-color); background: var(--input-bg-color); min-height: 44px; box-sizing: border-box; }
+        .ios-row:last-child { border-bottom: none; }
+        .ios-label { color: var(--text-color); font-size: 1em; font-weight: 400; flex-shrink: 0; width: 90px; margin-right: 15px; }
+        .ios-row input, .ios-row select { flex-grow: 1; padding: 0; margin: 0; box-sizing: border-box; background: transparent; color: var(--text-color); border: none; outline: none; font-size: 1em; text-align: right; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+        .ios-row input, .ios-row select { color: var(--text-color); }
+        .ios-row select { text-align: right; padding-right: 5px; }
+        .ios-row input::placeholder { color: var(--hint-color); opacity: 1; }
+        .ios-row:focus-within { background-color: color-mix(in srgb, var(--input-bg-color) 90%, var(--link-color) 5%); }
 
-        .form-section.expanded {
-            max-height: 500px; 
-        }
-
-        /* Улучшенный Заголовок */
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            padding: 20px;
-            height: 60px; 
-            box-sizing: border-box;
-            background: var(--secondary-bg-color); 
-            border-radius: 12px; /* Закругляем заголовок */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Немного тени */
-            transition: background-color 0.2s;
-        }
-        
-        .form-section.expanded .form-header {
-             border-bottom-left-radius: 0;
-             border-bottom-right-radius: 0;
-        }
-
-        .form-header:hover {
-            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
-        }
-        
-        .form-header h2 {
-            margin: 0;
-            display: flex;
-            align-items: center;
-            font-size: 1.1em;
-            font-weight: 600; 
-            color: var(--text-color);
-        }
-
-        .form-header h2 span#form-icon {
-            font-size: 1.2em;
-            margin-right: 10px;
-            color: var(--link-color); 
-        }
-
-        .form-section-content {
-            padding: 0; /* Удаляем паддинг тут, переносим его внутрь ячеек */
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
-            height: 0;
-            overflow: hidden;
-            background: var(--input-bg-color); /* Фон для содержимого формы */
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-        }
-
-        .form-section.expanded .form-section-content {
-            visibility: visible;
-            opacity: 1;
-            height: auto;
-            overflow: visible;
-        }
-
-        /* --- НОВЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
-
-        .ios-group {
-            border-radius: 12px; 
-            overflow: hidden;
-            /* Убрали фон здесь, т.к. он на form-section-content */
-        }
-        
-        .ios-row {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px; /* Внутренний отступ ячейки */
-            border-bottom: 1px solid var(--input-border-color); /* Разделительная линия */
-            background: var(--input-bg-color); 
-            min-height: 44px; /* Стандартная высота ячейки iOS */
-            box-sizing: border-box;
-        }
-
-        .ios-row:last-child {
-            border-bottom: none; /* Убираем линию у последнего элемента */
-        }
-
-        .ios-label {
-            color: var(--text-color);
-            font-size: 1em;
-            font-weight: 400; /* Стандартный шрифт iOS */
-            flex-shrink: 0; /* Чтобы не сжимался */
-            width: 90px; /* Фиксированная ширина для метки */
-            margin-right: 15px;
-        }
-        
-        .ios-row input, .ios-row select {
-            flex-grow: 1;
-            padding: 0; 
-            margin: 0; 
-            box-sizing: border-box;
-            background: transparent;
-            color: var(--text-color);
-            border: none;
-            outline: none;
-            font-size: 1em;
-            text-align: right; /* Ввод справа */
-            /* Убрать стандартные стрелки для select и date/time в iOS */
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
-        
-        /* Исправление цвета текста для полей ввода (чтобы не был как hint-color) */
-        .ios-row input, .ios-row select {
-             color: var(--text-color); 
-        }
-
-        /* Стиль для select */
-        .ios-row select {
-            /* Убираем стрелку вправо */
-            text-align: right; 
-            padding-right: 5px; 
-        }
-        
-        /* Стилизация placeholder (можно оставить для date/time) */
-        .ios-row input::placeholder {
-            color: var(--hint-color); 
-            opacity: 1;
-        }
-        
-        /* Фокусное состояние: можно подсветить фон, как в iOS */
-        .ios-row:focus-within {
-             background-color: color-mix(in srgb, var(--input-bg-color) 90%, var(--link-color) 5%); 
-        }
-
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ --- (оставляем без изменений) */
-        .task-card { 
-            border-left: 6px solid #444; 
-            padding: 15px; 
-            margin-bottom: 15px; 
-            border-radius: 12px; 
-            background: var(--secondary-bg-color); 
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
+        .task-card { border-left: 6px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 12px; background: var(--secondary-bg-color); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s, box-shadow 0.2s; }
         .task-card:active { transform: scale(0.99); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
         .task-card.expired { border-left-color: #e74c3c; opacity: 0.9; }
         .task-info { flex-grow: 1; }
@@ -222,118 +96,76 @@
         .importance-tag.low { background-color: #2ecc71; }
         .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color); }
         
-        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ (без изменений) --- */
-        .menu-button {
-            background: none;
-            border: none;
-            color: var(--hint-color);
-            font-size: 1.5em;
-            cursor: pointer;
-            padding: 0 5px;
-            margin-left: 10px;
-            line-height: 1; 
-            margin-top: -5px; 
-        }
-
-        #context-menu {
-            position: fixed; 
-            background: var(--bg-color);
-            border: 1px solid var(--secondary-bg-color);
-            border-radius: 12px; 
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); 
-            z-index: 1000;
-            min-width: 180px;
-            display: none; 
-            overflow: hidden;
-        }
-        .menu-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: background-color 0.2s;
-            font-size: 0.95em;
-            border-bottom: 1px solid var(--secondary-bg-color);
-        }
-
-        .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background-color: var(--secondary-bg-color); }
-        .menu-item.delete-item { color: #e74c3c; font-weight: 600; } /* Красный цвет для кнопки удаления */
-        /* .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6; } */
-
-        /* --- СТИЛИ НАВИГАЦИИ (BOTTOM NAVIGATION BAR) --- */
-        
-        /* Контейнеры для переключения содержимого */
-        .view {
-            display: none;
-            transition: opacity 0.3s;
-        }
-
-        .active-view {
-            display: block;
-            opacity: 1;
-        }
-
-        #bottom-nav-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            /* Добавляем небольшой отступ снизу и по бокам */
-            padding: 10px 15px 15px 15px;
-            box-sizing: border-box;
-            z-index: 999;
-        }
-
-        #bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px 5px;
-            
-            /* СТИЛЬ LIQUID GLASS */
-            background: color-mix(in srgb, var(--secondary-bg-color) 70%, transparent); /* Полупрозрачный фон */
-            border: 1px solid color-mix(in srgb, var(--hint-color) 20%, transparent); /* Светлая рамка */
-            backdrop-filter: blur(10px); /* Эффект размытия */
-            -webkit-backdrop-filter: blur(10px);
-            
-            border-radius: 25px; /* Основной контейнер скруглен */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-        }
-
-        .nav-button {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            padding: 10px 15px;
-            margin: 0 5px;
-            font-size: 0.9em;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s ease-in-out;
-            border-radius: 50px; /* Овальная форма */
+        /* --- СТИЛИ ЧАТА --- */
+        #chat-container {
+            /* Высота чата: занимает всё пространство до нижней навигации */
+            height: calc(100vh - 180px); 
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 2px;
+            padding: 0;
+            background: var(--chat-bg-color); 
+            border-radius: 12px;
         }
 
-        .nav-button:hover {
-            /* Подсветка при наведении */
-            background: color-mix(in srgb, var(--link-color) 10%, transparent);
+        .message-bubble {
+            max-width: 85%;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 18px;
+            font-size: 0.95em;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--user-bubble-color);
+            color: var(--user-text-color);
+            border-bottom-right-radius: 4px; /* "Срезанный" угол у пользователя */
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background-color: var(--ai-bubble-color);
+            color: var(--ai-text-color);
+            border-bottom-left-radius: 4px; /* "Срезанный" угол у бота */
         }
 
-        .nav-button.active {
-            /* Активная кнопка */
-            background: var(--link-color);
-            color: var(--bg-color); /* Светлый текст на активной кнопке */
-            box-shadow: 0 2px 10px var(--link-color);
+        .ai-greeting {
+            background-color: transparent;
+            color: var(--hint-color);
+            text-align: center;
+            margin: 20px auto;
+            font-style: italic;
         }
-
-        .nav-button-icon {
-            font-size: 1.2em;
+        
+        /* --- НАВИГАЦИЯ, МЕНЮ (без изменений) --- */
+        .menu-button { background: none; border: none; color: var(--hint-color); font-size: 1.5em; cursor: pointer; padding: 0 5px; margin-left: 10px; line-height: 1; margin-top: -5px; }
+        #context-menu { position: fixed; background: var(--bg-color); border: 1px solid var(--secondary-bg-color); border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); z-index: 1000; min-width: 180px; display: none; overflow: hidden; }
+        .menu-item { padding: 12px 15px; cursor: pointer; color: var(--text-color); transition: background-color 0.2s; font-size: 0.95em; border-bottom: 1px solid var(--secondary-bg-color); }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item:hover { background-color: var(--secondary-bg-color); }
+        .menu-item.delete-item { color: #e74c3c; font-weight: 600; }
+        .view { display: none; transition: opacity 0.3s; }
+        .active-view { display: flex; flex-direction: column; flex-grow: 1; } /* Для AI View делаем его flex-контейнером */
+        #bottom-nav-container { position: fixed; bottom: 0; left: 0; width: 100%; padding: 10px 15px 15px 15px; box-sizing: border-box; z-index: 999; }
+        #bottom-nav { display: flex; justify-content: space-around; align-items: center; padding: 10px 5px; background: color-mix(in srgb, var(--secondary-bg-color) 70%, transparent); border: 1px solid color-mix(in srgb, var(--hint-color) 20%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); }
+        .nav-button { background: transparent; border: none; color: var(--text-color); padding: 10px 15px; margin: 0 5px; font-size: 0.9em; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s ease-in-out; border-radius: 50px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .nav-button:hover { background: color-mix(in srgb, var(--link-color) 10%, transparent); }
+        .nav-button.active { background: var(--link-color); color: var(--bg-color); box-shadow: 0 2px 10px var(--link-color); }
+        .nav-button-icon { font-size: 1.2em; }
+        
+        /* Стили для AI Chat */
+        .ai-chat-view {
+             padding: 0 0 15px 0; /* Убираем верхний паддинг, оставляем нижний для красоты */
+             flex-grow: 1; 
         }
-
+        .ai-chat-view h1 {
+            padding: 0 0 10px 0;
+            margin-bottom: 15px;
+        }
+        
     </style>
 </head>
 <body>
@@ -380,16 +212,29 @@
                     </div> </form>
             </div>
         </div>
-
         <h2>📝 Активные задачи</h2>
         <div id="tasks-list">
             <p class="loading-message">Загрузка задач...</p>
         </div>
     </div>
     
-    <div id="ai-view" class="view">
-        <h1>🤖 AI Чат</h1>
-        <p class="empty-message">Раздел "AI Чат" будет реализован позже.</p>
+    <div id="ai-view" class="view ai-chat-view">
+        <h1>🤖 AI Ассистент</h1>
+        <div id="chat-container">
+            <div class="message-bubble ai-greeting">
+                Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
+            </div>
+            </div>
+        
+        <div class="ios-group" style="margin-top: 15px;">
+            <div class="ios-row" style="padding: 5px 15px;">
+                <input type="text" id="ai-prompt-input" placeholder="Введите ваш вопрос или задачу..." style="text-align: left; padding: 10px 0;">
+                <button id="send-prompt-btn" class="nav-button active" style="margin-left: 10px; width: auto; padding: 5px 15px;">
+                    <span class="nav-button-icon">🚀</span> Отправить
+                </button>
+            </div>
+        </div>
+        
     </div>
 
     <div id="info-view" class="view">
@@ -412,7 +257,7 @@
             </button>
             <button class="nav-button" data-view="ai" onclick="navigateTo('ai', this)">
                 <span class="nav-button-icon">🧠</span>
-                AI
+                AI Chat
             </button>
             <button class="nav-button" data-view="info" onclick="navigateTo('info', this)">
                 <span class="nav-button-icon">ℹ️</span>
@@ -430,8 +275,9 @@
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
-        const N8N_EDIT_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
-        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL
+        const N8N_EDIT_URL = N8N_UPDATE_URL; 
+        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; 
+        const N8N_AI_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat'; // НОВЫЙ URL ДЛЯ AI
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
@@ -440,48 +286,122 @@
         const formSection = document.getElementById('form-section');
         const contextMenu = document.getElementById('context-menu');
         const formTitle = document.getElementById('form-title');
-        
+        const chatContainer = document.getElementById('chat-container');
+        const aiPromptInput = document.getElementById('ai-prompt-input');
+        const sendPromptBtn = document.getElementById('send-prompt-btn');
+
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
         let allTasksData = []; 
         
-        // --- НОВАЯ ЛОГИКА НАВИГАЦИИ ---
         const views = document.querySelectorAll('.view');
         const navButtons = document.querySelectorAll('.nav-button');
 
+        // --- ЛОГИКА НАВИГАЦИИ ---
         function navigateTo(viewId, clickedButton) {
-            // 1. Скрытие всех View и активация нужного
             views.forEach(view => {
                 view.classList.remove('active-view');
             });
             document.getElementById(viewId + '-view').classList.add('active-view');
 
-            // 2. Смена активной кнопки
             navButtons.forEach(button => {
                 button.classList.remove('active');
             });
             clickedButton.classList.add('active');
             
-            // 3. Управление главной кнопкой Telegram (скрываем ее в AI/Info)
+            // Управление MainButton и Chat Input
             if (viewId === 'tasks' && formSection.classList.contains('expanded')) {
-                // Если мы в Tasks и форма развернута, показываем кнопку
                 tg.MainButton.show();
+            } else if (viewId === 'ai') {
+                // В AI режиме используем локальную кнопку, а не MainButton
+                tg.MainButton.hide(); 
+                aiPromptInput.focus();
+                // Прокрутка чата вниз при переходе
+                chatContainer.scrollTop = chatContainer.scrollHeight;
             } else {
-                // В остальных случаях (AI/Info или форма свернута) - скрываем
                 tg.MainButton.hide();
             }
             
-            // Опционально: При переходе на Tasks, обновить список
             if (viewId === 'tasks') {
                 fetchTasks();
             }
             
-            // Скрыть контекстное меню, если оно открыто
             contextMenu.style.display = 'none';
         }
+        
+        // --- ЛОГИКА ЧАТА ---
+        
+        function addMessageToChat(text, sender) {
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble ${sender}-message`;
+            
+            // Заменяем переносы строк на <br> для корректного отображения
+            bubble.innerHTML = text.replace(/\n/g, '<br>');
+            chatContainer.appendChild(bubble);
+            
+            // Автоматическая прокрутка вниз
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-        // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
+        async function sendAiPrompt() {
+            const prompt = aiPromptInput.value.trim();
+            if (!prompt) return;
+
+            // 1. Отобразить сообщение пользователя
+            addMessageToChat(prompt, 'user');
+            aiPromptInput.value = ''; // Очистить поле
+            aiPromptInput.disabled = true;
+            sendPromptBtn.disabled = true;
+
+            try {
+                tg.showProgress(true); 
+
+                const response = await fetch(N8N_AI_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.response) {
+                    // 2. Отобразить ответ AI
+                    addMessageToChat(result.response, 'ai');
+                } else {
+                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ.', 'ai');
+                    console.error('AI Response failed:', result);
+                }
+
+            } catch (error) {
+                console.error('AI Chat Error:', error);
+                addMessageToChat(`Ошибка соединения: ${error.message}`, 'ai');
+            } finally {
+                tg.showProgress(false);
+                aiPromptInput.disabled = false;
+                sendPromptBtn.disabled = false;
+                aiPromptInput.focus();
+            }
+        }
+        
+        // Обработчики для поля ввода и кнопки
+        aiPromptInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendAiPrompt();
+            }
+        });
+        sendPromptBtn.addEventListener('click', sendAiPrompt);
+
+
+        // --- ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
         function toggleForm() {
             if (formSection.classList.contains('expanded') && isEditing) {
                 exitEditMode(); 
@@ -495,10 +415,14 @@
                 }
             } else {
                 tg.MainButton.hide(); 
+                if (document.getElementById('ai-view').classList.contains('active-view')) {
+                     // Убедиться, что MainButton скрыта при переходе на AI
+                     tg.MainButton.hide();
+                }
             }
         }
 
-        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
+        // ... (ОСТАЛЬНЫЕ ФУНКЦИИ - БЕЗ ИЗМЕНЕНИЙ) ...
         
         function enterEditMode(task) {
             if (!task) return;
@@ -506,13 +430,11 @@
             isEditing = true;
             currentEditingId = task.id;
             
-            // Заполнение формы
             document.getElementById('taskInput').value = task.task_text || task.task;
             document.getElementById('dateInput').value = task.date;
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
             
-            // UI изменения
             formSection.classList.add('expanded');
             document.getElementById('form-arrow').textContent = '▲';
             formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
@@ -529,9 +451,8 @@
             tg.MainButton.setText('➕ Добавить задачу').show();
         }
         
-        // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
-        
         async function sendTask() {
+            // ... (КОД sendTask - БЕЗ ИЗМЕНЕНИЙ) ...
             
             const taskName = document.getElementById('taskInput').value.trim();
             const date = document.getElementById('dateInput').value;
@@ -617,7 +538,7 @@
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
         
-        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ И УДАЛЕНИЯ ---
+        // --- ЛОГИКА КОНТЕКСТНОГО МЕНЮ И УДАЛЕНИЯ ---
         
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
@@ -709,7 +630,6 @@
             });
         }
         
-        // --- НОВАЯ ФУНКЦИЯ УДАЛЕНИЯ ЗАДАЧИ ---
         async function deleteTask(taskId) {
             if (!taskId) return;
 
@@ -727,7 +647,7 @@
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                id: taskId, // Отправляем ID задачи на бэкенд
+                                id: taskId, 
                             })
                         });
 
@@ -735,10 +655,8 @@
                             throw new Error(`HTTP error! Status: ${response.status}`);
                         }
                         
-                        // Ответ от бэкенда не важен, главное, что он 200/OK
-                        
                         tg.showAlert('Задача успешно удалена!');
-                        await fetchTasks(); // Перезагружаем список задач
+                        await fetchTasks(); 
 
                     } catch (error) {
                         console.error('DELETE error:', error);
@@ -749,7 +667,6 @@
                 }
             });
         }
-        // --- КОНЕЦ НОВОЙ ФУНКЦИИ ---
 
         document.getElementById('menu-done').addEventListener('click', () => {
             if (currentTaskId) {
@@ -757,14 +674,13 @@
             }
         });
         
-        // Привязываем функцию удаления к кнопке в контекстном меню
         document.getElementById('menu-delete').addEventListener('click', () => {
             if (currentTaskId) {
                 deleteTask(currentTaskId);
             }
         });
 
-        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (БЕЗ ИЗМЕНЕНИЙ) ---
+        // --- ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
 
         function parseDate(dateStr) {
             if (!dateStr) return null;
@@ -822,19 +738,19 @@
         }
 
         async function fetchTasks() {
-            try {
-                // Проверяем, находится ли пользователь в разделе Tasks
-                if (!document.getElementById('tasks-view').classList.contains('active-view')) {
-                    return; // Не загружать, если мы не на экране задач
-                }
-                
-                if (!tg.initData) {
-                    displayError('Telegram initData is missing. Cannot authorize.');
-                    return;
-                }
+             // Проверяем, находится ли пользователь в разделе Tasks
+            if (!document.getElementById('tasks-view').classList.contains('active-view')) {
+                return;
+            }
+            
+            if (!tg.initData) {
+                displayError('Telegram initData is missing. Cannot authorize.');
+                return;
+            }
 
-                tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
-                
+            tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
+            
+            try {
                 const response = await fetch(N8N_GET_URL, {
                     method: 'GET',
                     headers: {
@@ -920,7 +836,8 @@
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
         window.navigateTo = navigateTo; 
-        window.deleteTask = deleteTask; // Добавляем функцию удаления в глобальный доступ
+        window.deleteTask = deleteTask; 
+        window.sendAiPrompt = sendAiPrompt; // Добавляем в глобальный доступ
 
         fetchTasks();
     </script>
