@@ -257,7 +257,8 @@
 
         .menu-item:last-child { border-bottom: none; }
         .menu-item:hover { background-color: var(--secondary-bg-color); }
-        .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6; }
+        .menu-item.delete-item { color: #e74c3c; font-weight: 600; } /* Красный цвет для кнопки удаления */
+        /* .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6; } */
 
         /* --- СТИЛИ НАВИГАЦИИ (BOTTOM NAVIGATION BAR) --- */
         
@@ -400,7 +401,7 @@
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
         <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
-        <div class="menu-item disabled" id="menu-delete">🗑️ Удалить (TBD)</div>
+        <div class="menu-item delete-item" id="menu-delete">🗑️ Удалить задачу</div>
     </div>
 
     <div id="bottom-nav-container">
@@ -429,7 +430,8 @@
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
-        const N8N_EDIT_URL = N8N_UPDATE_URL; 
+        const N8N_EDIT_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
+        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
@@ -615,7 +617,7 @@
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
         
-        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ (БЕЗ ИЗМЕНЕНИЙ) ---
+        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ И УДАЛЕНИЯ ---
         
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
@@ -706,10 +708,59 @@
                 }
             });
         }
+        
+        // --- НОВАЯ ФУНКЦИЯ УДАЛЕНИЯ ЗАДАЧИ ---
+        async function deleteTask(taskId) {
+            if (!taskId) return;
+
+            tg.showConfirm('Вы уверены, что хотите безвозвратно удалить эту задачу? Это действие необратимо.', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none';
+                    try {
+                        tg.MainButton.showProgress(true); 
+
+                        const response = await fetch(N8N_DELETE_URL, {
+                            method: 'POST', 
+                            headers: {
+                                'Authorization': N8N_AUTH_HEADER,
+                                'X-Init-Data': tg.initData,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                id: taskId, // Отправляем ID задачи на бэкенд
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        
+                        // Ответ от бэкенда не важен, главное, что он 200/OK
+                        
+                        tg.showAlert('Задача успешно удалена!');
+                        await fetchTasks(); // Перезагружаем список задач
+
+                    } catch (error) {
+                        console.error('DELETE error:', error);
+                        tg.showAlert(`Ошибка при удалении: ${error.message}.`);
+                    } finally {
+                        tg.MainButton.hideProgress();
+                    }
+                }
+            });
+        }
+        // --- КОНЕЦ НОВОЙ ФУНКЦИИ ---
 
         document.getElementById('menu-done').addEventListener('click', () => {
             if (currentTaskId) {
                 markTaskAsDone(currentTaskId);
+            }
+        });
+        
+        // Привязываем функцию удаления к кнопке в контекстном меню
+        document.getElementById('menu-delete').addEventListener('click', () => {
+            if (currentTaskId) {
+                deleteTask(currentTaskId);
             }
         });
 
@@ -868,7 +919,8 @@
         window.toggleForm = toggleForm;
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
-        window.navigateTo = navigateTo; // Добавляем новую функцию в глобальный доступ
+        window.navigateTo = navigateTo; 
+        window.deleteTask = deleteTask; // Добавляем функцию удаления в глобальный доступ
 
         fetchTasks();
     </script>
