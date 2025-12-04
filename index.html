@@ -267,7 +267,6 @@
         .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6;
         }
 
-
         /* --- СТИЛИ AI CHAT --- */
         #ai-chat-content h1 {
             border-color: #e74c3c;
@@ -275,10 +274,12 @@
         
         #ai-chat-messages {
             min-height: 200px;
-            overflow-y: auto;
+            max-height: calc(100vh - 280px); /* Ограничиваем высоту чата */
+            overflow-y: auto; /* Включаем прокрутку */
             margin-top: 15px; 
-            margin-bottom: 0; 
-            padding: 0 5px; /* Добавлен отступ для лучшего вида */
+            margin-bottom: 10px; 
+            padding: 0 5px;
+            scroll-behavior: smooth; /* Плавная прокрутка */
         }
 
         /* Стили для приветственного сообщения */
@@ -287,6 +288,7 @@
             padding: 20px;
             color: var(--hint-color);
             font-style: italic;
+            margin-bottom: 10px;
         }
         
         /* НОВЫЕ СТИЛИ ДЛЯ ПУЗЫРЕЙ ЧАТА */
@@ -322,6 +324,18 @@
             border-bottom-left-radius: 4px; /* Скошенный уголок */
         }
 
+        /* Стиль для индикатора загрузки */
+        .ai-loading {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .ai-loading .chat-bubble {
+            background-color: var(--secondary-bg-color);
+            color: var(--hint-color);
+            font-style: italic;
+        }
 
         /* --- СТИЛИ ПОЛЯ ВВОДА AI CHAT --- */
         #ai-chat-input-area {
@@ -493,15 +507,14 @@
         </div>
     </div>
 
-
     <div id="ai-chat-content" class="content-section">
         <h1 id="ai-chat-header">🤖 AI Ассистент</h1>
         
         <div id="ai-chat-messages">
-             <div class="ai-welcome">
-                 Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
-             </div>
-             </div>
+            <div class="ai-welcome">
+                Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
+            </div>
+        </div>
 
         <div id="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
@@ -517,8 +530,7 @@
         <p>
             Навигация реализована по принципу Single Page Application (SPA) для мгновенного переключения между разделами.
         </p>
-        </div>
-
+    </div>
 
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
@@ -541,7 +553,6 @@
         </button>
     </div>
 
-
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
@@ -551,9 +562,8 @@
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
-        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat'; // <-- НОВАЯ РУЧКА AI CHAT
+        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
-        // ------------------------------------------------
         
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
@@ -566,7 +576,6 @@
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
         const aiChatMessages = document.getElementById('ai-chat-messages');
-        // --------------------------
         
         let currentTaskId = null; 
         let isEditing = false;
@@ -1007,7 +1016,6 @@
             const activeColor = tg.themeParams.link_color || '#007aff';
             buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`; 
 
-
             if (sectionId === 'tasks-content') {
                 if (formSection.classList.contains('expanded')) {
                     tg.MainButton.show();
@@ -1023,7 +1031,7 @@
             }
         }
         
-        // --- 7. ЛОГИКА AI CHAT (ПОЛНАЯ ИНТЕГРАЦИЯ) ---
+        // --- 7. ЛОГИКА AI CHAT (ИСПРАВЛЕННАЯ) ---
         
         // 7.1. ФУНКЦИИ ЧАТА UI
         function appendMessage(text, sender) {
@@ -1042,15 +1050,23 @@
             messageElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(messageElement);
             
-            // Прокрутка вниз
+            // Автоматическая прокрутка к новому сообщению
             aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
         }
 
         function showAILoading() {
-            const loadingHtml = `<div id="ai-loading-placeholder" class="chat-message ai-message">
-                                    <div class="chat-bubble">...думаю</div>
-                                </div>`;
-            aiChatMessages.insertAdjacentHTML('beforeend', loadingHtml);
+            const loadingElement = document.createElement('div');
+            loadingElement.id = 'ai-loading-placeholder';
+            loadingElement.className = 'ai-loading';
+            
+            const bubbleElement = document.createElement('div');
+            bubbleElement.className = 'chat-bubble';
+            bubbleElement.textContent = '...думаю';
+            
+            loadingElement.appendChild(bubbleElement);
+            aiChatMessages.appendChild(loadingElement);
+            
+            // Прокрутка вниз
             aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
         }
         
@@ -1105,7 +1121,7 @@
                         aiResponseText = result.response;
                     }
                     
-                    // 4. Отображаем ответ AI
+                    // 4. Убираем индикатор загрузки и показываем ответ AI
                     hideAILoading();
                     appendMessage(aiResponseText, 'ai');
 
