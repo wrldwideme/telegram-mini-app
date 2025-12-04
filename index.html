@@ -48,8 +48,11 @@
             padding: 15px;
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
-            /* Уменьшаем паддинг, чтобы компенсировать меньшую навигацию */
             padding-bottom: 80px; 
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
         }
         
         h1 {
@@ -62,7 +65,7 @@
             font-weight: 700;
         }
 
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ (без изменений) --- */
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ --- */
         .form-section { background: transparent; margin-bottom: 20px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); max-height: 60px; }
         .form-section.expanded { max-height: 500px; }
         .form-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 20px; height: 60px; box-sizing: border-box; background: var(--secondary-bg-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); transition: background-color 0.2s; }
@@ -83,118 +86,78 @@
         .ios-row:focus-within { background-color: color-mix(in srgb, var(--input-bg-color) 90%, var(--link-color) 5%); }
 
         .task-card { border-left: 6px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 12px; background: var(--secondary-bg-color); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s, box-shadow 0.2s; }
-        .task-card:active { transform: scale(0.99); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
         .task-card.expired { border-left-color: #e74c3c; opacity: 0.9; }
         .task-info { flex-grow: 1; }
         .task-header { display: flex; align-items: flex-start; margin-bottom: 5px; }
         .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1; }
         .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0; }
-        .task-card.expired p { color: #ff5555; font-weight: bold; } 
-        
-        .importance-tag { font-size: 0.7em; font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); min-width: 60px; text-align: center; }
-        .importance-tag.high { background-color: #e74c3c; }
-        .importance-tag.medium { background-color: #f39c12; }
-        .importance-tag.low { background-color: #2ecc71; }
-        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color); }
         
         /* --- СТИЛИ ЧАТА --- */
         #chat-container {
-            /* Высота чата: занимает всё пространство до нижней навигации */
-            height: calc(100vh - 180px); 
+            height: 100%;
+            flex-grow: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             padding: 0;
             background: var(--chat-bg-color); 
             border-radius: 12px;
+            padding-bottom: 10px;
         }
 
-        .message-bubble {
-            max-width: 85%;
-            padding: 10px 15px;
-            margin: 8px 0;
-            border-radius: 18px;
-            font-size: 0.95em;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
+        .message-bubble { max-width: 85%; padding: 10px 15px; margin: 8px 0; border-radius: 18px; font-size: 0.95em; line-height: 1.4; word-wrap: break-word; }
+        .user-message { align-self: flex-end; background-color: var(--user-bubble-color); color: var(--user-text-color); border-bottom-right-radius: 4px; }
+        .ai-message { align-self: flex-start; background-color: var(--ai-bubble-color); color: var(--ai-text-color); border-bottom-left-radius: 4px; }
+        .ai-greeting { background-color: transparent; color: var(--hint-color); text-align: center; margin: 20px auto; font-style: italic; }
         
-        .user-message {
-            align-self: flex-end;
-            background-color: var(--user-bubble-color);
-            color: var(--user-text-color);
-            border-bottom-right-radius: 4px; 
-        }
-        
-        .ai-message {
-            align-self: flex-start;
-            background-color: var(--ai-bubble-color);
-            color: var(--ai-text-color);
-            border-bottom-left-radius: 4px; 
+        /* --- ИСПРАВЛЕНИЕ UI/LAYOUT --- */
+        .view { 
+            display: none; /* Все разделы по умолчанию скрыты */
+            transition: opacity 0.3s; 
+            padding-top: 0;
+            flex-grow: 1;
         }
 
-        .ai-greeting {
-            background-color: transparent;
-            color: var(--hint-color);
-            text-align: center;
-            margin: 20px auto;
-            font-style: italic;
+        .active-view { 
+            display: flex; 
+            flex-direction: column;
+            flex-grow: 1;
         }
         
-        /* --- СТИЛИ НИЖНЕЙ ПАНЕЛИ (ИЗМЕНЕНИЯ ЗДЕСЬ) --- */
+        #tasks-view.active-view, #info-view.active-view {
+            display: block; /* Задачи и инфо могут быть блоками */
+        }
+
+        .ai-chat-view { padding: 0 0 15px 0; flex-grow: 1; }
+        
+        /* --- СТИЛИ НИЖНЕЙ ПАНЕЛИ --- */
         #bottom-nav-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            /* Уменьшаем вертикальный паддинг */
+            position: fixed; bottom: 0; left: 0; width: 100%;
             padding: 5px 15px 10px 15px; 
-            box-sizing: border-box;
-            z-index: 999;
+            box-sizing: border-box; z-index: 999;
         }
 
         #bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            /* Уменьшаем вертикальный паддинг внутри контейнера */
+            display: flex; justify-content: space-around; align-items: center;
             padding: 5px 0; 
-            
-            /* СТИЛЬ LIQUID GLASS */
             background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
             border: 1px solid color-mix(in srgb, var(--hint-color) 10%, transparent); 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             border-radius: 20px; 
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
         }
 
         .nav-button {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            /* Уменьшаем паддинг для меньшего размера кнопок */
-            padding: 8px 12px; 
-            margin: 0 5px;
-            font-size: 0.85em; /* Уменьшаем шрифт */
-            font-weight: 500;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s ease-in-out;
+            background: transparent; border: none; color: var(--text-color);
+            padding: 8px 12px; margin: 0 5px; 
+            font-size: 0.85em; font-weight: 500; cursor: pointer;
+            text-align: center; transition: all 0.2s ease-in-out;
             border-radius: 50px; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
         }
 
-        .nav-button:hover { background: color-mix(in srgb, var(--link-color) 10%, transparent); }
         .nav-button.active { background: var(--link-color); color: var(--bg-color); box-shadow: 0 2px 10px var(--link-color); }
         .nav-button-icon { font-size: 1.2em; }
-        
-        .ai-chat-view { padding: 0 0 15px 0; flex-grow: 1; }
-        .ai-chat-view h1 { padding: 0 0 10px 0; margin-bottom: 15px; }
         
     </style>
 </head>
@@ -403,15 +366,16 @@
                 if (result.success && result.response) {
                     addMessageToChat(result.response, 'ai');
                 } else {
-                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ.', 'ai');
+                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ или сервер вернул неполные данные.', 'ai');
                     console.error('AI Response failed:', result);
                 }
 
             } catch (error) {
                 console.error('AI Chat Error:', error);
-                addMessageToChat(`Ошибка соединения: ${error.message}`, 'ai');
+                // Это сообщение будет включать "Unexpected end of JSON input"
+                tg.showAlert(`Ошибка соединения: ${error.message}. Проверьте логи Webhook в n8n.`);
+                addMessageToChat(`Ошибка соединения: ${error.message}.`, 'ai');
             } finally {
-                // ИСПРАВЛЕНИЕ: Скрываем прогресс через MainButton
                 tg.MainButton.hideProgress(); 
                 aiPromptInput.disabled = false;
                 sendPromptBtn.disabled = false;
