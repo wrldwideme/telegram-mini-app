@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task AI Assistant</title>
+    <title>To Do Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         /* Общие стили и переменные */
@@ -13,18 +13,9 @@
             --text-color: var(--tg-theme-text-color, #000000);
             --hint-color: var(--tg-theme-hint-color, #777777);
             --link-color: var(--tg-theme-link-color, #007aff);
-            --danger-color: #e74c3c;
-            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); 
-            --input-border-color: var(--tg-theme-hint-color, #e0e0e0); 
-            --chat-bg-color: var(--tg-theme-bg-color, #f8f8f8);
-            --user-bubble-color: var(--tg-theme-link-color, #007aff);
-            --ai-bubble-color: var(--tg-theme-secondary-bg-color, #e5e5ea);
-            --user-text-color: var(--tg-theme-bg-color, #ffffff);
-            --ai-text-color: var(--tg-theme-text-color, #000000);
-            /* Цвета важности */
-            --low-color: #2ecc71;
-            --medium-color: #f39c12;
-            --high-color: #e74c3c;
+            /* Новые переменные для стиля iOS */
+            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff); /* Фон для полей */
+            --input-border-color: var(--tg-theme-hint-color, #e0e0e0); /* Разделитель ячеек */
         }
 
         @media (prefers-color-scheme: dark) {
@@ -35,13 +26,6 @@
                 --hint-color: var(--tg-theme-hint-color, #aaa);
                 --input-bg-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
                 --input-border-color: var(--tg-theme-hint-color, #4a4a4a);
-                --chat-bg-color: var(--tg-theme-bg-color, #1a1a1a);
-                --ai-bubble-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
-                --user-text-color: var(--tg-theme-bg-color, #ffffff);
-                --ai-text-color: var(--tg-theme-text-color, #ecf0f1);
-                --low-color: #27ae60;
-                --medium-color: #f1c40f;
-                --high-color: #c0392b;
             }
         }
 
@@ -49,301 +33,350 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 0; 
+            padding: 0; /* Удаляем основной паддинг, чтобы навигация была от края до края */
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
-            min-height: 100vh;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column; 
         }
         
-        .page-header {
+        /* --- СТИЛИ ДЛЯ SPA КОНТЕНТА И НАВИГАЦИИ --- */
+        .content-section {
+            display: none;
+            padding: 15px;
+            padding-bottom: 75px; /* Отступ, чтобы контент не перекрывался нижним меню */
+        }
+        .content-section.active {
+            display: block;
+        }
+
+        h1 {
+            color: var(--link-color);
             font-size: 1.6em;
-            margin: 15px 15px 25px 15px;
+            margin-top: 0;
+            margin-bottom: 25px;
             padding-bottom: 5px;
+            border-bottom: 2px solid var(--link-color);
             font-weight: 700;
-            background: linear-gradient(45deg, var(--link-color) 30%, #4a90e2 80%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            border-bottom: 2px solid var(--input-border-color);
         }
 
-        .content-padding {
-            padding: 0 15px; 
+        /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
+        .form-section {
+            background: transparent; 
+            margin-bottom: 20px;
+            overflow: hidden; 
+            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            max-height: 60px; 
         }
 
-        /* --- СТИЛИ НАВИГАЦИИ и АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ --- */
-        .view { 
-            display: none; 
-            flex-grow: 1;
-            opacity: 0; 
-            transition: opacity 0.3s ease-in-out; 
-            position: absolute; 
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%; 
+        .form-section.expanded {
+            max-height: 500px; 
+        }
+
+        /* Улучшенный Заголовок */
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 20px;
+            height: 60px; 
             box-sizing: border-box;
-            z-index: 10; 
+            background: var(--secondary-bg-color); 
+            border-radius: 12px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            transition: background-color 0.2s;
         }
         
-        .active-view { 
-            display: flex; 
-            flex-direction: column; 
-            flex-grow: 1;
-            opacity: 1; 
-            position: relative; 
-            height: auto;
+        .form-section.expanded .form-header {
+             border-bottom-left-radius: 0;
+             border-bottom-right-radius: 0;
+        }
+
+        .form-header:hover {
+            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
         }
         
-        #tasks-view.active-view { 
-            display: block; 
-            overflow-y: auto; 
-            padding-bottom: 80px; 
+        .form-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: 600; 
+            color: var(--text-color);
         }
-        
-        #ai-view.active-view {
-            display: flex; 
-            flex-direction: column; 
-            padding-bottom: 130px; 
+
+        .form-header h2 span#form-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+            color: var(--link-color); 
         }
-        
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ И ФОРМЫ (Tasks View) --- */
-        .form-section { background: transparent; margin: 0 15px 20px 15px; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); max-height: 60px; }
-        .form-section.expanded { max-height: 500px; }
-        .form-header { 
-            display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 20px; height: 60px; box-sizing: border-box; 
-            background: var(--secondary-bg-color); border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-            transition: background-color 0.2s, transform 0.1s; 
-        }
-        .form-header:active {
-            transform: scale(0.98);
-        }
-        .form-section.expanded .form-header { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-        .form-section-content { 
-            padding: 15px; 
-            visibility: hidden; opacity: 0; 
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out; height: 0; overflow: hidden; 
-            background: var(--input-bg-color); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; 
+
+        .form-section-content {
+            padding: 0; 
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            height: 0;
+            overflow: hidden;
+            background: var(--input-bg-color); 
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
         }
-        .form-section.expanded .form-section-content { visibility: visible; opacity: 1; height: auto; overflow: visible; padding: 15px; } 
 
-        .ios-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--input-border-color); background: var(--input-bg-color); min-height: 44px; box-sizing: border-box; }
-        .ios-row:last-child { border-bottom: none; }
-        
-        /* --- ФИКС: КЛИКАБЕЛЬНОСТЬ ПОЛЕЙ ВВОДА В ФОРМЕ --- */
-        .ios-label {
-            flex-shrink: 0;
-            margin-right: 15px; 
-            color: var(--text-color);
+        .form-section.expanded .form-section-content {
+            visibility: visible;
+            opacity: 1;
+            height: auto;
+            overflow: visible;
         }
-        .ios-row input[type="text"],
-        .ios-row input[type="date"],
-        .ios-row input[type="time"],
-        .ios-row select {
-            flex-grow: 1; 
-            border: none;
-            outline: none;
-            background: transparent;
+
+        /* --- НОВЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
+
+        .ios-group {
+            border-radius: 12px; 
+            overflow: hidden;
+        }
+        
+        .ios-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px; 
+            border-bottom: 1px solid var(--input-border-color); 
+            background: var(--input-bg-color); 
+            min-height: 44px; 
+            box-sizing: border-box;
+        }
+
+        .ios-row:last-child {
+            border-bottom: none; 
+        }
+
+        .ios-label {
             color: var(--text-color);
             font-size: 1em;
-            padding: 0; 
-            text-align: right; 
-            position: relative; 
-            z-index: 20; 
+            font-weight: 400; 
+            flex-shrink: 0; 
+            width: 90px; 
+            margin-right: 15px;
         }
-        /* ------------------------------------------------ */
+        
+        .ios-row input, .ios-row select {
+            flex-grow: 1;
+            padding: 0; 
+            margin: 0; 
+            box-sizing: border-box;
+            background: transparent;
+            color: var(--text-color);
+            border: none;
+            outline: none;
+            font-size: 1em;
+            text-align: right; /* Ввод справа */
+            /* Убрать стандартные стрелки для select и date/time в iOS */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding-right: 5px; /* Небольшой отступ справа */
+        }
+        
+        /* ИСПРАВЛЕНИЕ: Гарантируем, что дата, время и select выравниваются справа */
+        .ios-row input[type="date"], 
+        .ios-row input[type="time"],
+        .ios-row select {
+            text-align: right !important; 
+            padding-right: 5px; 
+        }
 
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
         .task-card { 
             border-left: 6px solid #444; 
             padding: 15px; 
-            margin: 0 0 15px 0; 
+            margin-bottom: 15px; 
             border-radius: 12px; 
             background: var(--secondary-bg-color); 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            transition: transform 0.15s ease-out; 
-            position: relative; 
-        }
-        .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .importance-tag {
-            font-size: 0.75em;
-            font-weight: 700;
-            padding: 3px 6px;
-            border-radius: 6px;
-            color: var(--bg-color);
-            flex-shrink: 0;
-            align-self: flex-start;
-        }
-        .importance-tag.high { background-color: var(--high-color); }
-        .importance-tag.medium { background-color: var(--medium-color); }
-        .importance-tag.low { background-color: var(--low-color); }
-
-        .menu-button { 
-            background: transparent; border: none; color: var(--hint-color);
-            font-size: 1.5em; padding: 0 5px; line-height: 1; cursor: pointer;
-            align-self: flex-start; margin-top: -5px; 
-            position: relative; 
-            z-index: 15; 
-            transition: color 0.2s, transform 0.1s;
-        }
-        .menu-button:active { 
-            transform: scale(1.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
-        /* --- КОНТЕКСТНОЕ МЕНЮ --- */
+        .task-card:active { transform: scale(0.99); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .task-card.expired { border-left-color: #e74c3c; opacity: 0.9; }
+        .task-info { flex-grow: 1; }
+        .task-header { display: flex; align-items: flex-start; margin-bottom: 5px; }
+        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1; }
+        .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0; }
+        .task-card.expired p { color: #ff5555; font-weight: bold; } 
+        
+        .importance-tag { font-size: 0.7em; font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5); min-width: 60px; text-align: center; }
+        .importance-tag.high { background-color: #e74c3c; }
+        .importance-tag.medium { background-color: #f39c12; }
+        .importance-tag.low { background-color: #2ecc71; }
+        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color); }
+        
+        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
+        .menu-button {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            margin-left: 10px;
+            line-height: 1; 
+            margin-top: -5px; 
+        }
+
         #context-menu {
-            position: absolute;
-            background: var(--secondary-bg-color);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 9990; 
+            position: fixed; 
+            background: var(--bg-color);
+            border: 1px solid var(--secondary-bg-color);
+            border-radius: 12px; 
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); 
+            z-index: 1000;
+            min-width: 180px;
             display: none; 
             overflow: hidden;
-            min-width: 200px;
-            transition: opacity 0.2s; 
         }
         .menu-item {
             padding: 12px 15px;
-            font-size: 0.95em;
             cursor: pointer;
             color: var(--text-color);
-            border-bottom: 1px solid var(--input-border-color);
-            transition: background-color 0.1s, transform 0.05s;
+            transition: background-color 0.2s;
+            font-size: 0.95em;
+            border-bottom: 1px solid var(--secondary-bg-color);
         }
+
         .menu-item:last-child { border-bottom: none; }
-        .menu-item:hover { background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--link-color) 10%); }
-        .menu-item:active { transform: scale(0.98); }
-        .delete-item { color: var(--danger-color); }
+        .menu-item:hover { background-color: var(--secondary-bg-color); }
+        .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6; }
 
 
-        /* --- СТИЛИ ЧАТА --- */
-        
-        #chat-content-wrapper {
-            flex-grow: 1;
-            overflow-y: auto; 
-            padding: 15px; 
-            display: flex; 
-            flex-direction: column;
+        /* --- СТИЛИ AI CHAT --- */
+        #ai-chat-content h1 {
+            border-color: #e74c3c; /* Для AI можно выделить другим цветом */
         }
         
-        /* ИСПРАВЛЕНИЕ: FULL WIDTH INPUT */
-        #chat-input-container {
+        #ai-chat-messages {
+            min-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 100px; /* Отступ от нижнего поля ввода */
+        }
+
+        /* Стили для приветственного сообщения */
+        .ai-welcome {
+            text-align: center;
+            padding: 20px;
+            color: var(--hint-color);
+            font-style: italic;
+        }
+
+        /* --- СТИЛИ ПОЛЯ ВВОДА AI CHAT --- */
+        #ai-chat-input-area {
             position: fixed;
-            bottom: 70px; 
+            bottom: 60px; /* Поднимаем выше, чтобы не перекрывать нижнюю навигацию */
             left: 0;
-            width: 100%; /* Полная ширина */
+            right: 0;
+            padding: 10px 15px;
             background: var(--bg-color); 
-            padding: 10px 0; /* Убираем горизонтальные паддинги, чтобы ios-row занял 100% */
-            box-sizing: border-box;
             border-top: 1px solid var(--input-border-color);
-            z-index: 999; 
-            display: none; 
-            transition: bottom 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            gap: 10px; 
+            z-index: 990;
         }
-
-        #chat-input-container .ios-row {
-            padding: 5px 15px;
-            border-radius: 12px;
-            background: var(--input-bg-color);
-            border: 1px solid var(--input-border-color);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            display: flex; 
-            margin: 0 15px; /* Добавляем отступы здесь, чтобы ios-row выглядел красиво */
-        }
-        /* --------------------------- */
-
-        #ai-prompt-input {
-            flex-grow: 1; 
+        
+        #ai-chat-input-area input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            background-color: var(--secondary-bg-color);
+            color: var(--text-color);
             border: none;
             outline: none;
-            background: transparent;
-            color: var(--text-color);
             font-size: 1em;
+            height: 40px; /* Фиксированная высота */
+        }
+
+        #ai-chat-input-area button {
+            background-color: var(--link-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            line-height: 1.2;
+            white-space: nowrap;
+            /* Используем эмодзи ракеты из скриншота */
+            font-size: 1.1em;
         }
         
-        .message-bubble { 
-            max-width: 85%; padding: 10px 15px; margin: 5px 0; 
-            border-radius: 18px; font-size: 0.95em; line-height: 1.4; 
-            word-wrap: break-word; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-            white-space: pre-wrap;
-            transition: opacity 0.3s ease-out;
-            opacity: 0; 
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .user-message { 
-            align-self: flex-end; background-color: var(--user-bubble-color); 
-            color: var(--user-text-color); margin-right: 0; border-bottom-right-radius: 4px; 
-            margin-left: auto;
-        }
-        .ai-message { 
-            align-self: flex-start; background-color: var(--ai-bubble-color); 
-            color: var(--ai-text-color); margin-left: 0; border-bottom-left-radius: 4px; 
-            margin-right: auto;
-        }
-        .ai-greeting { 
-            background-color: transparent; color: var(--hint-color); 
-            text-align: center; margin: 20px auto; font-style: italic; box-shadow: none;
-        }
-
-
-        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (Fix Z-INDEX) --- */
-        #bottom-nav-container {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            padding: 5px 15px 10px 15px; 
-            box-sizing: border-box; 
-            z-index: 9999; 
-        }
-
+        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED) --- */
         #bottom-nav {
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 5px 0; 
-            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent); 
-            border: 1px solid color-mix(in srgb, var(--hint-color) 10%, transparent); 
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border-radius: 20px; 
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
-            transition: background 0.3s;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg-color); 
+            border-top: 1px solid var(--input-border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 5px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
-
-        .nav-button {
-            background: transparent; border: none; color: var(--text-color);
-            padding: 8px 12px; margin: 0 5px; 
-            font-size: 0.85em; font-weight: 500; cursor: pointer;
-            text-align: center; transition: all 0.2s ease-in-out;
-            border-radius: 50px; 
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
-        }
-
-        .nav-button:not(.active):hover {
-            background: color-mix(in srgb, var(--text-color) 5%, transparent);
-        }
-
-        .nav-button.active { 
-            background: var(--link-color); color: var(--bg-color); 
-            transform: translateY(-2px); 
-            box-shadow: 0 4px 12px var(--link-color); 
-        }
-        .nav-button-icon { font-size: 1.2em; }
         
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            color: var(--hint-color);
+            font-size: 0.7em;
+            transition: color 0.2s;
+            min-width: 60px;
+            text-align: center;
+        }
+        
+        .nav-button.active {
+            color: var(--link-color);
+            font-weight: 600;
+        }
+        
+        .nav-button-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-bottom: 2px;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-button-icon span {
+            font-size: 1.5em; 
+            line-height: 1;
+        }
+        
+        /* Стиль "свечения" активной иконки */
+        .nav-button.active .nav-button-icon {
+            background-color: color-mix(in srgb, var(--link-color) 20%, transparent); 
+            box-shadow: 0 0 10px rgba(0, 122, 255, 0.5); /* Базовый эффект, будет переопределен JS */
+        }
     </style>
 </head>
 <body>
 
-    <div id="tasks-view" class="view active-view">
-        <h1 class="page-header content-padding">Task Assistant 📋</h1>
+    <div id="tasks-content" class="content-section active">
+        <h1>📋 Task Assistant</h1>
         
         <div class="form-section" id="form-section">
             <div class="form-header" onclick="toggleForm()">
@@ -356,18 +389,22 @@
                 <form id="task-form">
                     
                     <div class="ios-group">
+                        
                         <div class="ios-row">
                             <label for="taskInput" class="ios-label">Текст задачи</label>
                             <input type="text" id="taskInput" placeholder="Введите задачу" required>
                         </div>
+                        
                         <div class="ios-row">
                             <label for="dateInput" class="ios-label">Дата</label>
                             <input type="date" id="dateInput" required>
                         </div>
+                        
                         <div class="ios-row">
                             <label for="timeInput" class="ios-label">Время</label>
                             <input type="time" id="timeInput" required>
                         </div>
+
                         <div class="ios-row">
                             <label for="importanceInput" class="ios-label">Важность</label>
                             <select id="importanceInput" required>
@@ -376,68 +413,63 @@
                                 <option value="low">Низкая</option>
                             </select>
                         </div>
-                    </div> 
-                </form>
+
+                    </div> </form>
             </div>
         </div>
 
-        <h2 class="content-padding">📝 Активные задачи</h2>
-        <div id="tasks-list" class="content-padding">
+        <h2>📝 Активные задачи</h2>
+        <div id="tasks-list">
             <p class="loading-message">Загрузка задач...</p>
         </div>
     </div>
-    
-    <div id="ai-view" class="view">
-        <h1 class="page-header content-padding">AI Ассистент 🧠</h1>
-        
-        <div id="chat-content-wrapper">
-            <div id="chat-container" style="display: flex; flex-direction: column; width: 100%;">
-                <div class="message-bubble ai-greeting">
-                    Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
-                </div>
-                </div>
-        </div>
-        
-    </div>
 
-    <div id="info-view" class="view">
-        <h1 class="page-header content-padding">Информация ℹ️</h1>
-        <div class="content-padding">
-            <p class="empty-message">Раздел с общей информацией и инструкциями о Task Assistant.</p>
+
+    <div id="ai-chat-content" class="content-section">
+        <h1 id="ai-chat-header">🤖 AI Ассистент</h1>
+        
+        <div id="ai-chat-messages">
+             <div class="ai-welcome">
+                 Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
+             </div>
+             </div>
+
+        <div id="ai-chat-input-area">
+            <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
+            <button id="sendAiChat">🚀 Отправить</button>
         </div>
     </div>
+    
+    <div id="info-content" class="content-section">
+        <h1>ℹ️ Информация</h1>
+        <p>
+            Этот To Do Bot разработан как демонстрация возможностей Telegram Mini Apps и платформы n8n/Google Sheets для бекенда.
+        </p>
+        <p>
+            Навигация реализована по принципу Single Page Application (SPA) для мгновенного переключения между разделами.
+        </p>
+        </div>
 
 
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
         <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
-        <div class="menu-item delete-item" id="menu-delete">🗑️ Удалить задачу</div>
+        <div class="menu-item disabled" id="menu-delete">🗑️ Удалить (TBD)</div>
     </div>
-
-    <div id="chat-input-container">
-        <div class="ios-row">
-            <input type="text" id="ai-prompt-input" placeholder="Введите ваш вопрос или задачу..." style="text-align: left; padding: 10px 0;">
-            <button id="send-prompt-btn" class="nav-button active" style="margin-left: 10px; width: auto; padding: 5px 15px;">
-                <span class="nav-button-icon">🚀</span> Отправить
-            </button>
-        </div>
-    </div>
-
-    <div id="bottom-nav-container">
-        <nav id="bottom-nav">
-            <button class="nav-button active" data-view="tasks" onclick="navigateTo('tasks', this)">
-                <span class="nav-button-icon">📋</span>
-                Tasks
-            </button>
-            <button class="nav-button" data-view="ai" onclick="navigateTo('ai', this)">
-                <span class="nav-button-icon">🧠</span>
-                AI Chat
-            </button>
-            <button class="nav-button" data-view="info" onclick="navigateTo('info', this)">
-                <span class="nav-button-icon">ℹ️</span>
-                Info
-            </button>
-        </nav>
+    
+    <div id="bottom-nav">
+        <button class="nav-button" data-section="tasks-content">
+            <div class="nav-button-icon"><span>📋</span></div>
+            Tasks
+        </button>
+        <button class="nav-button" data-section="ai-chat-content">
+            <div class="nav-button-icon"><span>🧠</span></div>
+            AI Chat
+        </button>
+        <button class="nav-button" data-section="info-content">
+            <div class="nav-button-icon"><span>ℹ️</span></div>
+            Info
+        </button>
     </div>
 
 
@@ -445,13 +477,11 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         
-        // --- ПЕРЕМЕННЫЕ N8N (Используйте свои URL) ---
+        // --- ПЕРЕМЕННЫЕ N8N ---
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
-        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; 
-        const N8N_AI_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat'; 
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ------------------------------------------------
         
@@ -460,137 +490,14 @@
         const formSection = document.getElementById('form-section');
         const contextMenu = document.getElementById('context-menu');
         const formTitle = document.getElementById('form-title');
-        const chatContainer = document.getElementById('chat-container');
-        const aiPromptInput = document.getElementById('ai-prompt-input');
-        const sendPromptBtn = document.getElementById('send-prompt-btn');
-        const chatContentWrapper = document.getElementById('chat-content-wrapper');
-        const chatInputContainer = document.getElementById('chat-input-container');
-
-
+        const bottomNav = document.getElementById('bottom-nav'); // Новый элемент
+        
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
         let allTasksData = []; 
         
-        const views = document.querySelectorAll('.view');
-        const navButtons = document.querySelectorAll('.nav-button');
-
-        // --- ЛОГИКА НАВИГАЦИИ ---
-        function navigateTo(viewId, clickedButton) {
-            
-            const activeView = document.querySelector('.active-view');
-            if (activeView) {
-                 activeView.classList.remove('active-view');
-            }
-
-            navButtons.forEach(button => {
-                button.classList.remove('active');
-            });
-            clickedButton.classList.add('active');
-            
-            const newView = document.getElementById(viewId + '-view');
-            newView.classList.add('active-view');
-
-            const isTaskViewActive = viewId === 'tasks';
-            const isFormExpanded = formSection.classList.contains('expanded');
-            const isAiViewActive = viewId === 'ai';
-
-            if (isTaskViewActive && isFormExpanded) {
-                tg.MainButton.show();
-            } else {
-                tg.MainButton.hide(); 
-            }
-            
-            if (isAiViewActive) {
-                chatInputContainer.style.display = 'flex'; 
-                // Скролл вниз
-                setTimeout(() => {
-                    scrollChatToBottom(); 
-                }, 100); 
-            } else {
-                chatInputContainer.style.display = 'none';
-            }
-            
-            if (isTaskViewActive) {
-                fetchTasks();
-            }
-            
-            contextMenu.style.display = 'none';
-        }
-        
-        // --- НОВАЯ ФУНКЦИЯ ПРОКРУТКИ ---
-        function scrollChatToBottom() {
-            chatContentWrapper.scrollTop = chatContentWrapper.scrollHeight;
-        }
-        // ------------------------------
-
-        // --- ЛОГИКА ЧАТА ---
-        function addMessageToChat(text, sender) {
-            const bubble = document.createElement('div');
-            bubble.className = `message-bubble ${sender}-message`;
-            bubble.innerHTML = text.replace(/\n/g, '<br>');
-            bubble.style.animationName = 'fadeIn'; 
-            chatContainer.appendChild(bubble);
-            
-            // АВТОМАТИЧЕСКАЯ ПРОКРУТКА
-            scrollChatToBottom(); 
-        }
-
-        async function sendAiPrompt() {
-            const prompt = aiPromptInput.value.trim();
-            if (!prompt) return;
-
-            addMessageToChat(prompt, 'user');
-            aiPromptInput.value = ''; 
-            aiPromptInput.disabled = true;
-            sendPromptBtn.disabled = true;
-
-            try {
-                tg.MainButton.showProgress(true); 
-
-                const response = await fetch(N8N_AI_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ prompt: prompt })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                
-                if (result.success && result.response) {
-                    addMessageToChat(result.response, 'ai');
-                } else {
-                    addMessageToChat('Ошибка: AI не смог сгенерировать ответ или сервер вернул неполные данные.', 'ai');
-                }
-
-            } catch (error) {
-                console.error('AI Chat Error:', error);
-                tg.showAlert(`Ошибка соединения: ${error.message}. Проверьте логи Webhook в n8n.`);
-                addMessageToChat(`Ошибка соединения: ${error.message}.`, 'ai');
-            } finally {
-                tg.MainButton.hideProgress(); 
-                aiPromptInput.disabled = false;
-                sendPromptBtn.disabled = false;
-                aiPromptInput.focus();
-            }
-        }
-        
-        aiPromptInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendAiPrompt();
-            }
-        });
-        sendPromptBtn.addEventListener('click', sendAiPrompt);
-
-
-        // --- ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
+        // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
         function toggleForm() {
             if (formSection.classList.contains('expanded') && isEditing) {
                 exitEditMode(); 
@@ -598,30 +505,40 @@
             formSection.classList.toggle('expanded');
             document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
             
-            if (formSection.classList.contains('expanded')) {
-                 if (!isEditing) {
-                    tg.MainButton.setText('➕ Добавить задачу').show();
+            // Управление MainButton - только если мы на вкладке Tasks
+            if (document.getElementById('tasks-content').classList.contains('active')) {
+                if (formSection.classList.contains('expanded')) {
+                    if (!isEditing) {
+                        tg.MainButton.setText('➕ Добавить задачу').show();
+                    }
+                } else {
+                    if (!isEditing) {
+                       tg.MainButton.hide(); 
+                    }
                 }
-            } else {
-                tg.MainButton.hide(); 
             }
         }
 
+        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
+        
         function enterEditMode(task) {
             if (!task) return;
             
             isEditing = true;
             currentEditingId = task.id;
             
+            // Заполнение формы
             document.getElementById('taskInput').value = task.task_text || task.task;
             document.getElementById('dateInput').value = task.date;
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
             
+            // UI изменения
             formSection.classList.add('expanded');
             document.getElementById('form-arrow').textContent = '▲';
             formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
             
+            // MainButton
             tg.MainButton.setText('✍️ Сохранить изменения').show();
             tg.HapticFeedback.notificationOccurred('success');
         }
@@ -631,10 +548,19 @@
             currentEditingId = null;
             taskForm.reset(); 
             formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
-            tg.MainButton.setText('➕ Добавить задачу').show();
+            
+            // MainButton
+            if (document.getElementById('tasks-content').classList.contains('active') && formSection.classList.contains('expanded')) {
+                tg.MainButton.setText('➕ Добавить задачу').show();
+            } else {
+                tg.MainButton.hide();
+            }
         }
         
+        // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
+        
         async function sendTask() {
+            
             const taskName = document.getElementById('taskInput').value.trim();
             const date = document.getElementById('dateInput').value;
             const time = document.getElementById('timeInput').value;
@@ -652,14 +578,16 @@
                 importance: importance,
             };
             
-            let url, isUpdate;
+            let url, method, isUpdate;
 
             if (isEditing) {
                 url = N8N_EDIT_URL;
+                method = 'POST';
                 isUpdate = true;
                 taskData.id = currentEditingId; 
             } else {
                 url = N8N_POST_URL;
+                method = 'POST';
                 isUpdate = false;
             }
 
@@ -667,7 +595,7 @@
                 tg.MainButton.showProgress(true); 
                 
                 const response = await fetch(url, {
-                    method: 'POST',
+                    method: method,
                     headers: {
                         'Authorization': N8N_AUTH_HEADER,
                         'X-Init-Data': tg.initData,
@@ -714,43 +642,37 @@
             }
         }
         
+        // Скрываем кнопку при старте
         tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
         
-        // --- ЛОГИКА КОНТЕКСТНОГО МЕНЮ И УДАЛЕНИЯ ---
+        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
         
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
             currentTaskId = taskId; 
 
             const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
             const rect = buttonElement.getBoundingClientRect();
             const offset = 10; 
 
             contextMenu.style.display = 'block';
             const menuWidth = contextMenu.offsetWidth; 
-            const menuHeight = contextMenu.offsetHeight; 
 
-            // Позиционирование по горизонтали
-            let leftPosition = rect.right - menuWidth; 
+            let leftPosition;
+            let defaultLeft = rect.right - menuWidth + 5; 
+
+            if (defaultLeft + menuWidth > viewportWidth - offset) {
+                leftPosition = viewportWidth - menuWidth - offset;
+            } else {
+                leftPosition = defaultLeft;
+            }
+
             if (leftPosition < offset) {
                 leftPosition = offset;
             }
-            if (leftPosition + menuWidth > viewportWidth - offset) {
-                leftPosition = viewportWidth - menuWidth - offset;
-            }
 
-            // Позиционирование по вертикали
-            let topPosition = rect.bottom + 5; 
-            if (topPosition + menuHeight > viewportHeight - 80) { 
-                topPosition = rect.top - menuHeight - 5;
-                if (topPosition < 0) { 
-                    topPosition = rect.bottom + 5;
-                }
-            }
-            
-            contextMenu.style.top = `${topPosition}px`; 
+            contextMenu.style.top = `${rect.bottom + 5}px`; 
             contextMenu.style.left = `${leftPosition}px`;
         }
 
@@ -763,76 +685,6 @@
             }
         });
 
-        async function markTaskAsDone(taskId) {
-            const performUpdate = async () => {
-                try {
-                    tg.MainButton.showProgress(true); 
-                    const response = await fetch(N8N_UPDATE_URL, {
-                        method: 'POST', 
-                        headers: {
-                            'Authorization': N8N_AUTH_HEADER,
-                            'X-Init-Data': tg.initData,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id: taskId, done: 'yes' })
-                    });
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    await fetchTasks(); 
-                    tg.showAlert('Задача успешно отмечена как выполненная!');
-                } catch (error) {
-                    console.error('UPDATE error:', error);
-                    tg.showAlert(`Ошибка обновления: ${error.message}.`);
-                } finally {
-                    tg.MainButton.hideProgress();
-                }
-            };
-            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
-                if (confirmed) {
-                    contextMenu.style.display = 'none'; 
-                    await performUpdate();
-                }
-            });
-        }
-        
-        async function deleteTask(taskId) {
-            if (!taskId) return;
-            tg.showConfirm('Вы уверены, что хотите безвозвратно удалить эту задачу? Это действие необратимо.', async (confirmed) => {
-                if (confirmed) {
-                    contextMenu.style.display = 'none';
-                    try {
-                        tg.MainButton.showProgress(true); 
-                        const response = await fetch(N8N_DELETE_URL, {
-                            method: 'POST', 
-                            headers: {
-                                'Authorization': N8N_AUTH_HEADER,
-                                'X-Init-Data': tg.initData,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ id: taskId })
-                        });
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! Status: ${response.status}`);
-                        }
-                        tg.showAlert('Задача успешно удалена!');
-                        await fetchTasks(); 
-                    } catch (error) {
-                        console.error('DELETE error:', error);
-                        tg.showAlert(`Ошибка при удалении: ${error.message}.`);
-                    } finally {
-                        tg.MainButton.hideProgress();
-                    }
-                }
-            });
-        }
-
-        document.getElementById('menu-done').addEventListener('click', () => {
-            if (currentTaskId) {
-                markTaskAsDone(currentTaskId);
-            }
-        });
-        
         document.getElementById('menu-edit').addEventListener('click', () => {
             if (currentTaskId) {
                 contextMenu.style.display = 'none';
@@ -845,13 +697,55 @@
             }
         });
         
-        document.getElementById('menu-delete').addEventListener('click', () => {
+        async function markTaskAsDone(taskId) {
+            const performUpdate = async () => {
+                try {
+                    tg.MainButton.showProgress(true); 
+                    
+                    const response = await fetch(N8N_UPDATE_URL, {
+                        method: 'POST', 
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: taskId,
+                            done: 'yes', 
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    await fetchTasks(); 
+                    tg.showAlert('Задача успешно отмечена как выполненная!');
+
+                } catch (error) {
+                    console.error('UPDATE error:', error);
+                    tg.showAlert(`Ошибка обновления: ${error.message}.`);
+                } finally {
+                    tg.MainButton.hideProgress();
+                }
+            };
+            
+            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none'; 
+                    await performUpdate();
+                }
+            });
+        }
+
+        document.getElementById('menu-done').addEventListener('click', () => {
             if (currentTaskId) {
-                deleteTask(currentTaskId);
+                markTaskAsDone(currentTaskId);
             }
         });
 
-        // --- ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+
         function parseDate(dateStr) {
             if (!dateStr) return null;
             if (dateStr.includes('-')) {
@@ -908,18 +802,14 @@
         }
 
         async function fetchTasks() {
-            if (!document.getElementById('tasks-view').classList.contains('active-view')) {
-                return;
-            }
-            
-            if (!tg.initData) {
-                displayError('Telegram initData is missing. Cannot authorize.');
-                return;
-            }
-
-            tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
-            
             try {
+                if (!tg.initData) {
+                    displayError('Telegram initData is missing. Cannot authorize.');
+                    return;
+                }
+
+                tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
+                
                 const response = await fetch(N8N_GET_URL, {
                     method: 'GET',
                     headers: {
@@ -998,20 +888,54 @@
                 displayError(error.message);
             }
         }
+        
+        // --- 6. ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ (SPA) ---
+        function switchSection(sectionId, buttonElement) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
 
-        // --- ГЛОБАЛЬНЫЕ ВЫЗОВЫ ---
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.classList.remove('active');
+                button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
+            });
+            
+            buttonElement.classList.add('active');
+            buttonElement.querySelector('.nav-button-icon').style.boxShadow = `0 0 10px ${tg.themeParams.link_color || '#007aff'}`; 
+
+            // Управление MainButton
+            if (sectionId === 'tasks-content') {
+                if (formSection.classList.contains('expanded')) {
+                    tg.MainButton.show();
+                    tg.MainButton.setText(isEditing ? '✍️ Сохранить изменения' : '➕ Добавить задачу');
+                } else {
+                    tg.MainButton.hide();
+                }
+                fetchTasks(); 
+            } else {
+                tg.MainButton.hide();
+            }
+        }
+        
+        // Event Listeners для навигации
+        bottomNav.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', () => {
+                switchSection(button.getAttribute('data-section'), button);
+            });
+        });
+
         window.markTaskAsDone = markTaskAsDone;
         window.showMenu = showMenu;
         window.toggleForm = toggleForm;
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
-        window.navigateTo = navigateTo; 
-        window.deleteTask = deleteTask; 
-        window.sendAiPrompt = sendAiPrompt; 
 
         // Инициализация при загрузке
-        navigateTo('tasks', document.querySelector('.nav-button[data-view="tasks"]'));
-        fetchTasks();
+        window.addEventListener('load', () => {
+            const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
+            switchSection('tasks-content', tasksButton); // Активируем вкладку Tasks при старте
+        });
     </script>
 </body>
 </html>
