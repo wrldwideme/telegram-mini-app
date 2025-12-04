@@ -85,34 +85,89 @@
         .ios-row input::placeholder { color: var(--hint-color); opacity: 1; }
         .ios-row:focus-within { background-color: color-mix(in srgb, var(--input-bg-color) 90%, var(--link-color) 5%); }
 
-        .task-card { border-left: 6px solid #444; padding: 15px; margin-bottom: 15px; border-radius: 12px; background: var(--secondary-bg-color); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s, box-shadow 0.2s; }
+        .task-card { 
+            border-left: 6px solid #444; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            background: var(--secondary-bg-color); 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; /* ИСПРАВЛЕНИЕ 1: Выравниваем по верху, чтобы кнопка не съезжала */
+            transition: transform 0.2s, box-shadow 0.2s; 
+        }
         .task-card.expired { border-left-color: #e74c3c; opacity: 0.9; }
-        .task-info { flex-grow: 1; }
+        .task-info { flex-grow: 1; margin-right: 10px; }
         .task-header { display: flex; align-items: flex-start; margin-bottom: 5px; }
         .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1; }
         .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0; }
         
-        /* --- СТИЛИ ЧАТА --- */
+        .menu-button { /* ИСПРАВЛЕНИЕ 1: Стили кнопки троеточия */
+            background: transparent;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.5em; 
+            padding: 0 5px;
+            line-height: 1;
+            cursor: pointer;
+            align-self: flex-start; /* Убеждаемся, что она всегда сверху */
+            margin-top: -5px; /* Слегка поднять для центрирования */
+        }
+        .menu-button:active { opacity: 0.7; }
+
+        /* --- СТИЛИ ЧАТА (УЛУЧШЕНИЕ UI) --- */
+        #ai-view {
+             padding: 0 15px 15px 15px; /* Добавляем боковые отступы */
+        }
         #chat-container {
             height: 100%;
             flex-grow: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            padding: 0;
+            padding: 10px 0; /* Уменьшаем верхние/нижние отступы, чтобы пузыри не прилипали */
             background: var(--chat-bg-color); 
             border-radius: 12px;
-            padding-bottom: 10px;
+            /* Убираем padding-bottom: 10px; */
         }
 
-        .message-bubble { max-width: 85%; padding: 10px 15px; margin: 8px 0; border-radius: 18px; font-size: 0.95em; line-height: 1.4; word-wrap: break-word; }
-        .user-message { align-self: flex-end; background-color: var(--user-bubble-color); color: var(--user-text-color); border-bottom-right-radius: 4px; }
-        .ai-message { align-self: flex-start; background-color: var(--ai-bubble-color); color: var(--ai-text-color); border-bottom-left-radius: 4px; }
-        .ai-greeting { background-color: transparent; color: var(--hint-color); text-align: center; margin: 20px auto; font-style: italic; }
+        .message-bubble { 
+            max-width: 85%; 
+            padding: 10px 15px; 
+            margin: 5px 0; /* Уменьшаем вертикальный отступ */
+            border-radius: 18px; 
+            font-size: 0.95em; 
+            line-height: 1.4; 
+            word-wrap: break-word; 
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        }
+        .user-message { 
+            align-self: flex-end; 
+            background-color: var(--user-bubble-color); 
+            color: var(--user-text-color); 
+            margin-right: 0;
+            border-bottom-right-radius: 4px; /* Острый угол внизу справа */
+        }
+        .ai-message { 
+            align-self: flex-start; 
+            background-color: var(--ai-bubble-color); 
+            color: var(--ai-text-color); 
+            margin-left: 0;
+            border-bottom-left-radius: 4px; /* Острый угол внизу слева */
+        }
+        .ai-greeting { 
+            background-color: transparent; 
+            color: var(--hint-color); 
+            text-align: center; 
+            margin: 20px auto; 
+            font-style: italic;
+            box-shadow: none;
+        }
         
         /* --- ИСПРАВЛЕНИЕ UI/LAYOUT --- */
         .view { 
-            display: none; /* Все разделы по умолчанию скрыты */
+            display: none; 
             transition: opacity 0.3s; 
             padding-top: 0;
             flex-grow: 1;
@@ -125,7 +180,7 @@
         }
         
         #tasks-view.active-view, #info-view.active-view {
-            display: block; /* Задачи и инфо могут быть блоками */
+            display: block; 
         }
 
         .ai-chat-view { padding: 0 0 15px 0; flex-grow: 1; }
@@ -266,6 +321,7 @@
         tg.ready();
         
         // --- ПЕРЕМЕННЫЕ N8N ---
+        // (ОСТАВИТЬ БЕЗ ИЗМЕНЕНИЙ)
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
@@ -304,12 +360,11 @@
             });
             clickedButton.classList.add('active');
             
-            // Управление MainButton и Chat Input
             if (viewId === 'tasks' && formSection.classList.contains('expanded')) {
                 tg.MainButton.show();
             } else if (viewId === 'ai') {
                 tg.MainButton.hide(); 
-                aiPromptInput.focus();
+                // aiPromptInput.focus(); // Убрал фокус, чтобы не всплывала клавиатура сразу
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             } else {
                 tg.MainButton.hide();
@@ -322,7 +377,7 @@
             contextMenu.style.display = 'none';
         }
         
-        // --- ЛОГИКА ЧАТА (С ИСПРАВЛЕНИЕМ ПРОГРЕССА) ---
+        // --- ЛОГИКА ЧАТА ---
         
         function addMessageToChat(text, sender) {
             const bubble = document.createElement('div');
@@ -344,7 +399,6 @@
             sendPromptBtn.disabled = true;
 
             try {
-                // ИСПРАВЛЕНИЕ: Используем MainButton для показа прогресса
                 tg.MainButton.showProgress(true); 
 
                 const response = await fetch(N8N_AI_URL, {
@@ -372,7 +426,6 @@
 
             } catch (error) {
                 console.error('AI Chat Error:', error);
-                // Это сообщение будет включать "Unexpected end of JSON input"
                 tg.showAlert(`Ошибка соединения: ${error.message}. Проверьте логи Webhook в n8n.`);
                 addMessageToChat(`Ошибка соединения: ${error.message}.`, 'ai');
             } finally {
@@ -383,7 +436,6 @@
             }
         }
         
-        // Обработчики для поля ввода и кнопки
         aiPromptInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 sendAiPrompt();
