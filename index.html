@@ -35,8 +35,8 @@
         /* Стили для формы (Секция "Новая задача") */
         .form-section {
             background: var(--tg-theme-secondary-bg-color, #2a2a2a);
-            padding: 0 20px 0 20px; /* Отступы для заголовка формы */
-            border-radius: 12px; /* Более мягкий радиус */
+            padding: 0 20px 0 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -49,7 +49,7 @@
             font-size: 1.1em;
             font-weight: bold;
             color: var(--tg-theme-text-color, #ecf0f1);
-            padding: 15px 0; /* Отступ заголовка */
+            padding: 15px 0;
         }
 
         .form-section-header .icon {
@@ -65,11 +65,11 @@
         }
 
         .form-content.open {
-            max-height: 500px; /* Достаточно большое значение */
+            max-height: 500px;
         }
 
         .form-content form {
-            padding-bottom: 15px; /* Отступ для нижней части формы */
+            padding-bottom: 15px;
         }
         
         .form-section label {
@@ -86,7 +86,7 @@
             margin-bottom: 10px;
             box-sizing: border-box;
             border: 1px solid var(--tg-theme-secondary-bg-color, #444);
-            border-radius: 8px; /* Более мягкий радиус */
+            border-radius: 8px;
             background: var(--tg-theme-bg-color, #333);
             color: var(--tg-theme-text-color, #fff);
         }
@@ -101,7 +101,7 @@
         }
         h2 .icon {
             margin-right: 8px;
-            color: #f7b731; /* Цвет иконки календаря */
+            color: #f7b731;
         }
         
         /* Стили карточек */
@@ -113,7 +113,7 @@
             margin-bottom: 12px; 
             border-radius: 12px; 
             background: var(--tg-theme-secondary-bg-color, #2a2a2a); 
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             position: relative;
         }
         .task-info { 
@@ -141,6 +141,7 @@
         }
         .task-card p .icon {
             margin-right: 5px;
+            font-size: 1.1em;
         }
 
         /* Теги важности */
@@ -204,14 +205,14 @@
         }
 
         .action-mark-done {
-            color: #2ecc71; /* Зеленый для "Выполнено" */
+            color: #2ecc71;
             font-weight: bold;
         }
         .action-edit {
             color: var(--tg-theme-link-color, #3498db);
         }
         .action-delete {
-            color: #e74c3c; /* Красный для "Удалить" */
+            color: #e74c3c;
         }
         .loading-message, .empty-message, .error-message { 
             text-align: center; 
@@ -263,7 +264,7 @@
         // --- ЗАПОЛНИТЕ ПЕРЕМЕННЫЕ! ---
         const N8N_GET_URL = 'https://worldonme.app.n8n.cloud/webhook/get-tasks'; 
         const N8N_POST_URL = 'https://worldonme.app.n8n.cloud/webhook/add-task'; 
-        const N8N_UPDATE_STATUS_URL = 'https://worldonme.app.n8n.cloud/webhook/update-task-status'; // Добавлено для маркировки "Выполнено"
+        const N8N_UPDATE_STATUS_URL = 'https://worldonme.app.n8n.cloud/webhook/update-task-status'; 
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         // ----------------------------------
         
@@ -298,10 +299,14 @@
                 return `<span class="icon">📅</span> Нет даты <span class="icon">⏰</span> Нет времени`;
             }
 
-            const now = new Date();
-            // Используем 'T' для корректной интерпретации UTC/локального времени
-            const taskDate = new Date(`${dateStr}T${timeStr}:00`); 
+            // ИСПРАВЛЕНИЕ: Создаем дату, явно указывая время, чтобы избежать проблем с UTC/часовым поясом
+            const taskDate = new Date(`${dateStr}T${timeStr}:00`);
 
+            if (isNaN(taskDate)) {
+                 return `<span class="icon">📅</span> INVALID DATE <span class="icon">⏰</span> ${timeStr}`;
+            }
+
+            const now = new Date();
             // Сброс времени для сравнения дней
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -314,7 +319,7 @@
             } else if (taskDay.getTime() === tomorrow.getTime()) {
                 dateText = 'Завтра';
             } else {
-                // Формат: "17 ДЕК."
+                // Формат: "3 ДЕК."
                 const day = taskDate.getDate();
                 const monthNames = ["ЯНВ.", "ФЕВ.", "МАР.", "АПР.", "МАЙ", "ИЮН.", "ИЮЛ.", "АВГ.", "СЕН.", "ОКТ.", "НОЯ.", "ДЕК."];
                 dateText = `${day} ${monthNames[taskDate.getMonth()]}.`;
@@ -374,8 +379,10 @@
                 if (response.ok && result.success) {
                     tg.showAlert('Задача успешно добавлена!');
                     taskForm.reset(); 
-                    formContent.classList.remove('open'); // Закрываем форму после добавления
-                    tg.MainButton.hide(); // Скрываем кнопку
+                    // Закрываем форму и скрываем кнопку
+                    formContent.classList.remove('open'); 
+                    formHeader.querySelector('.icon').style.transform = 'rotate(0deg)';
+                    tg.MainButton.hide(); 
                     await fetchTasks(); 
                 } else {
                     throw new Error(result.message || 'Не удалось добавить задачу. (Проверь n8n log)');
