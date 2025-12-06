@@ -535,8 +535,7 @@
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
         <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
-        <div class="menu-item disabled" id="menu-delete">🗑️ Удалить (TBD)</div>
-    </div>
+        <div class="menu-item" id="menu-delete">🗑️ Удалить</div> </div>
     
     <div id="bottom-nav">
         <button class="nav-button" data-section="tasks-content">
@@ -563,6 +562,7 @@
         const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
         const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
+        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL ДЛЯ УДАЛЕНИЯ
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         
         const tasksList = document.getElementById('tasks-list');
@@ -853,6 +853,53 @@
                 markTaskAsDone(currentTaskId);
             }
         });
+
+        // НОВАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ЗАДАЧИ
+        async function deleteTask(taskId) {
+            const performDelete = async () => {
+                try {
+                    tg.MainButton.showProgress(true); 
+                    
+                    const response = await fetch(N8N_DELETE_URL, {
+                        method: 'POST', 
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: taskId,
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    await fetchTasks(); 
+                    tg.showAlert('Задача успешно удалена!');
+
+                } catch (error) {
+                    console.error('DELETE error:', error);
+                    tg.showAlert(`Ошибка удаления: ${error.message}.`);
+                } finally {
+                    tg.MainButton.hideProgress();
+                }
+            };
+            
+            tg.showConfirm('Вы уверены, что хотите удалить эту задачу?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none'; 
+                    await performDelete();
+                }
+            });
+        }
+
+        document.getElementById('menu-delete').addEventListener('click', () => {
+            if (currentTaskId) {
+                deleteTask(currentTaskId);
+            }
+        });
         
         // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
 
@@ -942,6 +989,7 @@
 
                 const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
 
+                // ПРОВЕРКА НА ПУСТОЙ МАССИВ
                 if (activeTasks.length === 0) {
                     tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
                     return;
@@ -1160,6 +1208,7 @@
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
         window.setDefaultFormValues = setDefaultFormValues; 
+        window.deleteTask = deleteTask; // СДЕЛАТЬ ГЛОБАЛЬНОЙ ДЛЯ ДОСТУПА ИЗ UI
 
         // Инициализация при загрузке
         window.addEventListener('load', () => {
