@@ -57,6 +57,73 @@
             padding-bottom: 5px;
             border-bottom: 2px solid var(--link-color);
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ЛОГОТИП В ЗАГОЛОВКАХ */
+        .logo-header {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #5AC8FA, #007AFF);
+            padding: 6px;
+            box-shadow: 0 3px 10px rgba(0, 122, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('https://i.postimg.cc/PNJJFDvS/logo.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: brightness(0) invert(1);
+        }
+
+        #tasks-content h1 .logo-header {
+            background: linear-gradient(135deg, #5AC8FA, #007AFF);
+        }
+
+        #ai-chat-content h1 .logo-header {
+            background: linear-gradient(135deg, #8A2BE2, #9370DB);
+        }
+
+        #stats-content h1 .logo-header {
+            background: linear-gradient(135deg, #34C759, #30D158);
+        }
+
+        /* Для темной темы - другой эффект */
+        @media (prefers-color-scheme: dark) {
+            .logo-header {
+                box-shadow: 0 3px 15px rgba(0, 122, 255, 0.3);
+            }
+            
+            .logo-header::before {
+                filter: brightness(1) invert(0);
+            }
+            
+            #tasks-content h1 .logo-header::before {
+                filter: brightness(0) invert(1);
+            }
+            
+            #ai-chat-content h1 .logo-header::before {
+                filter: brightness(0) invert(1);
+            }
+            
+            #stats-content h1 .logo-header::before {
+                filter: brightness(0) invert(1);
+            }
         }
 
         /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
@@ -951,13 +1018,21 @@
                 width: 44px;
                 height: 44px;
             }
+            
+            .logo-header {
+                width: 35px;
+                height: 35px;
+            }
         }
     </style>
 </head>
 <body>
 
     <div id="tasks-content" class="content-section active">
-        <h1>📋 Task Assistant</h1>
+        <h1>
+            <span class="logo-header"></span>
+            Task Assistant
+        </h1>
         
         <div class="form-section" id="form-section">
             <div class="form-header" onclick="toggleForm()">
@@ -1006,7 +1081,10 @@
     </div>
 
     <div id="ai-chat-content" class="content-section">
-        <h1 id="ai-chat-header">🤖 AI Ассистент</h1>
+        <h1>
+            <span class="logo-header"></span>
+            AI Ассистент
+        </h1>
         <button id="clear-chat-btn" title="Очистить чат">🗑️</button>
         
         <div id="ai-chat-messages">
@@ -1022,7 +1100,10 @@
     </div>
     
     <div id="stats-content" class="content-section">
-        <h1>📊 Статистика</h1>
+        <h1>
+            <span class="logo-header"></span>
+            Статистика
+        </h1>
         
         <div id="stats-container">
             <div class="stats-grid">
