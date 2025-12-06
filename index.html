@@ -1191,7 +1191,7 @@
             }
         }
         
-        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (НОВАЯ) ---
+        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ИСПРАВЛЕННАЯ) ---
 
         function displayStatsError(message) {
             statsList.innerHTML = `<p class="error-message" style="padding: 15px; margin-bottom: 0;">Ошибка загрузки статистики: ${message}</p>`;
@@ -1229,18 +1229,28 @@
                 
                 const stats = await response.json();
 
-                if (!stats || typeof stats !== 'object' || Array.isArray(stats)) {
-                    throw new Error('Некорректный формат данных от API статистики.');
+                // ИСПРАВЛЕНИЕ #1: Проверка на массив и извлечение первого элемента
+                if (!Array.isArray(stats) || stats.length === 0 || typeof stats[0] !== 'object') {
+                    throw new Error('Некорректный формат данных от API статистики. Ожидался массив с объектом.');
                 }
                 
-                // Предполагаем, что API возвращает поля: totalTasks, activeTasks, completedTasks, highPriority
+                const statData = stats[0]; // Получаем объект со статистикой
                 
+                // ИСПРАВЛЕНИЕ #2: Маппинг полей API к переменным для отображения
+                const activeTasks = statData.activeTotal || 0;
+                const completedTasks = statData.totalCompleted || 0;
+                const totalTasks = activeTasks + completedTasks; // Рассчитываем общее количество
+                // Используем оператор ?. для безопасного доступа к вложенному полю
+                const highPriority = statData.importanceDistribution?.high || 0; 
+
+
                 let htmlContent = '';
                 
-                htmlContent += formatStatRow('Всего задач', stats.totalTasks || 0, '🔢');
-                htmlContent += formatStatRow('Активных задач', stats.activeTasks || 0, '📝');
-                htmlContent += formatStatRow('Выполнено задач', stats.completedTasks || 0, '✅');
-                htmlContent += formatStatRow('Высокий приоритет', stats.highPriority || 0, '🚨');
+                // Используем корректно извлеченные и сопоставленные переменные
+                htmlContent += formatStatRow('Всего задач', totalTasks, '🔢');
+                htmlContent += formatStatRow('Активных задач', activeTasks, '📝');
+                htmlContent += formatStatRow('Выполнено задач', completedTasks, '✅');
+                htmlContent += formatStatRow('Высокий приоритет', highPriority, '🚨');
 
 
                 statsList.innerHTML = htmlContent;
