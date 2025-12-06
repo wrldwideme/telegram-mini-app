@@ -522,13 +522,15 @@
         </div>
     </div>
     
-    <div id="info-content" class="content-section">
-        <h1>ℹ️ Информация</h1>
-        <p>
-            Этот To Do Bot разработан как демонстрация возможностей Telegram Mini Apps и платформы n8n/Google Sheets для бекенда.
-        </p>
-        <p>
-            Навигация реализована по принципу Single Page Application (SPA) для мгновенного переключения между разделами.
+    <div id="stats-content" class="content-section">
+        <h1>📊 Статистика</h1>
+        
+        <div id="stats-list" class="ios-group">
+             <p class="loading-message">Загрузка статистики...</p>
+        </div>
+        
+        <p style="margin-top: 20px; color: var(--hint-color); font-size: 0.9em;">
+            Данные предоставляются через n8n API.
         </p>
     </div>
 
@@ -547,9 +549,9 @@
             <div class="nav-button-icon"><span>🧠</span></div>
             AI Chat
         </button>
-        <button class="nav-button" data-section="info-content">
-            <div class="nav-button-icon"><span>ℹ️</span></div>
-            Info
+        <button class="nav-button" data-section="stats-content">
+            <div class="nav-button-icon"><span>📊</span></div>
+            Stats
         </button>
     </div>
 
@@ -564,6 +566,7 @@
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
         const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
         const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL ДЛЯ УДАЛЕНИЯ
+        const N8N_GET_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats'; // НОВЫЙ URL ДЛЯ СТАТИСТИКИ
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         
         const tasksList = document.getElementById('tasks-list');
@@ -572,6 +575,7 @@
         const contextMenu = document.getElementById('context-menu');
         const formTitle = document.getElementById('form-title');
         const bottomNav = document.getElementById('bottom-nav'); 
+        const statsList = document.getElementById('stats-list'); // Добавлена переменная для списка статистики
         
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
@@ -1075,6 +1079,9 @@
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
+            } else if (sectionId === 'stats-content') { // ДОБАВЛЕНА ЛОГИКА ДЛЯ СТАТИСТИКИ
+                tg.MainButton.hide();
+                fetchStats(); 
             } else {
                 tg.MainButton.hide();
             }
@@ -1184,6 +1191,67 @@
                     sendAiChatButton.disabled = false;
                     aiChatInput.focus();
                 }
+            }
+        }
+        
+        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (НОВАЯ) ---
+
+        function displayStatsError(message) {
+            statsList.innerHTML = `<p class="error-message" style="padding: 15px; margin-bottom: 0;">Ошибка загрузки статистики: ${message}</p>`;
+        }
+        
+        function formatStatRow(label, value, icon) {
+             return `
+                <div class="ios-row">
+                    <label class="ios-label" style="width: auto; margin-right: 15px;">${icon} ${label}</label>
+                    <span style="flex-grow: 1; text-align: right; font-weight: 600;">${value}</span>
+                </div>
+            `;
+        }
+
+        async function fetchStats() {
+            try {
+                if (!tg.initData) {
+                    displayStatsError('Telegram initData is missing. Cannot authorize.');
+                    return;
+                }
+
+                statsList.innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
+                
+                const response = await fetch(N8N_GET_STATS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const stats = await response.json();
+
+                if (!stats || typeof stats !== 'object' || Array.isArray(stats)) {
+                    throw new Error('Некорректный формат данных от API статистики.');
+                }
+                
+                // Предполагаем, что API возвращает поля: totalTasks, activeTasks, completedTasks, highPriority
+                
+                let htmlContent = '';
+                
+                htmlContent += formatStatRow('Всего задач', stats.totalTasks || 0, '🔢');
+                htmlContent += formatStatRow('Активных задач', stats.activeTasks || 0, '📝');
+                htmlContent += formatStatRow('Выполнено задач', stats.completedTasks || 0, '✅');
+                htmlContent += formatStatRow('Высокий приоритет', stats.highPriority || 0, '🚨');
+
+
+                statsList.innerHTML = htmlContent;
+
+            } catch (error) {
+                console.error('Fetch Stats error:', error);
+                displayStatsError(error.message);
+                tg.showAlert('Ошибка загрузки статистики.');
             }
         }
         
