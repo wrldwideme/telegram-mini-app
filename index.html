@@ -260,131 +260,359 @@
             border-bottom: 1px solid var(--secondary-bg-color);
         }
 
-        .menu-item:last-child { border-bottom: none;
+        .menu-item:last-child {
+            border-bottom: none;
         }
-        .menu-item:hover { background-color: var(--secondary-bg-color);
+        .menu-item:hover {
+            background-color: var(--secondary-bg-color);
         }
-        .menu-item.disabled { color: var(--hint-color); cursor: not-allowed; opacity: 0.6;
+        .menu-item.disabled {
+            color: var(--hint-color);
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
-        /* --- СТИЛИ AI CHAT --- */
+        /* === УЛУЧШЕННЫЕ СТИЛИ AI CHAT === */
+        #ai-chat-content {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #ai-chat-content:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at top right, rgba(138, 43, 226, 0.1), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #ai-chat-content:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at bottom left, rgba(147, 112, 219, 0.05), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
         #ai-chat-content h1 {
-            border-color: #e74c3c;
+            border-color: #8a2be2;
+            position: relative;
+            padding-bottom: 10px;
+            padding-right: 50px;
+        }
+
+        #ai-chat-content h1:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #8a2be2, #9370db);
+            border-radius: 2px;
         }
         
         #ai-chat-messages {
             min-height: 200px;
-            max-height: calc(100vh - 280px); /* Ограничиваем высоту чата */
-            overflow-y: auto; /* Включаем прокрутку */
-            margin-top: 15px; 
-            margin-bottom: 10px; 
+            max-height: calc(100vh - 280px);
+            overflow-y: auto;
+            margin-top: 15px;
+            margin-bottom: 10px;
             padding: 0 5px;
-            scroll-behavior: smooth; /* Плавная прокрутка */
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--link-color) transparent;
+        }
+
+        #ai-chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #ai-chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #ai-chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--link-color);
+            border-radius: 2px;
         }
 
         /* Стили для приветственного сообщения */
         .ai-welcome {
             text-align: center;
-            padding: 20px;
+            padding: 25px 20px;
             color: var(--hint-color);
             font-style: italic;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(147, 112, 219, 0.05));
+            border-radius: 16px;
+            border: 1px solid rgba(138, 43, 226, 0.15);
+            position: relative;
+            overflow: hidden;
         }
-        
-        /* НОВЫЕ СТИЛИ ДЛЯ ПУЗЫРЕЙ ЧАТА */
+
+        .ai-welcome:before {
+            content: '✨';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+            opacity: 0.3;
+        }
+
+        .ai-welcome:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.3), transparent);
+        }
+
+        /* Улучшенные стили для пузырей чата */
         .chat-message {
             display: flex;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: messageAppear 0.3s ease-out forwards;
+        }
+
+        @keyframes messageAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .chat-bubble {
             max-width: 85%;
-            padding: 10px 15px;
-            border-radius: 18px;
+            padding: 12px 16px;
+            border-radius: 20px;
             word-wrap: break-word;
-            line-height: 1.4;
+            line-height: 1.5;
             font-size: 0.95em;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
         }
 
+        .chat-bubble:hover {
+            transform: scale(1.01);
+        }
+
+        /* Сообщения пользователя */
         .user-message {
             justify-content: flex-end;
         }
+
         .user-message .chat-bubble {
-            background-color: var(--link-color); /* Синий как в Telegram */
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
             color: white;
-            border-bottom-right-radius: 4px; /* Скошенный уголок */
+            border-bottom-right-radius: 5px;
+            border-top-right-radius: 20px;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            margin-left: auto;
+            box-shadow: 0 4px 12px rgba(var(--link-color-rgb, 0, 122, 255), 0.2);
         }
 
+        /* Сообщения AI */
         .ai-message {
             justify-content: flex-start;
         }
+
         .ai-message .chat-bubble {
-            background-color: var(--secondary-bg-color); /* Серый фон */
+            background: var(--secondary-bg-color);
             color: var(--text-color);
-            border-bottom-left-radius: 4px; /* Скошенный уголок */
+            border-bottom-left-radius: 5px;
+            border-top-right-radius: 20px;
+            border-top-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        /* Стиль для индикатора загрузки */
+        /* Индикатор загрузки AI с улучшенной анимацией */
         .ai-loading {
             display: flex;
             justify-content: flex-start;
-            margin-bottom: 15px;
-        }
-        
-        .ai-loading .chat-bubble {
-            background-color: var(--secondary-bg-color);
-            color: var(--hint-color);
-            font-style: italic;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: loadingAppear 0.3s ease-out 0.1s forwards;
         }
 
-        /* --- СТИЛИ ПОЛЯ ВВОДА AI CHAT --- */
+        @keyframes loadingAppear {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .ai-loading .chat-bubble {
+            background: linear-gradient(90deg, var(--secondary-bg-color), rgba(138, 43, 226, 0.1), var(--secondary-bg-color));
+            background-size: 200% 100%;
+            animation: loadingShine 1.5s infinite linear;
+            color: var(--hint-color);
+            font-style: italic;
+            border: 1px solid rgba(138, 43, 226, 0.15);
+            min-width: 100px;
+        }
+
+        @keyframes loadingShine {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Анимация точек в сообщении загрузки */
+        .ai-loading .chat-bubble:after {
+            content: '...';
+            display: inline-block;
+            width: 20px;
+            animation: loadingDots 1.5s infinite steps(4);
+        }
+
+        @keyframes loadingDots {
+            0%, 100% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        /* Улучшенное поле ввода AI Chat */
         #ai-chat-input-area {
             position: fixed;
-            /* ФИНАЛЬНАЯ ПРАВКА: 95px для идеального позиционирования */
             bottom: calc(95px + env(safe-area-inset-bottom));
             left: 0;
             right: 0;
-            padding: 10px 15px;
-            background: var(--bg-color); 
-            border-top: none; 
+            padding: 15px;
+            background: linear-gradient(to top, var(--bg-color) 80%, transparent);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            gap: 10px;
+            gap: 12px;
             z-index: 990;
-        }
-        
-        #ai-chat-input-area input {
-            flex-grow: 1;
-            padding: 10px 15px;
-            border-radius: 20px; 
-            background-color: var(--secondary-bg-color);
-            color: var(--text-color);
-            border: none;
-            outline: none;
-            font-size: 1.0em;
-            height: 40px;
+            border-top: 1px solid var(--secondary-bg-color);
         }
 
-        #ai-chat-input-area button {
-            background-color: var(--link-color);
+        #aiChatInput {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border-radius: 25px;
+            background: var(--secondary-bg-color);
+            color: var(--text-color);
+            border: 2px solid transparent;
+            outline: none;
+            font-size: 1.0em;
+            height: 48px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #aiChatInput:focus {
+            border-color: rgba(138, 43, 226, 0.3);
+            background: var(--input-bg-color);
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.15);
+        }
+
+        #aiChatInput::placeholder {
+            color: var(--hint-color);
+            opacity: 0.7;
+        }
+
+        #sendAiChat {
+            background: linear-gradient(135deg, #8a2be2, #9370db);
             color: white;
             border: none;
-            border-radius: 50%; 
-            width: 40px; 
-            height: 40px;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
             padding: 0;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
-            line-height: 1;
-            white-space: nowrap;
-            font-size: 1.2em;
+            transition: all 0.3s;
             display: flex;
             justify-content: center;
             align-items: center;
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        #sendAiChat:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(138, 43, 226, 0.4);
+        }
+
+        #sendAiChat:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        #sendAiChat:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        #sendAiChat:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        #sendAiChat:hover:before {
+            left: 100%;
+        }
+
+        #sendAiChat span {
+            font-size: 1.3em;
+            transition: transform 0.3s;
+        }
+
+        #sendAiChat:hover span:not(:disabled) {
+            transform: translateX(2px);
+        }
+
+        /* Кнопка очистки чата */
+        #clear-chat-btn {
+            position: absolute;
+            top: 0;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            z-index: 1;
+        }
+
+        #clear-chat-btn:hover {
+            color: var(--link-color);
+            background: var(--secondary-bg-color);
+        }
+
         /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
         #bottom-nav {
             position: fixed;
@@ -706,6 +934,24 @@
         .progress-section { animation-delay: 0.5s; }
         .priority-section { animation-delay: 0.6s; }
         .weekly-section { animation-delay: 0.7s; }
+
+        /* Адаптивность для маленьких экранов */
+        @media (max-width: 480px) {
+            .chat-bubble {
+                max-width: 90%;
+                padding: 10px 14px;
+            }
+            
+            #aiChatInput {
+                height: 44px;
+                padding: 10px 16px;
+            }
+            
+            #sendAiChat {
+                width: 44px;
+                height: 44px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -761,6 +1007,7 @@
 
     <div id="ai-chat-content" class="content-section">
         <h1 id="ai-chat-header">🤖 AI Ассистент</h1>
+        <button id="clear-chat-btn" title="Очистить чат">🗑️</button>
         
         <div id="ai-chat-messages">
             <div class="ai-welcome">
@@ -946,6 +1193,7 @@
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
         const aiChatMessages = document.getElementById('ai-chat-messages');
+        const clearChatButton = document.getElementById('clear-chat-btn');
         
         let currentTaskId = null; 
         let isEditing = false;
@@ -1557,6 +1805,23 @@
                     aiChatInput.focus();
                 }
             }
+        }
+
+        // 7.3. ЛОГИКА ОЧИСТКИ ЧАТА
+        if (clearChatButton) {
+            clearChatButton.addEventListener('click', () => {
+                tg.showConfirm('Очистить всю историю чата?', (confirmed) => {
+                    if (confirmed) {
+                        aiChatMessages.innerHTML = `
+                            <div class="ai-welcome">
+                                Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
+                            </div>
+                        `;
+                        tg.showAlert('История чата очищена');
+                        tg.HapticFeedback.notificationOccurred('success');
+                    }
+                });
+            });
         }
         
         // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ИСПРАВЛЕННАЯ) ---
