@@ -706,15 +706,14 @@
 
         // --- ПЕРЕМЕННЫЕ N8N (КОРРЕКЦИЯ URL) ---
         // ИСПРАВЛЕНО: Всегда используем /webhook/ для продакшена
-        const N8N_BASE_URL = 'https://i74s52gg.rcld.app'; 
-        const N8N_GET_URL = N8N_BASE_URL + '/webhook/get-tasks'; 
-        const N8N_POST_URL = N8N_BASE_URL + '/webhook/add-task'; 
-        const N8N_UPDATE_URL = N8N_BASE_URL + '/webhook/update-task-status'; 
+        const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
+        const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
+        const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
-        const N8N_AI_CHAT_URL = N8N_BASE_URL + '/webhook/ai-chat';
-        const N8N_DELETE_URL = N8N_BASE_URL + '/webhook/delete-task'; 
-        const N8N_STATS_URL = N8N_BASE_URL + '/webhook/get-stats'; 
-        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; // Использовано значение из предыдущих итераций
+        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
+        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL ДЛЯ УДАЛЕНИЯ
+        const N8N_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats'; // НОВЫЙ URL ДЛЯ СТАТИСТИКИ
+        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
 
         // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
         let allTasksData = []; 
@@ -1479,4 +1478,5 @@
     </script>
 </body>
 </html>
+
 
