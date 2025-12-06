@@ -454,6 +454,215 @@
             background-color: color-mix(in srgb, var(--link-color) 20%, transparent);
             box-shadow: none; 
         }
+
+        /* --- СТИЛИ РАЗДЕЛА СТАТИСТИКИ (iOS 2025 / Telegram Style) --- */
+        #stats-content h1 {
+            border-color: #34c759; /* Зеленый акцент для статистики */
+        }
+
+        #stats-container {
+            margin-top: 15px;
+        }
+
+        /* Главные метрики в стиле виджетов iOS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-widget {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.2s, background-color 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-widget:active {
+            transform: scale(0.98);
+        }
+
+        .stat-widget-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            width: 100%;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.3em;
+        }
+
+        .stat-icon.total { background-color: rgba(52, 199, 89, 0.15); color: #34c759; }
+        .stat-icon.active { background-color: rgba(0, 122, 255, 0.15); color: var(--link-color); }
+        .stat-icon.completed { background-color: rgba(52, 199, 89, 0.15); color: #34c759; }
+        .stat-icon.high-priority { background-color: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+
+        .stat-title {
+            font-size: 0.9em;
+            color: var(--hint-color);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .stat-subtitle {
+            font-size: 0.8em;
+            color: var(--hint-color);
+            opacity: 0.8;
+        }
+
+        /* Прогресс-бар для выполнения */
+        .progress-section {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .progress-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .progress-percentage {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #34c759;
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #34c759, #30d158);
+            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: var(--hint-color);
+        }
+
+        /* Распределение приоритетов */
+        .priority-section {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .priority-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .priority-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+
+        .priority-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .priority-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .priority-color.high { background-color: #e74c3c; }
+        .priority-color.medium { background-color: #f39c12; }
+        .priority-color.low { background-color: #2ecc71; }
+
+        .priority-info {
+            flex-grow: 1;
+        }
+
+        .priority-name {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .priority-count {
+            font-weight: 700;
+            color: var(--text-color);
+            margin-left: 10px;
+        }
+
+        .priority-percentage {
+            font-size: 0.9em;
+            color: var(--hint-color);
+        }
+
+        /* Анимации для статистики */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stat-widget, .progress-section, .priority-section {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-widget:nth-child(1) { animation-delay: 0.1s; }
+        .stat-widget:nth-child(2) { animation-delay: 0.2s; }
+        .stat-widget:nth-child(3) { animation-delay: 0.3s; }
+        .stat-widget:nth-child(4) { animation-delay: 0.4s; }
+        .progress-section { animation-delay: 0.5s; }
+        .priority-section { animation-delay: 0.6s; }
     </style>
 </head>
 <body>
@@ -525,11 +734,99 @@
     <div id="stats-content" class="content-section">
         <h1>📊 Статистика</h1>
         
-        <div id="stats-list" class="ios-group">
-             <p class="loading-message">Загрузка статистики...</p>
+        <div id="stats-container">
+            <div class="stats-grid">
+                <div class="stat-widget">
+                    <div class="stat-widget-header">
+                        <div class="stat-icon total">🔢</div>
+                        <div>
+                            <div class="stat-title">Всего задач</div>
+                            <div class="stat-value" id="stat-total">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-subtitle">Все созданные задачи</div>
+                </div>
+                
+                <div class="stat-widget">
+                    <div class="stat-widget-header">
+                        <div class="stat-icon active">📝</div>
+                        <div>
+                            <div class="stat-title">Активных</div>
+                            <div class="stat-value" id="stat-active">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-subtitle">Требуют выполнения</div>
+                </div>
+                
+                <div class="stat-widget">
+                    <div class="stat-widget-header">
+                        <div class="stat-icon completed">✅</div>
+                        <div>
+                            <div class="stat-title">Выполнено</div>
+                            <div class="stat-value" id="stat-completed">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-subtitle">Успешно завершено</div>
+                </div>
+                
+                <div class="stat-widget">
+                    <div class="stat-widget-header">
+                        <div class="stat-icon high-priority">🚨</div>
+                        <div>
+                            <div class="stat-title">Высокий приоритет</div>
+                            <div class="stat-value" id="stat-high-priority">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-subtitle">Срочные задачи</div>
+                </div>
+            </div>
+            
+            <div class="progress-section">
+                <div class="progress-header">
+                    <div class="progress-title">Прогресс выполнения</div>
+                    <div class="progress-percentage" id="progress-percentage">0%</div>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="progress-stats">
+                    <span id="progress-active">0 активных</span>
+                    <span id="progress-completed">0 выполнено</span>
+                </div>
+            </div>
+            
+            <div class="priority-section">
+                <div class="priority-title">Распределение по приоритетам</div>
+                
+                <div class="priority-item">
+                    <div class="priority-color high"></div>
+                    <div class="priority-info">
+                        <span class="priority-name">Высокий</span>
+                        <span class="priority-count" id="priority-high">0</span>
+                    </div>
+                    <div class="priority-percentage" id="percentage-high">0%</div>
+                </div>
+                
+                <div class="priority-item">
+                    <div class="priority-color medium"></div>
+                    <div class="priority-info">
+                        <span class="priority-name">Средний</span>
+                        <span class="priority-count" id="priority-medium">0</span>
+                    </div>
+                    <div class="priority-percentage" id="percentage-medium">0%</div>
+                </div>
+                
+                <div class="priority-item">
+                    <div class="priority-color low"></div>
+                    <div class="priority-info">
+                        <span class="priority-name">Низкий</span>
+                        <span class="priority-count" id="priority-low">0</span>
+                    </div>
+                    <div class="priority-percentage" id="percentage-low">0%</div>
+                </div>
+            </div>
         </div>
-        
-        </div>
+    </div>
 
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
@@ -572,7 +869,6 @@
         const contextMenu = document.getElementById('context-menu');
         const formTitle = document.getElementById('form-title');
         const bottomNav = document.getElementById('bottom-nav'); 
-        const statsList = document.getElementById('stats-list'); // Добавлена переменная для списка статистики
         
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
@@ -1076,7 +1372,7 @@
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
-            } else if (sectionId === 'stats-content') { // ДОБАВЛЕНА ЛОГИКА ДЛЯ СТАТИСТИКИ
+            } else if (sectionId === 'stats-content') {
                 tg.MainButton.hide();
                 fetchStats(); 
             } else {
@@ -1191,30 +1487,15 @@
             }
         }
         
-        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (КРИТИЧЕСКИ ИСПРАВЛЕННАЯ) ---
-
-        function displayStatsError(message) {
-            statsList.innerHTML = `<p class="error-message" style="padding: 15px; margin-bottom: 0;">Ошибка загрузки статистики: ${message}</p>`;
-        }
-        
-        function formatStatRow(label, value, icon) {
-             return `
-                <div class="ios-row">
-                    <label class="ios-label" style="width: auto; margin-right: 15px;">${icon} ${label}</label>
-                    <span style="flex-grow: 1; text-align: right; font-weight: 600;">${value}</span>
-                </div>
-            `;
-        }
+        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ОБНОВЛЕННАЯ) ---
 
         async function fetchStats() {
             try {
                 if (!tg.initData) {
-                    displayStatsError('Telegram initData is missing. Cannot authorize.');
+                    document.getElementById('stats-container').innerHTML = '<p class="error-message">Ошибка авторизации Telegram.</p>';
                     return;
                 }
 
-                statsList.innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
-                
                 const response = await fetch(N8N_GET_STATS_URL, {
                     method: 'GET',
                     headers: {
@@ -1228,45 +1509,51 @@
                 }
                 
                 const stats = await response.json();
-                
-                let statData = null;
-                
-                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, является ли ответ массивом ИЛИ одиночным объектом
-                if (Array.isArray(stats) && stats.length > 0 && typeof stats[0] === 'object') {
-                    // Формат: [ { ...данные... } ] - Берем первый элемент
-                    statData = stats[0]; 
-                } else if (typeof stats === 'object' && stats !== null) {
-                    // Формат: { ...данные... } - Берем сам объект
-                    statData = stats;
+
+                if (!Array.isArray(stats) || stats.length === 0 || typeof stats[0] !== 'object') {
+                    throw new Error('Некорректный формат данных статистики.');
                 }
                 
-                if (!statData) {
-                    throw new Error('Получен пустой ответ или некорректный формат данных.');
-                }
+                const statData = stats[0];
                 
-                // Маппинг полей API к переменным для отображения
+                // Извлекаем данные из API
                 const activeTasks = statData.activeTotal || 0;
                 const completedTasks = statData.totalCompleted || 0;
-                const totalTasks = activeTasks + completedTasks; 
-                // Безопасный доступ к вложенному полю
-                const highPriority = statData.importanceDistribution?.high || 0; 
-
-
-                let htmlContent = '';
+                const totalTasks = activeTasks + completedTasks;
+                const highPriority = statData.importanceDistribution?.high || 0;
+                const mediumPriority = statData.importanceDistribution?.medium || 0;
+                const lowPriority = statData.importanceDistribution?.low || 0;
                 
-                // Используем корректно извлеченные и сопоставленные переменные
-                htmlContent += formatStatRow('Всего задач', totalTasks, '🔢');
-                htmlContent += formatStatRow('Активных задач', activeTasks, '📝');
-                htmlContent += formatStatRow('Выполнено задач', completedTasks, '✅');
-                htmlContent += formatStatRow('Высокий приоритет', highPriority, '🚨');
-
-
-                statsList.innerHTML = htmlContent;
+                // Обновляем виджеты
+                document.getElementById('stat-total').textContent = totalTasks;
+                document.getElementById('stat-active').textContent = activeTasks;
+                document.getElementById('stat-completed').textContent = completedTasks;
+                document.getElementById('stat-high-priority').textContent = highPriority;
+                
+                // Обновляем прогресс-бар
+                const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                document.getElementById('progress-percentage').textContent = `${progressPercentage}%`;
+                document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+                document.getElementById('progress-active').textContent = `${activeTasks} активных`;
+                document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
+                
+                // Обновляем распределение по приоритетам
+                const totalPriority = highPriority + mediumPriority + lowPriority;
+                
+                document.getElementById('priority-high').textContent = highPriority;
+                document.getElementById('priority-medium').textContent = mediumPriority;
+                document.getElementById('priority-low').textContent = lowPriority;
+                
+                // Рассчитываем проценты
+                document.getElementById('percentage-high').textContent = totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%';
+                document.getElementById('percentage-medium').textContent = totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%';
+                document.getElementById('percentage-low').textContent = totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%';
 
             } catch (error) {
                 console.error('Fetch Stats error:', error);
-                displayStatsError(error.message);
-                tg.showAlert('Ошибка загрузки статистики.');
+                document.getElementById('stats-container').innerHTML = `
+                    <p class="error-message">Ошибка загрузки статистики: ${error.message}</p>
+                `;
             }
         }
         
@@ -1292,7 +1579,6 @@
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
         window.setDefaultFormValues = setDefaultFormValues; 
-        // ПРАВКА #1: Сделать функцию deleteTask глобальной
         window.deleteTask = deleteTask; 
 
         // Инициализация при загрузке
