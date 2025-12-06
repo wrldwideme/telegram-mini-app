@@ -1191,7 +1191,7 @@
             }
         }
         
-        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ИСПРАВЛЕННАЯ) ---
+        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (КРИТИЧЕСКИ ИСПРАВЛЕННАЯ) ---
 
         function displayStatsError(message) {
             statsList.innerHTML = `<p class="error-message" style="padding: 15px; margin-bottom: 0;">Ошибка загрузки статистики: ${message}</p>`;
@@ -1228,19 +1228,27 @@
                 }
                 
                 const stats = await response.json();
-
-                // ИСПРАВЛЕНИЕ #1: Проверка на массив и извлечение первого элемента
-                if (!Array.isArray(stats) || stats.length === 0 || typeof stats[0] !== 'object') {
-                    throw new Error('Некорректный формат данных от API статистики. Ожидался массив с объектом.');
+                
+                let statData = null;
+                
+                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, является ли ответ массивом ИЛИ одиночным объектом
+                if (Array.isArray(stats) && stats.length > 0 && typeof stats[0] === 'object') {
+                    // Формат: [ { ...данные... } ] - Берем первый элемент
+                    statData = stats[0]; 
+                } else if (typeof stats === 'object' && stats !== null) {
+                    // Формат: { ...данные... } - Берем сам объект
+                    statData = stats;
                 }
                 
-                const statData = stats[0]; // Получаем объект со статистикой
+                if (!statData) {
+                    throw new Error('Получен пустой ответ или некорректный формат данных.');
+                }
                 
-                // ИСПРАВЛЕНИЕ #2: Маппинг полей API к переменным для отображения
+                // Маппинг полей API к переменным для отображения
                 const activeTasks = statData.activeTotal || 0;
                 const completedTasks = statData.totalCompleted || 0;
-                const totalTasks = activeTasks + completedTasks; // Рассчитываем общее количество
-                // Используем оператор ?. для безопасного доступа к вложенному полю
+                const totalTasks = activeTasks + completedTasks; 
+                // Безопасный доступ к вложенному полю
                 const highPriority = statData.importanceDistribution?.high || 0; 
 
 
