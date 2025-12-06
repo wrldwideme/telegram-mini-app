@@ -388,40 +388,51 @@
         /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
         #bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            /* Позиционирование для эффекта "плавающей" плашки */
+            bottom: calc(10px + env(safe-area-inset-bottom));
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: calc(100% - 30px); 
+            max-width: 500px;
+            /* ЭФФЕКТ LIQUID GLASS */
+            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent);
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            
+            /* Стиль для "овальной" плашки */
+            border-top: none;
+            border-radius: 25px; 
+            
             display: flex;
             justify-content: space-around;
-            align-items: center;
-            height: 56px; 
-            /* Добавляем отступ для Safe Area на iOS/Android */
-            padding-bottom: env(safe-area-inset-bottom);
-            background: var(--bg-color);
-            border-top: 1px solid var(--input-border-color); 
-            box-sizing: content-box; /* Важно для padding-bottom */
+            padding: 10px 0; 
+            
+            /* Улучшенная тень */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
         }
-
+        
         .nav-button {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 5px 0; 
+            background: none; 
+            border: none;
             cursor: pointer;
+            padding: 5px 10px;
             color: var(--hint-color);
             font-size: 0.7em;
             transition: color 0.2s;
             min-width: 60px;
             text-align: center;
         }
-
+        
         .nav-button.active {
             color: var(--link-color);
             font-weight: 600;
         }
-
+        
         .nav-button-icon {
             display: flex;
             align-items: center;
@@ -432,132 +443,51 @@
             margin-bottom: 2px;
             transition: background-color 0.2s, box-shadow 0.2s;
         }
-
+        
         .nav-button-icon span {
             font-size: 1.5em;
             line-height: 1;
         }
-
+        
         /* Стиль активной иконки - только фон */
         .nav-button.active .nav-button-icon {
             background-color: color-mix(in srgb, var(--link-color) 20%, transparent);
-            box-shadow: none;
+            box-shadow: none; 
         }
-
-        /* --- СТИЛИ АНАЛИТИКИ --- */
-        #analytics-content h1 {
-            border-color: #3498db; /* Новый цвет для заголовка аналитики */
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-
-        .stat-card {
-            background: var(--secondary-bg-color);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2.2em;
-            font-weight: 700;
-            color: var(--link-color);
-            margin: 5px 0;
-            line-height: 1.1;
-        }
-
-        .stat-label {
-            font-size: 0.85em;
-            color: var(--hint-color);
-        }
-
-        .chart-section {
-            background: var(--secondary-bg-color);
-            padding: 15px;
-            border-radius: 12px;
-            margin-top: 25px;
-        }
-
-        .chart-section h3 {
-            margin-top: 0;
-            border-bottom: 1px solid var(--input-border-color);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-size: 1.2em;
-            color: var(--text-color);
-        }
-
-        #importance-chart .chart-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .chart-label {
-            font-size: 0.9em;
-            font-weight: 600;
-            min-width: 80px;
-        }
-
-        .chart-bar-area {
-            flex-grow: 1;
-            height: 12px;
-            background: var(--input-border-color);
-            border-radius: 6px;
-            overflow: hidden;
-            margin: 0 10px;
-        }
-
-        .chart-bar {
-            height: 100%;
-            transition: width 0.5s ease-out;
-        }
-        
-        .chart-high { background-color: #e74c3c; }
-        .chart-medium { background-color: #f39c12; }
-        .chart-low { background-color: #2ecc71; }
-        
     </style>
 </head>
 <body>
-    
+
     <div id="tasks-content" class="content-section active">
-        <h1>✅ Мои Задачи</h1>
+        <h1>📋 Task Assistant</h1>
         
-        <div id="form-section" class="form-section">
+        <div class="form-section" id="form-section">
             <div class="form-header" onclick="toggleForm()">
                 <h2 id="form-title">
-                    <span id="form-icon">➕</span> Добавить новую задачу
+                    <span id="form-icon">💡</span> Новая задача
                 </h2>
-                <span id="form-arrow" style="color: var(--hint-color); font-size: 1.2em;">▼</span>
+                <span id="form-arrow">▼</span>
             </div>
-            
             <div class="form-section-content">
-                <form id="taskForm">
-                    <div class="ios-group" style="margin-top: 1px;">
-                        <div class="ios-row">
-                            <label for="taskInput" class="ios-label" style="width: 100%;">Текст задачи</label>
-                        </div>
-                        <div class="ios-row">
-                             <input type="text" id="taskInput" placeholder="Что нужно сделать?" required style="text-align: left; padding-right: 0;">
-                        </div>
-                    </div>
+                <form id="task-form">
                     
-                    <div class="ios-group" style="margin-top: 15px;">
+                    <div class="ios-group">
+                        
+                        <div class="ios-row">
+                            <label for="taskInput" class="ios-label">Текст задачи</label>
+                            <input type="text" id="taskInput" placeholder="Введите задачу" required>
+                        </div>
+                        
                         <div class="ios-row">
                             <label for="dateInput" class="ios-label">Дата</label>
                             <input type="date" id="dateInput" required>
                         </div>
+                        
                         <div class="ios-row">
                             <label for="timeInput" class="ios-label">Время</label>
                             <input type="time" id="timeInput" required>
                         </div>
+
                         <div class="ios-row">
                             <label for="importanceInput" class="ios-label">Важность</label>
                             <select id="importanceInput" required>
@@ -566,11 +496,11 @@
                                 <option value="low">Низкая</option>
                             </select>
                         </div>
-                    </div>
-                </form>
+
+                    </div> </form>
             </div>
         </div>
-        
+
         <h2>📝 Активные задачи</h2>
         <div id="tasks-list">
             <p class="loading-message">Загрузка задач...</p>
@@ -579,151 +509,116 @@
 
     <div id="ai-chat-content" class="content-section">
         <h1 id="ai-chat-header">🤖 AI Ассистент</h1>
+        
         <div id="ai-chat-messages">
             <div class="ai-welcome">
                 Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
             </div>
         </div>
-        
+
         <div id="ai-chat-input-area">
             <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
             <button id="sendAiChat">🚀</button>
         </div>
     </div>
-
-    <div id="analytics-content" class="content-section">
-        <h1>📊 Статистика и Аналитика</h1>
-        
-        <div id="analytics-loading" class="loading-message" style="display: block;">
-            Загрузка статистики...
-        </div>
-        
-        <div id="analytics-error" class="error-message" style="display: none; color: #e74c3c;">
-            ❌ Не удалось загрузить статистику. Попробуйте позже.
-        </div>
-        
-        <div id="analytics-main" style="display: none;">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-completed">0</div>
-                    <div class="stat-label">Выполнено всего</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-today-done">0</div>
-                    <div class="stat-label">Выполнено сегодня</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-active">0</div>
-                    <div class="stat-label">Активных задач</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="stat-expired">0</div>
-                    <div class="stat-label">Просрочено</div>
-                </div>
-            </div>
-
-            <div class="chart-section">
-                <h3>Распределение важности</h3>
-                <div id="importance-chart">
-                    <p class="empty-message" id="chart-empty-message" style="display: none;">Нет данных для отображения.</p>
-                </div>
-            </div>
-        </div>
+    
+    <div id="info-content" class="content-section">
+        <h1>ℹ️ Информация</h1>
+        <p>
+            Этот To Do Bot разработан как демонстрация возможностей Telegram Mini Apps и платформы n8n/Google Sheets для бекенда.
+        </p>
+        <p>
+            Навигация реализована по принципу Single Page Application (SPA) для мгновенного переключения между разделами.
+        </p>
     </div>
 
     <div id="context-menu">
-        <div class="menu-item" id="menu-mark-done">✅ Отметить как сделанное</div>
-        <div class="menu-item" id="menu-edit">✏️ Редактировать</div>
+        <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
+        <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
         <div class="menu-item" id="menu-delete">🗑️ Удалить</div>
     </div>
-
+    
     <div id="bottom-nav">
-        <div class="nav-button active" data-section="tasks-content">
-            <div class="nav-button-icon"><span role="img" aria-label="Tasks">📋</span></div>
-            <span>Задачи</span>
-        </div>
-        <div class="nav-button" data-section="analytics-content">
-            <div class="nav-button-icon"><span role="img" aria-label="Analytics">📈</span></div>
-            <span>Статистика</span>
-        </div>
-        <div class="nav-button" data-section="ai-chat-content">
-            <div class="nav-button-icon"><span role="img" aria-label="AI Chat">💬</span></div>
-            <span>AI Ассистент</span>
-        </div>
+        <button class="nav-button" data-section="tasks-content">
+            <div class="nav-button-icon"><span>📋</span></div>
+            Tasks
+        </button>
+        <button class="nav-button" data-section="ai-chat-content">
+            <div class="nav-button-icon"><span>🧠</span></div>
+            AI Chat
+        </button>
+        <button class="nav-button" data-section="info-content">
+            <div class="nav-button-icon"><span>ℹ️</span></div>
+            Info
+        </button>
     </div>
 
     <script>
-        // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
         tg.ready();
-        tg.expand();
-        tg.setHeaderColor('secondary_bg_color'); // Используем secondary_bg_color для header
         
-        // Переменные окружения (замените на свои реальные URL и токен)
-        const N8N_AUTH_HEADER = 'Bearer YOUR_N8N_WEBHOOK_TOKEN';
-        const N8N_GET_TASKS_URL = 'YOUR_N8N_BASE_URL/get-tasks';
-        const N8N_ADD_TASK_URL = 'YOUR_N8N_BASE_URL/add-task';
-        const N8N_UPDATE_TASK_URL = 'YOUR_N8N_BASE_URL/update-task';
-        const N8N_DELETE_TASK_URL = 'YOUR_N8N_BASE_URL/delete-task';
-        const N8N_GET_STATS_URL = 'YOUR_N8N_BASE_URL/get-stats';
-        const N8N_AI_CHAT_URL = 'YOUR_N8N_BASE_URL/ai-chat'; // Новый URL для AI
-
-        // DOM элементы
-        const formSection = document.getElementById('form-section');
-        const taskForm = document.getElementById('taskForm');
-        const taskInput = document.getElementById('taskInput');
-        const dateInput = document.getElementById('dateInput');
-        const timeInput = document.getElementById('timeInput');
-        const importanceInput = document.getElementById('importanceInput');
+        // --- ПЕРЕМЕННЫЕ N8N ---
+        const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
+        const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
+        const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
+        const N8N_EDIT_URL = N8N_UPDATE_URL; 
+        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
+        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL ДЛЯ УДАЛЕНИЯ
+        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
+        
         const tasksList = document.getElementById('tasks-list');
+        const taskForm = document.getElementById('task-form');
+        const formSection = document.getElementById('form-section');
         const contextMenu = document.getElementById('context-menu');
+        const formTitle = document.getElementById('form-title');
+        const bottomNav = document.getElementById('bottom-nav'); 
+        
+        // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
         const aiChatMessages = document.getElementById('ai-chat-messages');
-        const importanceChart = document.getElementById('importance-chart');
-        let bottomNav = document.getElementById('bottom-nav');
-
-        // Состояние приложения
-        let allTasksData = [];
+        
         let currentTaskId = null; 
         let isEditing = false;
-        let currentEditingId = null;
-
-        // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
-
+        let currentEditingId = null; 
+        let allTasksData = []; 
+        
+        // --- Установка значений по умолчанию для формы ---
         function setDefaultFormValues() {
             const now = new Date();
+            
             // 1. Установка даты (Сегодня)
-            const today = now.toLocaleDateString('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+            const today = now.toISOString().split('T')[0];
             document.getElementById('dateInput').value = today;
-
+            
             // 2. Установка времени (Ближайший час)
             const nextHour = new Date(now.getTime());
             nextHour.setHours(now.getHours() + 1);
             nextHour.setMinutes(0);
             nextHour.setSeconds(0);
-            const timeString = nextHour.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
+            const timeString = nextHour.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            });
             document.getElementById('timeInput').value = timeString;
 
             // 3. Установка важности (Средняя)
             document.getElementById('importanceInput').value = 'medium';
         }
-
-        function displayError(message) {
-            tasksList.innerHTML = `<p class="error-message">❌ Ошибка: ${message}</p>`;
-        }
-
+        
         // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
-
         function toggleForm() {
             if (formSection.classList.contains('expanded') && isEditing) {
-                exitEditMode();
+                exitEditMode(); 
             }
             
             const isExpanding = !formSection.classList.contains('expanded');
+            
             formSection.classList.toggle('expanded');
             document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
-
+            
             if (isExpanding) {
                 setDefaultFormValues();
             }
@@ -735,119 +630,122 @@
                     }
                 } else {
                     if (!isEditing) {
-                        tg.MainButton.hide();
+                       tg.MainButton.hide(); 
                     }
                 }
             }
         }
-
-        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
         
+        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
         function enterEditMode(task) {
             if (!task) return;
-
             isEditing = true;
             currentEditingId = task.id;
             
             document.getElementById('taskInput').value = task.task_text || task.task;
             document.getElementById('dateInput').value = task.date;
-            document.getElementById('timeInput').value = task.time || '00:00';
+            document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
-
-            document.getElementById('form-icon').textContent = '✏️';
-            document.getElementById('form-title').textContent = 'Редактировать задачу';
-            tg.MainButton.setText('💾 Сохранить изменения').show();
-
-            if (!formSection.classList.contains('expanded')) {
-                formSection.classList.add('expanded');
-                document.getElementById('form-arrow').textContent = '▲';
-            }
             
-            // Скрываем клавиатуру, если она открыта (для фокуса)
-            document.activeElement.blur(); 
-            // Фокус на поле ввода для удобства
-            taskInput.focus();
+            formSection.classList.add('expanded');
+            document.getElementById('form-arrow').textContent = '▲';
+            formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
+            
+            tg.MainButton.setText('✍️ Сохранить изменения').show();
+            tg.HapticFeedback.notificationOccurred('success');
         }
-
+        
         function exitEditMode() {
             isEditing = false;
             currentEditingId = null;
+            taskForm.reset(); 
+            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
+            setDefaultFormValues(); 
             
-            document.getElementById('form-icon').textContent = '➕';
-            document.getElementById('form-title').textContent = 'Добавить новую задачу';
-            tg.MainButton.setText('➕ Добавить задачу'); // Сбрасываем текст
-            
-            // Если форма открыта, показываем кнопку "Добавить"
-            if (formSection.classList.contains('expanded')) {
-                 tg.MainButton.show();
+            if (document.getElementById('tasks-content').classList.contains('active') && formSection.classList.contains('expanded')) {
+                tg.MainButton.setText('➕ Добавить задачу').show();
             } else {
-                 tg.MainButton.hide();
+                tg.MainButton.hide();
             }
         }
         
-        // --- 3. ЛОГИКА ОТПРАВКИ ФОРМЫ (ADD/EDIT) ---
-
-        async function sendTask(e) {
-            // ИСПРАВЛЕНИЕ ОШИБКИ: Безопасная обработка e.preventDefault()
-            // Это устраняет ошибку TypeError: Cannot read properties of undefined (reading 'preventDefault'), 
-            // возникающую при вызове функции через tg.onEvent('mainButtonClicked', sendTask), где 'e' равно 'undefined'.
-            if (e && typeof e.preventDefault === 'function') { 
-                e.preventDefault(); 
-            }
-
-            if (taskInput.value.trim() === '') {
-                tg.showAlert('Пожалуйста, введите текст задачи!');
+        // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
+        async function sendTask() {
+            
+            const taskName = document.getElementById('taskInput').value.trim();
+            const date = document.getElementById('dateInput').value;
+            const time = document.getElementById('timeInput').value;
+            const importance = document.getElementById('importanceInput').value;
+            
+            if (!taskName || !date || !time) {
+                tg.showAlert('Пожалуйста, заполните все поля задачи.');
                 return;
             }
-
-            tg.MainButton.showProgress();
-
-            const data = {
-                task_text: taskInput.value.trim(),
-                date: dateInput.value,
-                time: timeInput.value,
-                importance: importanceInput.value,
-                id: isEditing ? currentEditingId : undefined // Добавляем ID только при редактировании
+            
+            const taskData = {
+                taskName: taskName,
+                date: date,
+                time: time,
+                importance: importance,
             };
+            
+            let url, method, isUpdate;
 
-            const url = isEditing ? N8N_UPDATE_TASK_URL : N8N_ADD_TASK_URL;
+            if (isEditing) {
+                url = N8N_EDIT_URL;
+                method = 'POST';
+                isUpdate = true;
+                taskData.id = currentEditingId; 
+            } else {
+                url = N8N_POST_URL;
+                method = 'POST';
+                isUpdate = false;
+            }
 
             try {
+                tg.MainButton.showProgress(true); 
+                
                 const response = await fetch(url, {
-                    method: 'POST',
+                    method: method,
                     headers: {
                         'Authorization': N8N_AUTH_HEADER,
                         'X-Init-Data': tg.initData,
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(taskData)
                 });
 
-                if (!response.ok) {
+                let result = {};
+                if (response.ok) {
+                    if (!isUpdate) {
+                       try { result = await response.json(); } catch (e) { result = { success: true }; }
+                    } else {
+                       result = { success: true };
+                    }
+                } else {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                const result = await response.json();
-
-                if (result.success) {
-                    tg.showAlert(`Задача ${isEditing ? 'обновлена' : 'добавлена'}!`);
+                if (result.success || response.ok) {
+                    tg.showAlert(isUpdate ? 'Задача успешно обновлена!' : 'Задача успешно добавлена!');
                     
-                    // Сброс режима редактирования
-                    isEditing = false;
-                    currentEditingId = null;
-                    exitEditMode(); // Сбросит MainButton и заголовок формы
-
-                    taskForm.reset();
-                    setDefaultFormValues();
+                    if (isEditing) {
+                        exitEditMode(); 
+                    } else {
+                        taskForm.reset(); 
+                        setDefaultFormValues(); 
+                    }
                     
-                    formSection.classList.remove('expanded');
+                    formSection.classList.remove('expanded'); 
                     document.getElementById('form-arrow').textContent = '▼';
-                    tg.MainButton.hide();
+                    tg.MainButton.hide(); 
 
-                    await fetchTasks();
+                    await fetchTasks(); 
+
                 } else {
                     throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
                 }
+
             } catch (error) {
                 console.error('Operation error:', error);
                 tg.showAlert(`Ошибка: ${error.message}`);
@@ -855,45 +753,44 @@
                 tg.MainButton.hideProgress();
             }
         }
-
-        tg.MainButton.setText('➕ Добавить задачу').hide();
+        
+        tg.MainButton.setText('➕ Добавить задачу').hide(); 
         tg.onEvent('mainButtonClicked', sendTask);
 
         // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
-
+        
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
-            currentTaskId = taskId;
-            
-            // Логика позиционирования
+            currentTaskId = taskId; 
+
             const viewportWidth = window.innerWidth;
             const rect = buttonElement.getBoundingClientRect();
-            const offset = 10;
-            
+            const offset = 10; 
+
             contextMenu.style.display = 'block';
-            const menuWidth = contextMenu.offsetWidth;
-            
+            const menuWidth = contextMenu.offsetWidth; 
+
             let leftPosition;
             let defaultLeft = rect.right - menuWidth + 5; 
 
-            // Проверка, не выходит ли за правый край
             if (defaultLeft + menuWidth > viewportWidth - offset) {
                 leftPosition = viewportWidth - menuWidth - offset;
             } else {
                 leftPosition = defaultLeft;
             }
 
-            // Проверка, не выходит ли за левый край
             if (leftPosition < offset) {
                 leftPosition = offset;
             }
 
-            contextMenu.style.top = `${rect.bottom + 5}px`;
+            contextMenu.style.top = `${rect.bottom + 5}px`; 
             contextMenu.style.left = `${leftPosition}px`;
         }
 
         document.addEventListener('click', (event) => {
-            if (contextMenu.style.display === 'block' && !contextMenu.contains(event.target) && !event.target.classList.contains('menu-button')) {
+            if (contextMenu.style.display === 'block' && 
+                !contextMenu.contains(event.target) && 
+                !event.target.classList.contains('menu-button')) {
                 contextMenu.style.display = 'none';
                 currentTaskId = null;
             }
@@ -902,104 +799,98 @@
         document.getElementById('menu-edit').addEventListener('click', () => {
             if (currentTaskId) {
                 contextMenu.style.display = 'none';
-                const taskToEdit = allTasksData.find(t => String(t.id) === String(currentTaskId));
+                const taskToEdit = allTasksData.find(t => t.id == currentTaskId);
                 if (taskToEdit) {
                     enterEditMode(taskToEdit);
+                } else {
+                    tg.showAlert('Не удалось найти задачу для редактирования.');
                 }
             }
         });
-
-        document.getElementById('menu-mark-done').addEventListener('click', () => {
-             if (currentTaskId) {
-                markTaskAsDone(currentTaskId);
-            }
-        });
-
+        
         async function markTaskAsDone(taskId) {
-            tg.MainButton.showProgress();
-
-            const performMarkDone = async () => {
+            const performUpdate = async () => {
                 try {
-                    const response = await fetch(N8N_UPDATE_TASK_URL, {
-                        method: 'POST',
+                    tg.MainButton.showProgress(true); 
+                    
+                    const response = await fetch(N8N_UPDATE_URL, {
+                        method: 'POST', 
                         headers: {
                             'Authorization': N8N_AUTH_HEADER,
                             'X-Init-Data': tg.initData,
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ id: taskId, done: 'yes' }),
+                        body: JSON.stringify({
+                            id: taskId,
+                            done: 'yes', 
+                        })
                     });
 
                     if (!response.ok) {
-                         throw new Error(`HTTP error! Status: ${response.status}`);
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-                    
-                    const result = await response.json();
 
-                    if (result.success) {
-                        tg.showAlert('Задача отмечена как выполненная!');
-                        await fetchTasks(); // Обновляем список задач
-                        // Если активна вкладка аналитики, обновляем ее тоже
-                        if (document.getElementById('analytics-content').classList.contains('active')) {
-                            fetchAnalytics();
-                        }
-                    } else {
-                        throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
-                    }
+                    await fetchTasks(); 
+                    tg.showAlert('Задача успешно отмечена как выполненная!');
+
                 } catch (error) {
-                    console.error('Operation error:', error);
-                    tg.showAlert(`Ошибка: ${error.message}`);
+                    console.error('UPDATE error:', error);
+                    tg.showAlert(`Ошибка обновления: ${error.message}.`);
                 } finally {
                     tg.MainButton.hideProgress();
                 }
             };
             
-            contextMenu.style.display = 'none';
-            await performMarkDone();
+            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none'; 
+                    await performUpdate();
+                }
+            });
         }
 
-        function deleteTask(taskId) {
-            tg.MainButton.showProgress();
+        document.getElementById('menu-done').addEventListener('click', () => {
+            if (currentTaskId) {
+                markTaskAsDone(currentTaskId);
+            }
+        });
 
+        // НОВАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ЗАДАЧИ
+        async function deleteTask(taskId) {
             const performDelete = async () => {
                 try {
-                    const response = await fetch(N8N_DELETE_TASK_URL, {
-                        method: 'POST',
+                    tg.MainButton.showProgress(true); 
+                    
+                    const response = await fetch(N8N_DELETE_URL, {
+                        method: 'POST', 
                         headers: {
                             'Authorization': N8N_AUTH_HEADER,
                             'X-Init-Data': tg.initData,
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ id: taskId }),
+                        body: JSON.stringify({
+                            id: taskId,
+                        })
                     });
 
                     if (!response.ok) {
-                         throw new Error(`HTTP error! Status: ${response.status}`);
+                        throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     
-                    const result = await response.json();
+                    await fetchTasks(); 
+                    tg.showAlert('Задача успешно удалена!');
 
-                    if (result.success) {
-                        tg.showAlert('Задача удалена.');
-                        await fetchTasks(); // Обновляем список задач
-                        // Если активна вкладка аналитики, обновляем ее тоже
-                        if (document.getElementById('analytics-content').classList.contains('active')) {
-                            fetchAnalytics();
-                        }
-                    } else {
-                        throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
-                    }
                 } catch (error) {
-                    console.error('Operation error:', error);
-                    tg.showAlert(`Ошибка: ${error.message}`);
+                    console.error('DELETE error:', error);
+                    tg.showAlert(`Ошибка удаления: ${error.message}.`);
                 } finally {
                     tg.MainButton.hideProgress();
                 }
             };
-
+            
             tg.showConfirm('Вы уверены, что хотите удалить эту задачу?', async (confirmed) => {
                 if (confirmed) {
-                    contextMenu.style.display = 'none';
+                    contextMenu.style.display = 'none'; 
                     await performDelete();
                 }
             });
@@ -1010,18 +901,16 @@
                 deleteTask(currentTaskId);
             }
         });
-
-        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
         
+        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+
         function parseDate(dateStr) {
             if (!dateStr) return null;
-            // Предполагаем формат YYYY-MM-DD
             if (dateStr.includes('-')) {
-                 const parts = dateStr.split('-');
-                 if (parts.length === 3 && parts[0].length === 4) {
-                     // Используем UTC для создания даты, чтобы избежать смещения времени при создании
-                     return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-                 }
+                const parts = dateStr.split('-');
+                if (parts.length === 3 && parts[0].length === 4) {
+                    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+                }
             }
             const date = new Date(dateStr);
             return isNaN(date.getTime()) ? null : date;
@@ -1036,12 +925,8 @@
                 return { formattedText: `📅 НЕВЕРНАЯ ДАТА в ⏰ ${formattedTime}`, isExpired: false };
             }
 
-            // Создаем полную дату с временем.
-            // Используем нативное смещение для корректного сравнения с Date()
-            const taskDateTime = new Date(dateOnly.getTime());
-            // Корректируем на разницу UTC и местного времени, чтобы дата была правильной
-            taskDateTime.setHours(taskDateTime.getHours() + (new Date().getTimezoneOffset() / 60));
-            // Устанавливаем часы и минуты из времени задачи
+            const taskDateTime = new Date(dateOnly.getTime()); 
+            taskDateTime.setHours(taskDateTime.getHours() + (new Date().getTimezoneOffset() / 60)); 
             taskDateTime.setHours(taskDateTime.getHours() + parseInt(timeParts[0] || 0));
             taskDateTime.setMinutes(taskDateTime.getMinutes() + parseInt(timeParts[1] || 0));
 
@@ -1049,105 +934,105 @@
             const isExpired = taskDateTime < now;
 
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const taskDate = new Date(dateOnly.getFullYear(), dateOnly.getMonth(), dateOnly.getDate());
+            const taskDateOnly = new Date(taskDateTime.getFullYear(), taskDateTime.getMonth(), taskDateTime.getDate());
             
-            let dateText;
-            if (taskDate.getTime() === today.getTime()) {
-                dateText = 'Сегодня';
-            } else {
-                const tomorrow = new Date(today.getTime());
-                tomorrow.setDate(today.getDate() + 1);
-                if (taskDate.getTime() === tomorrow.getTime()) {
-                    dateText = 'Завтра';
-                } else {
-                    dateText = taskDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' });
-                }
-            }
-            
-            const timeText = timeStr || '00:00';
-            const formattedText = `📅 ${dateText} в ⏰ ${timeText}`;
+            let dateDisplay;
+            const dayDifference = Math.round((taskDateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
 
-            return { formattedText, isExpired };
+            if (dayDifference === 0) {
+                dateDisplay = 'Сегодня';
+            } else if (dayDifference === 1) {
+                dateDisplay = 'Завтра';
+            } else {
+                const options = { day: 'numeric', month: 'short' };
+                dateDisplay = taskDateOnly.toLocaleDateString('ru-RU', options).toUpperCase().replace(/\./g, '');
+            }
+
+            return { 
+                formattedText: `📅 ${dateDisplay} в ⏰ ${timeStr}`, 
+                isExpired: isExpired 
+            };
+        }
+
+        function displayError(message) {
+            tasksList.innerHTML = `<p class="error-message">API Error: ${message}</p>`;
+            tg.showAlert('Ошибка загрузки задач.');
         }
 
         async function fetchTasks() {
-            tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
-            
-            if (!tg.initData) {
-                displayError('Telegram initData is missing. Cannot fetch tasks.');
-                return;
-            }
-
             try {
-                const response = await fetch(N8N_GET_TASKS_URL, {
-                    method: 'POST',
+                if (!tg.initData) {
+                    displayError('Telegram initData is missing. Cannot authorize.');
+                    return;
+                }
+
+                tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
+                
+                const response = await fetch(N8N_GET_URL, {
+                    method: 'GET',
                     headers: {
                         'Authorization': N8N_AUTH_HEADER,
                         'X-Init-Data': tg.initData,
-                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({}),
                 });
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-
-                allTasksData = await response.json();
                 
-                if (!Array.isArray(allTasksData)) {
-                    allTasksData = [];
-                }
+                const tasks = await response.json();
 
-                if (allTasksData.length === 0) {
-                    tasksList.innerHTML = '<p class="empty-message">Нет активных задач. Поздравляем!</p>';
-                    return;
+                if (!Array.isArray(tasks)) {
+                    throw new Error('Некорректный формат данных от API.');
                 }
                 
-                // Фильтруем активные задачи
-                const activeTasks = allTasksData.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
+                allTasksData = tasks; 
 
+                const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
+
+                // ПРАВКА #2: Проверка на пустой массив и вывод сообщения "Задач нет."
                 if (activeTasks.length === 0) {
-                    tasksList.innerHTML = '<p class="empty-message">Нет активных задач. Поздравляем!</p>';
+                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
                     return;
                 }
-
-                // Сортировка по дате и времени
+                
                 activeTasks.sort((a, b) => {
                     const aTimeStr = a.date + ' ' + (a.time || '00:00');
                     const bTimeStr = b.date + ' ' + (b.time || '00:00');
-                    
+
                     const aDate = new Date(aTimeStr);
                     const bDate = new Date(bTimeStr);
-
-                    if (isNaN(aDate.getTime())) return 1;
+                    
+                    if (isNaN(aDate.getTime())) return 1; 
                     if (isNaN(bDate.getTime())) return -1;
                     
                     return aDate.getTime() - bDate.getTime();
                 });
 
-                tasksList.innerHTML = '';
-                
+                tasksList.innerHTML = ''; 
+
                 activeTasks.forEach(taskData => {
                     const importance = (taskData.importance || 'low').toLowerCase();
                     const taskCard = document.createElement('div');
-                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи';
+                    
+                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
                     const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
-                    const taskId = taskData.id;
+                    const taskId = taskData.id; 
 
                     let cardClasses = `task-card ${importance}`;
                     if (dateTimeInfo.isExpired) {
                         cardClasses += ' expired';
                     }
-
                     taskCard.className = cardClasses;
                     taskCard.setAttribute('data-task-id', taskId);
+
                     taskCard.innerHTML = `
                         <div class="task-info">
                             <div class="task-header">
-                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span>
+                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
                                 <span class="task-text">${taskText}</span>
                             </div>
+                            
                             <p>${dateTimeInfo.formattedText}</p>
                         </div>
                         <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
@@ -1162,9 +1047,8 @@
                 displayError(error.message);
             }
         }
-
+        
         // --- 6. ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ (SPA) ---
-
         function switchSection(sectionId, buttonElement) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
@@ -1173,97 +1057,94 @@
 
             document.querySelectorAll('.nav-button').forEach(button => {
                 button.classList.remove('active');
+                button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
+                button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
             });
-            buttonElement.classList.add('active');
             
-            // Логика MainButton и формы
+            buttonElement.classList.add('active');
+            const activeColor = tg.themeParams.link_color || '#007aff';
+            buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`; 
+
             if (sectionId === 'tasks-content') {
-                 tg.setBackgroundColor('bg_color');
-                 tg.setHeaderColor('secondary_bg_color');
-                 if (formSection.classList.contains('expanded') && !isEditing) {
-                     tg.MainButton.setText('➕ Добавить задачу').show();
-                 } else if (isEditing) {
-                     tg.MainButton.setText('💾 Сохранить изменения').show();
-                 } else {
-                     tg.MainButton.hide();
-                 }
-                // При переходе на Tasks, если форма закрыта, сбрасываем режим редактирования
-                if (!formSection.classList.contains('expanded')) {
-                    exitEditMode(); 
+                if (formSection.classList.contains('expanded')) {
+                    tg.MainButton.show();
+                    tg.MainButton.setText(isEditing ? '✍️ Сохранить изменения' : '➕ Добавить задачу');
+                } else {
+                    tg.MainButton.hide();
                 }
-                fetchTasks();
+                if (document.getElementById('tasks-list').children.length < 2) {
+                    fetchTasks(); 
+                }
             } else {
                 tg.MainButton.hide();
-                exitEditMode(); // Сбрасываем режим редактирования
-                // Для AI Chat и Аналитики используем основной фон
-                tg.setBackgroundColor('bg_color'); 
             }
+        }
+        
+        // --- 7. ЛОГИКА AI CHAT (ИСПРАВЛЕННАЯ) ---
+        
+        // 7.1. ФУНКЦИИ ЧАТА UI
+        function appendMessage(text, sender) {
+            const welcome = document.querySelector('.ai-welcome');
+            if (welcome) welcome.remove();
 
-            if (sectionId === 'analytics-content') {
-                tg.setHeaderColor('bg_color'); // Скрываем secondary_bg_color
-                fetchAnalytics();
-            }
-             if (sectionId === 'ai-chat-content') {
-                 tg.setHeaderColor('bg_color'); // Скрываем secondary_bg_color
-            }
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${sender}-message`;
             
-            // Плавный скролл наверх
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const bubbleElement = document.createElement('div');
+            bubbleElement.className = 'chat-bubble';
+            
+            // Замена \n на <br> для корректного отображения многострочного текста
+            bubbleElement.innerHTML = text.replace(/\n/g, '<br>'); 
+            
+            messageElement.appendChild(bubbleElement);
+            aiChatMessages.appendChild(messageElement);
+            
+            // Автоматическая прокрутка к новому сообщению
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
         }
 
-        // --- 7. ЛОГИКА AI CHAT ---
-        
-        function appendMessage(text, type) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `chat-message ${type}-message`;
+        function showAILoading() {
+            const loadingElement = document.createElement('div');
+            loadingElement.id = 'ai-loading-placeholder';
+            loadingElement.className = 'ai-loading';
             
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble';
-            bubble.innerHTML = text.replace(/\n/g, '<br>'); // Поддержка переносов строк
+            const bubbleElement = document.createElement('div');
+            bubbleElement.className = 'chat-bubble';
+            bubbleElement.textContent = '...думаю';
             
-            messageDiv.appendChild(bubble);
-            aiChatMessages.appendChild(messageDiv);
+            loadingElement.appendChild(bubbleElement);
+            aiChatMessages.appendChild(loadingElement);
             
-            // Автоматический скролл вниз
+            // Прокрутка вниз
             aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
         }
         
-        function showAILoading() {
-             const loadingDiv = document.createElement('div');
-             loadingDiv.id = 'ai-loading-indicator';
-             loadingDiv.className = 'ai-loading';
-             const bubble = document.createElement('div');
-             bubble.className = 'chat-bubble';
-             bubble.textContent = 'Печатает...';
-             loadingDiv.appendChild(bubble);
-             aiChatMessages.appendChild(loadingDiv);
-             aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-        }
-
         function hideAILoading() {
-             const loadingIndicator = document.getElementById('ai-loading-indicator');
-             if (loadingIndicator) {
-                 loadingIndicator.remove();
-             }
+            const loading = document.getElementById('ai-loading-placeholder');
+            if (loading) {
+                loading.remove();
+            }
         }
 
+        // 7.2. ЛОГИКА ОТПРАВКИ СООБЩЕНИЯ
         async function sendAiMessage() {
             const messageText = aiChatInput.value.trim();
+            
             if (messageText) {
-                // 1. Показываем сообщение пользователя
+                // 1. Отображаем сообщение пользователя
                 appendMessage(messageText, 'user');
                 
-                // 2. Очистка и блокировка ввода
+                // 2. Очистка поля и блокировка ввода
                 aiChatInput.value = '';
                 aiChatInput.disabled = true;
                 sendAiChatButton.disabled = true;
                 
                 // 3. Показываем индикатор загрузки AI
                 showAILoading();
-
+                
                 try {
                     const response = await fetch(N8N_AI_CHAT_URL, {
-                        method: 'POST',
+                        method: 'POST', 
                         headers: {
                             'Authorization': N8N_AUTH_HEADER,
                             'X-Init-Data': tg.initData,
@@ -1277,17 +1158,18 @@
                     if (!response.ok) {
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
-
+                    
                     const result = await response.json();
+                    
                     let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответа)";
 
                     // Проверка на ожидаемые поля в ответе
                     if (result && result.aiResponse) {
                         aiResponseText = result.aiResponse;
-                    } else if (result && result.response) {
+                    } else if (result && result.response) { 
                         aiResponseText = result.response;
                     }
-
+                    
                     // 4. Убираем индикатор загрузки и показываем ответ AI
                     hideAILoading();
                     appendMessage(aiResponseText, 'ai');
@@ -1304,105 +1186,8 @@
                 }
             }
         }
-
-        // --- 8. ЛОГИКА АНАЛИТИКИ ---
         
-        function drawImportanceChart(categories) {
-            importanceChart.innerHTML = '';
-            const totalCount = categories.reduce((sum, item) => sum + item.count, 0);
-            const emptyMessage = document.getElementById('chart-empty-message');
-            
-            if (totalCount === 0) {
-                 // Убедимся, что emptyMessage - это нужный DOM элемент, если нет - создадим
-                 if (!emptyMessage) return; // Если не нашли DOM элемент, выходим
-
-                 emptyMessage.style.display = 'block';
-                 return;
-            }
-            
-            emptyMessage.style.display = 'none';
-
-            categories.forEach(item => {
-                const widthPercent = (item.count / totalCount) * 100;
-                const importanceClass = item.category.toLowerCase(); // high, medium, low
-
-                const chartItem = document.createElement('div');
-                chartItem.className = 'chart-item';
-                chartItem.innerHTML = `
-                    <div class="chart-label">${item.category.toUpperCase()}</div>
-                    <div class="chart-bar-area">
-                        <div class="chart-bar chart-${importanceClass}" style="width: ${widthPercent}%;"></div>
-                    </div>
-                    <div class="chart-value">${item.count}</div>
-                `;
-                importanceChart.appendChild(chartItem);
-            });
-        }
-
-        async function fetchAnalytics() {
-            const loadingEl = document.getElementById('analytics-loading');
-            const mainEl = document.getElementById('analytics-main');
-            const errorEl = document.getElementById('analytics-error');
-
-            try {
-                loadingEl.style.display = 'block';
-                mainEl.style.display = 'none';
-                errorEl.style.display = 'none';
-                
-                if (!tg.initData) {
-                    throw new Error('Telegram initData is missing. Cannot fetch stats.');
-                }
-
-                const response = await fetch(N8N_GET_STATS_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({}),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                const stats = await response.json();
-
-                // Обновление карточек статистики
-                document.getElementById('stat-completed').textContent = stats.completedTasks || 0;
-                document.getElementById('stat-today-done').textContent = stats.completedToday || 0;
-                document.getElementById('stat-active').textContent = stats.activeTasks || 0;
-                document.getElementById('stat-expired').textContent = stats.expiredTasks || 0;
-                
-                // Обновление графика
-                drawImportanceChart(stats.importanceDistribution || []);
-
-                loadingEl.style.display = 'none';
-                mainEl.style.display = 'block';
-
-            } catch (error) {
-                console.error('Analytics error:', error);
-                loadingEl.style.display = 'none';
-                errorEl.style.display = 'block';
-                errorEl.textContent = `❌ Не удалось загрузить статистику. ${error.message}`;
-            }
-        }
-
-        // --- ГЛОБАЛЬНЫЕ НАЗНАЧЕНИЯ И EVENT LISTENERS ---
-        
-        // ** ИСПРАВЛЕНИЕ 2: Выставление функций в глобальную область видимости (window) **
-        // Это необходимо для функций, вызываемых напрямую из HTML (onclick).
-        window.markTaskAsDone = markTaskAsDone;
-        window.showMenu = showMenu;
-        window.toggleForm = toggleForm;
-        window.enterEditMode = enterEditMode; 
-        window.exitEditMode = exitEditMode; 
-        window.setDefaultFormValues = setDefaultFormValues; 
-        window.deleteTask = deleteTask; 
-        window.fetchAnalytics = fetchAnalytics; // Делаем глобальной
-
-        // Event Listeners для навигации
+        // Event Listeners
         bottomNav.querySelectorAll('.nav-button').forEach(button => {
             button.addEventListener('click', () => {
                 switchSection(button.getAttribute('data-section'), button);
@@ -1417,6 +1202,15 @@
                 sendAiMessage();
             }
         });
+
+        window.markTaskAsDone = markTaskAsDone;
+        window.showMenu = showMenu;
+        window.toggleForm = toggleForm;
+        window.enterEditMode = enterEditMode; 
+        window.exitEditMode = exitEditMode; 
+        window.setDefaultFormValues = setDefaultFormValues; 
+        // ПРАВКА #1: Сделать функцию deleteTask глобальной
+        window.deleteTask = deleteTask; 
 
         // Инициализация при загрузке
         window.addEventListener('load', () => {
