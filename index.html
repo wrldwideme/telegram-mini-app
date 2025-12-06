@@ -705,15 +705,16 @@
         tg.expand();
 
         // --- ПЕРЕМЕННЫЕ N8N (КОРРЕКЦИЯ URL) ---
-        // ИСПРАВЛЕНО: Всегда используем /webhook/ для продакшена
-        const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
-        const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task'; 
-        const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status'; 
+        const N8N_BASE_URL = 'https://i74s52gg.rcld.app'; 
+        const N8N_GET_URL = N8N_BASE_URL + '/webhook/get-tasks'; 
+        const N8N_POST_URL = N8N_BASE_URL + '/webhook/add-task'; 
+        const N8N_UPDATE_URL = N8N_BASE_URL + '/webhook/update-task-status'; 
         const N8N_EDIT_URL = N8N_UPDATE_URL; 
-        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
-        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task'; // НОВЫЙ URL ДЛЯ УДАЛЕНИЯ
-        const N8N_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats'; // НОВЫЙ URL ДЛЯ СТАТИСТИКИ
-        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
+        const N8N_AI_CHAT_URL = N8N_BASE_URL + '/webhook/ai-chat';
+        const N8N_DELETE_URL = N8N_BASE_URL + '/webhook/delete-task'; 
+        const N8N_STATS_URL = N8N_BASE_URL + '/webhook/get-stats'; 
+        // ИСПОЛЬЗУЕМ ВАШ РЕАЛЬНЫЙ КЛЮЧ
+        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzI'; 
 
         // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
         let allTasksData = []; 
@@ -1100,6 +1101,7 @@
                 });
 
                 if (!response.ok) {
+                    // Это место, где ловится 403 или 500
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
@@ -1164,7 +1166,7 @@
 
             } catch (error) {
                 console.error('Fetch error:', error);
-                displayError(error.message);
+                displayError(error.message); // <-- Здесь отобразится сообщение об ошибке
             }
         }
 
@@ -1193,7 +1195,8 @@
                 } else {
                     tg.MainButton.hide();
                 }
-                if (document.getElementById('tasks-list').children.length === 0) {
+                // Проверяем, если список задач пуст, то загружаем их
+                if (document.getElementById('tasks-list').innerHTML.includes('loading-message') || allTasksData.length === 0) {
                     fetchTasks();
                 }
             } else if (sectionId === 'analytics-content') {
@@ -1410,7 +1413,6 @@
                 const rawResponse = await response.json();
                 
                 // КРИТИЧЕСКАЯ ПРАВКА: Извлекаем объект статистики из массива [ { ... } ]
-                // Ваш бэкенд возвращает массив, но нам нужен только первый объект.
                 const stats = rawResponse[0] || {}; 
                 
                 // --- Обновление UI ---
@@ -1478,5 +1480,3 @@
     </script>
 </body>
 </html>
-
-
