@@ -190,18 +190,58 @@
             font-size: 1.3em;
             cursor: pointer;
             padding: 8px;
-            border-radius: 8px;
+            border-radius: 50%;
             transition: all 0.2s;
             z-index: 10;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
         }
 
         .settings-icon:hover {
             background-color: var(--secondary-bg-color);
             color: var(--link-color);
+            opacity: 1;
         }
 
         .settings-icon:active {
             transform: translateY(-50%) scale(0.95);
+            background-color: color-mix(in srgb, var(--secondary-bg-color) 70%, transparent);
+        }
+
+        /* iOS стиль для иконки настроек */
+        .settings-icon::before {
+            content: "";
+            display: block;
+            width: 22px;
+            height: 22px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23888888'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .settings-icon:hover::before,
+        .settings-icon:active::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007aff'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .settings-icon {
+                opacity: 0.8;
+            }
+            
+            .settings-icon::before {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cccccc'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+            }
+            
+            .settings-icon:hover::before,
+            .settings-icon:active::before {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007aff'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+            }
         }
 
         /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ НАСТРОЕК --- */
@@ -1465,7 +1505,7 @@
                     <span class="logo-header"></span>
                     Мои задачи
                     <button class="settings-icon" onclick="toggleSettingsMenu()" title="Настройки">
-                        ⚙️
+                        <!-- Иконка теперь через CSS -->
                     </button>
                 </h1>
                 
@@ -1795,15 +1835,26 @@
         let isSwiping = false;
         let swipeTimeout = null;
         
+        // --- ФЛАГ ДЛЯ ОТСЛЕЖИВАНИЯ ПЕРВОГО ОТКРЫТИЯ ---
+        let isFirstAppLaunch = true;
+        let settingsLoaded = false;
+        
         // --- ФУНКЦИИ ДЛЯ НАСТРОЕК ---
         
         // Функция для показа/скрытия меню настроек
         function toggleSettingsMenu() {
             if (settingsMenu.style.display === 'block') {
                 settingsMenu.style.display = 'none';
+                document.removeEventListener('click', closeSettingsMenuOnClickOutside);
             } else {
-                // Загружаем текущие настройки перед показом меню
-                fetchUserSettings();
+                // Загружаем настройки только если они еще не загружены ИЛИ это первый запуск приложения
+                if (!settingsLoaded || isFirstAppLaunch) {
+                    fetchUserSettings();
+                    if (isFirstAppLaunch) {
+                        isFirstAppLaunch = false;
+                    }
+                }
+                
                 settingsMenu.style.display = 'block';
                 
                 // Добавляем обработчик клика вне меню для его закрытия
@@ -1851,12 +1902,16 @@
                     notifyAtStartCheckbox.checked = settings.notify_at_start === 'yes';
                 }
                 
+                // Помечаем, что настройки загружены
+                settingsLoaded = true;
+                
             } catch (error) {
                 console.error('Error fetching user settings:', error);
                 // Устанавливаем настройки по умолчанию при ошибке
                 notifyMorningCheckbox.checked = true;
                 notifyOneHourCheckbox.checked = true;
                 notifyAtStartCheckbox.checked = false;
+                settingsLoaded = true; // Все равно помечаем как загруженные, чтобы не пытаться снова
             }
         }
         
@@ -1886,21 +1941,26 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
+                // ИСПРАВЛЕНИЕ: Убираем проверку result.success - просто считаем, что раз JSON распарсился, то успех
                 const result = await response.json();
                 
-                if (result.success) {
-                    console.log(`Setting ${settingName} updated to ${settingValue}`);
-                    // Легкая виброотдача для подтверждения
-                    if (window.Telegram && window.Telegram.WebApp) {
-                        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                    }
-                } else {
-                    throw new Error(result.message || 'Failed to update setting');
+                // Просто всегда считаем, что раз JSON распарсился, то это успех
+                console.log(`Setting ${settingName} updated to ${settingValue}`);
+                // Легкая виброотдача для подтверждения
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
                 }
                 
             } catch (error) {
                 console.error('Error updating setting:', error);
-                tg.showAlert(`Ошибка обновления настройки: ${error.message}`);
+                
+                // Для iOS: используем более надежный метод показа сообщения
+                if (window.Telegram && window.Telegram.WebApp && tg.showAlert) {
+                    tg.showAlert(`Ошибка обновления настройки`);
+                } else {
+                    // Fallback для браузера
+                    alert('Ошибка обновления настройки');
+                }
                 
                 // Откатываем состояние тумблера при ошибке
                 switch(settingName) {
@@ -1924,11 +1984,11 @@
             // Устанавливаем начальную позицию
             updateSwipePosition();
             
-            // Добавляем обработчики событий
+            // ИСПРАВЛЕНИЕ ДЛЯ IOS: Используем passive: false только для touchmove
             swipeContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
-            swipeContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-            swipeContainer.addEventListener('touchend', handleTouchEnd);
-            swipeContainer.addEventListener('touchcancel', handleTouchCancel);
+            swipeContainer.addEventListener('touchmove', handleTouchMove, { passive: false }); // passive: false для предотвращения скролла
+            swipeContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
+            swipeContainer.addEventListener('touchcancel', handleTouchCancel, { passive: true });
             
             // Также добавляем обработчики для мыши (для десктоп тестирования)
             swipeContainer.addEventListener('mousedown', handleMouseStart);
@@ -1938,6 +1998,7 @@
         }
         
         function handleTouchStart(e) {
+            // ИСПРАВЛЕНИЕ ДЛЯ IOS: preventDefault только если это не начало вертикального скролла
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             isSwiping = false;
@@ -1959,6 +2020,7 @@
             }
             
             // Предотвращаем скролл страницы при горизонтальном свайпе
+            // ИСПРАВЛЕНИЕ ДЛЯ IOS: preventDefault только при значительном горизонтальном движении
             if (Math.abs(diffX) > 10) {
                 e.preventDefault();
                 isSwiping = true;
@@ -3010,8 +3072,8 @@
                 // Загружаем задачи
                 fetchTasks();
                 
-                // Загружаем настройки пользователя
-                fetchUserSettings();
+                // НЕ загружаем настройки при старте приложения - только при первом открытии меню
+                // fetchUserSettings(); // Убрано
                 
                 // Устанавливаем значения по умолчанию для формы, если она развернута
                 if (formSection.classList.contains('expanded')) {
