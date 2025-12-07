@@ -80,22 +80,23 @@
             border-color: var(--stats-color);
         }
 
-        /* ЛОГОТИП В ЗАГОЛОВКАХ - ЕДИНЫЙ СТИЛЬ */
+        /* УМЕНЬШЕННЫЙ ЛОГОТИП В ЗАГОЛОВКАХ - РАВЕН РАЗМЕРУ ЗАГЛАВНОЙ БУКВЫ */
         .logo-header {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 1em; /* Равен размеру заглавной буквы */
+            height: 1em; /* Равен размеру заглавной буквы */
+            border-radius: 4px;
             background: linear-gradient(135deg, var(--link-color), #5d9cff);
-            padding: 6px;
-            box-shadow: 0 3px 10px rgba(0, 122, 255, 0.2);
+            padding: 4px;
+            box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2);
             position: relative;
             overflow: hidden;
+            font-size: inherit; /* Наследует размер шрифта родителя */
         }
 
-        /* Иконки для разделов */
+        /* Иконки для разделов - подогнаны под уменьшенный размер */
         .logo-header::before {
             content: '';
             position: absolute;
@@ -103,7 +104,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-size: 60% 60%;
+            background-size: 70% 70%; /* Увеличили для лучшей видимости в маленьком размере */
             background-repeat: no-repeat;
             background-position: center;
             filter: brightness(0) invert(1);
@@ -124,7 +125,7 @@
         /* Для темной темы - другой эффект */
         @media (prefers-color-scheme: dark) {
             .logo-header {
-                box-shadow: 0 3px 15px rgba(0, 122, 255, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
             }
         }
 
@@ -751,7 +752,7 @@
             box-shadow: none; 
         }
 
-        /* --- СТИЛИ РАЗДЕЛА СТАТИСТИКИ (iOS 2025 / Telegram Style) --- */
+        /* --- УЛУЧШЕННЫЕ СТИЛИ РАЗДЕЛА СТАТИСТИКИ (СИММЕТРИЧНЫЕ БЛОКИ) --- */
         #stats-container {
             margin-top: 15px;
         }
@@ -770,12 +771,13 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
             transition: transform 0.2s, background-color 0.3s;
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 
                 0 4px 12px rgba(0, 0, 0, 0.08),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            height: 140px; /* Фиксированная высота для симметрии */
+            justify-content: space-between;
         }
 
         .stat-widget:active {
@@ -784,9 +786,9 @@
 
         .stat-widget-header {
             display: flex;
-            align-items: center;
-            margin-bottom: 12px;
+            align-items: flex-start;
             width: 100%;
+            margin-bottom: 10px;
         }
 
         .stat-icon {
@@ -798,6 +800,7 @@
             justify-content: center;
             margin-right: 12px;
             font-size: 1.3em;
+            flex-shrink: 0;
         }
 
         .stat-icon.total { background-color: rgba(52, 199, 89, 0.15); color: #34c759; }
@@ -807,10 +810,21 @@
         .stat-icon.today { background-color: rgba(255, 149, 0, 0.15); color: #ff9500; }
         .stat-icon.expired { background-color: rgba(255, 59, 48, 0.15); color: #ff3b30; }
 
+        .stat-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
         .stat-title {
             font-size: 0.9em;
             color: var(--hint-color);
             font-weight: 500;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .stat-value {
@@ -825,6 +839,7 @@
             font-size: 0.8em;
             color: var(--hint-color);
             opacity: 0.8;
+            margin-top: auto;
         }
 
         /* Прогресс-бар для выполнения */
@@ -908,6 +923,7 @@
             height: 12px;
             border-radius: 50%;
             margin-right: 15px;
+            flex-shrink: 0;
         }
 
         .priority-color.high { background-color: #e74c3c; }
@@ -916,6 +932,9 @@
 
         .priority-info {
             flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .priority-name {
@@ -926,12 +945,13 @@
         .priority-count {
             font-weight: 700;
             color: var(--text-color);
-            margin-left: 10px;
         }
 
         .priority-percentage {
             font-size: 0.9em;
             color: var(--hint-color);
+            min-width: 40px;
+            text-align: right;
         }
 
         /* Еженедельная активность - исправлено: начинается с понедельника */
@@ -995,9 +1015,11 @@
         .stat-widget:nth-child(2) { animation-delay: 0.2s; }
         .stat-widget:nth-child(3) { animation-delay: 0.3s; }
         .stat-widget:nth-child(4) { animation-delay: 0.4s; }
-        .progress-section { animation-delay: 0.5s; }
-        .priority-section { animation-delay: 0.6s; }
-        .weekly-section { animation-delay: 0.7s; }
+        .stat-widget:nth-child(5) { animation-delay: 0.5s; }
+        .stat-widget:nth-child(6) { animation-delay: 0.6s; }
+        .progress-section { animation-delay: 0.7s; }
+        .priority-section { animation-delay: 0.8s; }
+        .weekly-section { animation-delay: 0.9s; }
 
         /* Адаптивность для маленьких экранов */
         @media (max-width: 480px) {
@@ -1017,12 +1039,14 @@
             }
             
             .logo-header {
-                width: 35px;
-                height: 35px;
+                width: 0.8em;
+                height: 0.8em;
+                padding: 3px;
             }
             
             h1 {
                 font-size: 1.4em;
+                gap: 8px;
             }
             
             #bottom-nav {
@@ -1037,6 +1061,15 @@
             
             .nav-button-icon span {
                 font-size: 1.3em;
+            }
+            
+            .stat-widget {
+                height: 130px;
+                padding: 15px;
+            }
+            
+            .stat-value {
+                font-size: 1.8em;
             }
         }
     </style>
@@ -1132,67 +1165,67 @@
                 <div class="stat-widget">
                     <div class="stat-widget-header">
                         <div class="stat-icon total">🔢</div>
-                        <div>
+                        <div class="stat-content">
                             <div class="stat-title">Всего задач</div>
                             <div class="stat-value" id="stat-total">0</div>
+                            <div class="stat-subtitle">Все созданные задачи</div>
                         </div>
                     </div>
-                    <div class="stat-subtitle">Все созданные задачи</div>
                 </div>
                 
                 <div class="stat-widget">
                     <div class="stat-widget-header">
                         <div class="stat-icon active">📝</div>
-                        <div>
+                        <div class="stat-content">
                             <div class="stat-title">Активных</div>
                             <div class="stat-value" id="stat-active">0</div>
+                            <div class="stat-subtitle">Требуют выполнения</div>
                         </div>
                     </div>
-                    <div class="stat-subtitle">Требуют выполнения</div>
                 </div>
                 
                 <div class="stat-widget">
                     <div class="stat-widget-header">
                         <div class="stat-icon completed">✅</div>
-                        <div>
+                        <div class="stat-content">
                             <div class="stat-title">Выполнено</div>
                             <div class="stat-value" id="stat-completed">0</div>
+                            <div class="stat-subtitle">Успешно завершено</div>
                         </div>
                     </div>
-                    <div class="stat-subtitle">Успешно завершено</div>
                 </div>
                 
                 <div class="stat-widget">
                     <div class="stat-widget-header">
                         <div class="stat-icon high-priority">🚨</div>
-                        <div>
+                        <div class="stat-content">
                             <div class="stat-title">Высокий приоритет</div>
                             <div class="stat-value" id="stat-high-priority">0</div>
+                            <div class="stat-subtitle">Срочные задачи</div>
                         </div>
                     </div>
-                    <div class="stat-subtitle">Срочные задачи</div>
                 </div>
                 
                 <div class="stat-widget">
                     <div class="stat-widget-header">
                         <div class="stat-icon today">📅</div>
-                        <div>
+                        <div class="stat-content">
                             <div class="stat-title">Выполнено сегодня</div>
                             <div class="stat-value" id="stat-today">0</div>
+                            <div class="stat-subtitle">Завершённые сегодня</div>
                         </div>
                     </div>
-                    <div class="stat-subtitle">Завершённые сегодня</div>
                 </div>
                 
                 <div class="stat-widget">
                     <div class="stat-widget-header">
                         <div class="stat-icon expired">⏰</div>
-                        <div>
+                        <div class="stat-content">
                             <div class="stat-title">Просрочено</div>
                             <div class="stat-value" id="stat-expired">0</div>
+                            <div class="stat-subtitle">Истёк срок выполнения</div>
                         </div>
                     </div>
-                    <div class="stat-subtitle">Истёк срок выполнения</div>
                 </div>
             </div>
             
@@ -1274,6 +1307,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.ready();
+        
+        // --- ИСПРАВЛЕНИЕ: Открытие миниапа в полную версию ---
+        tg.expand();
         
         // --- ПЕРЕМЕННЫЕ N8N ---
         const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks'; 
@@ -1469,6 +1505,11 @@
         // Убираем старую кнопку Telegram и добавляем обработчик для новой кнопки
         tg.MainButton.hide();
         addTaskButton.addEventListener('click', sendTask);
+
+        // --- ИСПРАВЛЕНИЕ: Предотвращение зависания при выборе важности ---
+        document.getElementById('importanceInput').addEventListener('change', function(e) {
+            e.stopPropagation();
+        });
 
         // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
         
