@@ -46,7 +46,7 @@
         .content-section {
             display: none;
             padding: 15px;
-            padding-bottom: calc(115px + env(safe-area-inset-bottom));
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
         }
         .content-section.active {
             display: block;
@@ -245,6 +245,7 @@
             -moz-appearance: none;
             appearance: none;
             padding-right: 5px; 
+            width: 100%;
         }
         
         /* Гарантируем, что дата, время и select выравниваются справа */
@@ -253,6 +254,54 @@
         .ios-row select {
             text-align: right !important;
             padding-right: 5px; 
+        }
+
+        /* Кнопка добавления задачи внутри формы */
+        .form-submit-button {
+            display: flex;
+            justify-content: center;
+            padding: 20px 15px 15px 15px;
+            background: var(--input-bg-color);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        #add-task-button {
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 1.0em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+
+        #add-task-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+        }
+
+        #add-task-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #add-task-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        #add-task-button span {
+            font-size: 1.1em;
         }
 
         /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
@@ -520,7 +569,7 @@
         /* Улучшенное поле ввода AI Chat */
         #ai-chat-input-area {
             position: fixed;
-            bottom: calc(95px + env(safe-area-inset-bottom));
+            bottom: calc(75px + env(safe-area-inset-bottom));
             left: 0;
             right: 0;
             padding: 15px;
@@ -640,21 +689,22 @@
         }
 
         /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
+        /* Уменьшенная навигация */
         #bottom-nav {
             position: fixed;
-            bottom: calc(10px + env(safe-area-inset-bottom));
+            bottom: calc(8px + env(safe-area-inset-bottom));
             left: 50%; 
             transform: translateX(-50%); 
             width: calc(100% - 30px); 
-            max-width: 500px;
-            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent);
+            max-width: 450px;
+            background: color-mix(in srgb, var(--secondary-bg-color) 85%, transparent);
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px); 
             border-top: none;
-            border-radius: 25px; 
+            border-radius: 22px; 
             display: flex;
             justify-content: space-around;
-            padding: 10px 0; 
+            padding: 8px 0; 
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             z-index: 1000;
         }
@@ -667,11 +717,11 @@
             background: none; 
             border: none;
             cursor: pointer;
-            padding: 5px 10px;
+            padding: 4px 8px;
             color: var(--hint-color);
-            font-size: 0.7em;
+            font-size: 0.65em;
             transition: color 0.2s;
-            min-width: 60px;
+            min-width: 55px;
             text-align: center;
         }
         
@@ -684,15 +734,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 45px;
-            height: 45px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
             transition: background-color 0.2s, box-shadow 0.2s;
         }
         
         .nav-button-icon span {
-            font-size: 1.5em;
+            font-size: 1.4em;
             line-height: 1;
         }
         
@@ -884,7 +934,7 @@
             color: var(--hint-color);
         }
 
-        /* Еженедельная активность */
+        /* Еженедельная активность - исправлено: начинается с понедельника */
         .weekly-section {
             background: var(--secondary-bg-color);
             border-radius: 16px;
@@ -974,6 +1024,20 @@
             h1 {
                 font-size: 1.4em;
             }
+            
+            #bottom-nav {
+                padding: 6px 0;
+                border-radius: 20px;
+            }
+            
+            .nav-button-icon {
+                width: 34px;
+                height: 34px;
+            }
+            
+            .nav-button-icon span {
+                font-size: 1.3em;
+            }
         }
     </style>
 </head>
@@ -1021,7 +1085,14 @@
                             </select>
                         </div>
 
-                    </div> </form>
+                    </div>
+                    
+                    <div class="form-submit-button">
+                        <button type="button" id="add-task-button">
+                            <span>➕</span> Добавить задачу
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -1220,6 +1291,7 @@
         const contextMenu = document.getElementById('context-menu');
         const formTitle = document.getElementById('form-title');
         const bottomNav = document.getElementById('bottom-nav'); 
+        const addTaskButton = document.getElementById('add-task-button');
         
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
@@ -1272,16 +1344,11 @@
                 setDefaultFormValues();
             }
 
-            if (document.getElementById('tasks-content').classList.contains('active')) {
-                if (formSection.classList.contains('expanded')) {
-                    if (!isEditing) {
-                        tg.MainButton.setText('➕ Добавить задачу').show();
-                    }
-                } else {
-                    if (!isEditing) {
-                       tg.MainButton.hide(); 
-                    }
-                }
+            // Обновляем кнопку внутри формы
+            if (isEditing) {
+                addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
+            } else {
+                addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
             }
         }
         
@@ -1300,7 +1367,7 @@
             document.getElementById('form-arrow').textContent = '▲';
             formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
             
-            tg.MainButton.setText('✍️ Сохранить изменения').show();
+            addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
             tg.HapticFeedback.notificationOccurred('success');
         }
         
@@ -1309,13 +1376,8 @@
             currentEditingId = null;
             taskForm.reset(); 
             formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
+            addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
             setDefaultFormValues(); 
-            
-            if (document.getElementById('tasks-content').classList.contains('active') && formSection.classList.contains('expanded')) {
-                tg.MainButton.setText('➕ Добавить задачу').show();
-            } else {
-                tg.MainButton.hide();
-            }
         }
         
         // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
@@ -1352,7 +1414,8 @@
             }
 
             try {
-                tg.MainButton.showProgress(true); 
+                addTaskButton.disabled = true;
+                addTaskButton.innerHTML = isEditing ? '<span>⏳</span> Сохранение...' : '<span>⏳</span> Добавление...';
                 
                 const response = await fetch(url, {
                     method: method,
@@ -1387,7 +1450,6 @@
                     
                     formSection.classList.remove('expanded'); 
                     document.getElementById('form-arrow').textContent = '▼';
-                    tg.MainButton.hide(); 
 
                     await fetchTasks(); 
 
@@ -1399,12 +1461,14 @@
                 console.error('Operation error:', error);
                 tg.showAlert(`Ошибка: ${error.message}`);
             } finally {
-                tg.MainButton.hideProgress();
+                addTaskButton.disabled = false;
+                addTaskButton.innerHTML = isEditing ? '<span>✍️</span> Сохранить изменения' : '<span>➕</span> Добавить задачу';
             }
         }
         
-        tg.MainButton.setText('➕ Добавить задачу').hide(); 
-        tg.onEvent('mainButtonClicked', sendTask);
+        // Убираем старую кнопку Telegram и добавляем обработчик для новой кнопки
+        tg.MainButton.hide();
+        addTaskButton.addEventListener('click', sendTask);
 
         // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
         
@@ -1460,8 +1524,6 @@
         async function markTaskAsDone(taskId) {
             const performUpdate = async () => {
                 try {
-                    tg.MainButton.showProgress(true); 
-                    
                     const response = await fetch(N8N_UPDATE_URL, {
                         method: 'POST', 
                         headers: {
@@ -1485,8 +1547,6 @@
                 } catch (error) {
                     console.error('UPDATE error:', error);
                     tg.showAlert(`Ошибка обновления: ${error.message}.`);
-                } finally {
-                    tg.MainButton.hideProgress();
                 }
             };
             
@@ -1508,8 +1568,6 @@
         async function deleteTask(taskId) {
             const performDelete = async () => {
                 try {
-                    tg.MainButton.showProgress(true); 
-                    
                     const response = await fetch(N8N_DELETE_URL, {
                         method: 'POST', 
                         headers: {
@@ -1532,8 +1590,6 @@
                 } catch (error) {
                     console.error('DELETE error:', error);
                     tg.showAlert(`Ошибка удаления: ${error.message}.`);
-                } finally {
-                    tg.MainButton.hideProgress();
                 }
             };
             
@@ -1716,19 +1772,18 @@
 
             if (sectionId === 'tasks-content') {
                 if (formSection.classList.contains('expanded')) {
-                    tg.MainButton.show();
-                    tg.MainButton.setText(isEditing ? '✍️ Сохранить изменения' : '➕ Добавить задачу');
-                } else {
-                    tg.MainButton.hide();
+                    // Обновляем кнопку внутри формы
+                    if (isEditing) {
+                        addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
+                    } else {
+                        addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
+                    }
                 }
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
             } else if (sectionId === 'stats-content') {
-                tg.MainButton.hide();
                 fetchStats(); 
-            } else {
-                tg.MainButton.hide();
             }
         }
         
@@ -1858,9 +1913,10 @@
         
         // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ИСПРАВЛЕННАЯ) ---
 
-        // Функция для получения названия дня недели
+        // Функция для получения названия дня недели - исправлено: начинается с понедельника
         function getDayName(dayIndex) {
-            const days = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
+            // dayIndex: 0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ, 5=СБ, 6=ВС
+            const days = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
             return days[dayIndex] || '?';
         }
 
@@ -1930,19 +1986,29 @@
                 document.getElementById('percentage-medium').textContent = totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%';
                 document.getElementById('percentage-low').textContent = totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%';
                 
-                // Обновляем еженедельную активность
+                // Обновляем еженедельную активность - исправлено: начинается с понедельника
                 const weeklyGrid = document.getElementById('weekly-grid');
                 weeklyGrid.innerHTML = '';
                 
-                // Создаем ячейки для каждого дня недели
+                // Получаем текущий день недели (0=ВС, 1=ПН, ..., 6=СБ)
+                const today = new Date().getDay(); // 0=ВС, 1=ПН, 2=ВТ, 3=СР, 4=ЧТ, 5=ПТ, 6=СБ
+                // Конвертируем в нашу систему (0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ, 5=СБ, 6=ВС)
+                const todayInOurSystem = today === 0 ? 6 : today - 1;
+                
+                // Создаем ячейки для каждого дня недели, начиная с понедельника
                 for (let i = 0; i < 7; i++) {
-                    const dayCount = weeklyActivity[i] || 0;
+                    // Преобразуем индекс: 0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ, 5=СБ, 6=ВС
+                    const dayIndex = i; // i=0 -> ПН, i=1 -> ВТ, ..., i=6 -> ВС
+                    
+                    // Преобразуем в формат API (0=ВС, 1=ПН, 2=ВТ, 3=СР, 4=ЧТ, 5=ПТ, 6=СБ)
+                    const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
+                    
+                    const dayCount = weeklyActivity[apiDayIndex] || 0;
                     const dayCell = document.createElement('div');
                     dayCell.className = 'day-cell';
                     
                     // Подсвечиваем текущий день
-                    const today = new Date().getDay();
-                    if (i === today) {
+                    if (i === todayInOurSystem) {
                         dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
                         dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
                     }
@@ -1991,7 +2057,7 @@
         window.fetchTasks = fetchTasks; 
         window.switchSection = switchSection;
 
-        // Инициализация при загрузке - ВАЖНОЕ ИСПРАВЛЕНИЕ
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             // Убедимся, что Telegram WebApp инициализирован
             if (tg.initData) {
@@ -2020,7 +2086,6 @@
 
         // Также инициализируем при полной загрузке окна
         window.addEventListener('load', function() {
-            // Убедимся, что все загружено
             console.log('Page fully loaded');
         });
     </script>
