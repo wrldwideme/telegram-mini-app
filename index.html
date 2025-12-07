@@ -178,6 +178,163 @@
             }
         }
 
+        /* --- СТИЛИ ДЛЯ ИКОНКИ НАСТРОЕК --- */
+        .settings-icon {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.3em;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .settings-icon:hover {
+            background-color: var(--secondary-bg-color);
+            color: var(--link-color);
+        }
+
+        .settings-icon:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        /* --- СТИЛИ ВЫПАДАЮЩЕГО МЕНЮ НАСТРОЕК --- */
+        #settings-menu {
+            position: fixed;
+            top: 60px;
+            right: 15px;
+            background: var(--bg-color);
+            border: 1px solid var(--secondary-bg-color);
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            min-width: 280px;
+            max-width: 320px;
+            display: none;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .settings-header {
+            padding: 16px 20px;
+            background: var(--secondary-bg-color);
+            border-bottom: 1px solid var(--input-border-color);
+        }
+
+        .settings-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-content {
+            padding: 0;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--input-border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item:hover {
+            background-color: var(--secondary-bg-color);
+        }
+
+        .settings-text {
+            flex-grow: 1;
+        }
+
+        .settings-title {
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 4px;
+            font-size: 1em;
+        }
+
+        .settings-description {
+            font-size: 0.85em;
+            color: var(--hint-color);
+        }
+
+        /* Стили для iOS-тумблеров */
+        .ios-toggle {
+            position: relative;
+            width: 51px;
+            height: 31px;
+            flex-shrink: 0;
+            margin-left: 12px;
+        }
+
+        .ios-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .ios-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e5ea;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .ios-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input:checked + .ios-toggle-slider {
+            background-color: var(--link-color);
+        }
+
+        input:checked + .ios-toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Темная тема для тумблеров */
+        @media (prefers-color-scheme: dark) {
+            .ios-toggle-slider {
+                background-color: #3a3a3c;
+            }
+            
+            input:checked + .ios-toggle-slider {
+                background-color: var(--link-color);
+            }
+        }
+
         /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
         .form-section {
             background: transparent;
@@ -1257,6 +1414,17 @@
             .weekly-section {
                 padding: 15px;
             }
+            
+            /* Адаптивность для меню настроек */
+            #settings-menu {
+                min-width: 250px;
+                max-width: 280px;
+                right: 12px;
+            }
+            
+            .settings-item {
+                padding: 14px 16px;
+            }
         }
         
         /* Дополнительные исправления для очень маленьких экранов */
@@ -1277,6 +1445,12 @@
                 width: 80px;
                 font-size: 0.9em;
             }
+            
+            #settings-menu {
+                min-width: 230px;
+                max-width: 260px;
+                right: 10px;
+            }
         }
     </style>
 </head>
@@ -1290,6 +1464,9 @@
                 <h1>
                     <span class="logo-header"></span>
                     Мои задачи
+                    <button class="settings-icon" onclick="toggleSettingsMenu()" title="Настройки">
+                        ⚙️
+                    </button>
                 </h1>
                 
                 <div class="form-section" id="form-section">
@@ -1490,6 +1667,47 @@
         </div>
     </div>
 
+    <!-- МЕНЮ НАСТРОЕК -->
+    <div id="settings-menu">
+        <div class="settings-header">
+            <h3>⚙️ Настройки уведомлений</h3>
+        </div>
+        <div class="settings-content">
+            <div class="settings-item">
+                <div class="settings-text">
+                    <div class="settings-title">Напоминание утром</div>
+                    <div class="settings-description">Ежедневное уведомление о задачах на день</div>
+                </div>
+                <label class="ios-toggle">
+                    <input type="checkbox" id="notify-morning" onclick="toggleSetting('notify_morning', this.checked)">
+                    <span class="ios-toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-text">
+                    <div class="settings-title">Напоминание за час</div>
+                    <div class="settings-description">Уведомление за 1 час до начала задачи</div>
+                </div>
+                <label class="ios-toggle">
+                    <input type="checkbox" id="notify-one-hour" onclick="toggleSetting('notify_one_hour', this.checked)">
+                    <span class="ios-toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="settings-item">
+                <div class="settings-text">
+                    <div class="settings-title">Моментальное напоминание</div>
+                    <div class="settings-description">Уведомление в момент начала задачи</div>
+                </div>
+                <label class="ios-toggle">
+                    <input type="checkbox" id="notify-at-start" onclick="toggleSetting('notify_at_start', this.checked)">
+                    <span class="ios-toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
     <!-- ПАНЕЛЬ ВВОДА AI ЧАТА - ВЫНЕСЕНА ОТДЕЛЬНО И БУДЕТ ПОКАЗЫВАТЬСЯ ТОЛЬКО В AI РАЗДЕЛЕ -->
     <div id="ai-chat-input-area">
         <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
@@ -1532,6 +1750,11 @@
         const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
         const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task';
         const N8N_GET_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats';
+        
+        // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕК
+        const N8N_GET_SETTINGS_URL = 'https://i74s52gg.rcld.app/webhook/get-user-settings';
+        const N8N_UPDATE_SETTINGS_URL = 'https://i74s52gg.rcld.app/webhook/update-settings';
+        
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         
         const tasksList = document.getElementById('tasks-list');
@@ -1553,6 +1776,12 @@
         const clearChatButton = document.getElementById('clear-chat-btn');
         const aiChatInputArea = document.getElementById('ai-chat-input-area');
         
+        // --- ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕК ---
+        const settingsMenu = document.getElementById('settings-menu');
+        const notifyMorningCheckbox = document.getElementById('notify-morning');
+        const notifyOneHourCheckbox = document.getElementById('notify-one-hour');
+        const notifyAtStartCheckbox = document.getElementById('notify-at-start');
+        
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
@@ -1565,6 +1794,128 @@
         let touchEndX = 0;
         let isSwiping = false;
         let swipeTimeout = null;
+        
+        // --- ФУНКЦИИ ДЛЯ НАСТРОЕК ---
+        
+        // Функция для показа/скрытия меню настроек
+        function toggleSettingsMenu() {
+            if (settingsMenu.style.display === 'block') {
+                settingsMenu.style.display = 'none';
+            } else {
+                // Загружаем текущие настройки перед показом меню
+                fetchUserSettings();
+                settingsMenu.style.display = 'block';
+                
+                // Добавляем обработчик клика вне меню для его закрытия
+                setTimeout(() => {
+                    document.addEventListener('click', closeSettingsMenuOnClickOutside);
+                }, 10);
+            }
+        }
+        
+        // Закрытие меню настроек при клике вне его
+        function closeSettingsMenuOnClickOutside(event) {
+            if (!settingsMenu.contains(event.target) && !event.target.classList.contains('settings-icon')) {
+                settingsMenu.style.display = 'none';
+                document.removeEventListener('click', closeSettingsMenuOnClickOutside);
+            }
+        }
+        
+        // Функция для получения настроек пользователя
+        async function fetchUserSettings() {
+            try {
+                if (!tg.initData) {
+                    console.warn('Telegram initData is missing. Cannot fetch settings.');
+                    return;
+                }
+                
+                const response = await fetch(N8N_GET_SETTINGS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const settings = await response.json();
+                console.log('User settings loaded:', settings);
+                
+                // Обновляем состояние тумблеров
+                if (settings) {
+                    notifyMorningCheckbox.checked = settings.notify_morning === 'yes';
+                    notifyOneHourCheckbox.checked = settings.notify_one_hour === 'yes';
+                    notifyAtStartCheckbox.checked = settings.notify_at_start === 'yes';
+                }
+                
+            } catch (error) {
+                console.error('Error fetching user settings:', error);
+                // Устанавливаем настройки по умолчанию при ошибке
+                notifyMorningCheckbox.checked = true;
+                notifyOneHourCheckbox.checked = true;
+                notifyAtStartCheckbox.checked = false;
+            }
+        }
+        
+        // Функция для обновления настройки
+        async function toggleSetting(settingName, isEnabled) {
+            try {
+                if (!tg.initData) {
+                    console.warn('Telegram initData is missing. Cannot update settings.');
+                    return;
+                }
+                
+                const settingValue = isEnabled ? 'yes' : 'no';
+                
+                const response = await fetch(N8N_UPDATE_SETTINGS_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        [settingName]: settingValue
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log(`Setting ${settingName} updated to ${settingValue}`);
+                    // Легкая виброотдача для подтверждения
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                    }
+                } else {
+                    throw new Error(result.message || 'Failed to update setting');
+                }
+                
+            } catch (error) {
+                console.error('Error updating setting:', error);
+                tg.showAlert(`Ошибка обновления настройки: ${error.message}`);
+                
+                // Откатываем состояние тумблера при ошибке
+                switch(settingName) {
+                    case 'notify_morning':
+                        notifyMorningCheckbox.checked = !isEnabled;
+                        break;
+                    case 'notify_one_hour':
+                        notifyOneHourCheckbox.checked = !isEnabled;
+                        break;
+                    case 'notify_at_start':
+                        notifyAtStartCheckbox.checked = !isEnabled;
+                        break;
+                }
+            }
+        }
         
         // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
         
@@ -2637,6 +2988,8 @@
         window.deleteTask = deleteTask; 
         window.fetchTasks = fetchTasks; 
         window.switchSection = switchSection;
+        window.toggleSettingsMenu = toggleSettingsMenu;
+        window.toggleSetting = toggleSetting;
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
@@ -2656,6 +3009,9 @@
                 
                 // Загружаем задачи
                 fetchTasks();
+                
+                // Загружаем настройки пользователя
+                fetchUserSettings();
                 
                 // Устанавливаем значения по умолчанию для формы, если она развернута
                 if (formSection.classList.contains('expanded')) {
