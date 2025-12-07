@@ -2,1302 +2,1929 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskMate AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>To Do Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* === ОБНОВЛЕННЫЕ ПЕРЕМЕННЫЕ iOS 2025 === */
+        /* Общие стили и переменные */
         :root {
-            /* Основные цвета Telegram */
             --bg-color: var(--tg-theme-bg-color, #ffffff);
-            --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f2f2f7);
+            --secondary-bg-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
             --text-color: var(--tg-theme-text-color, #000000);
-            --hint-color: var(--tg-theme-hint-color, #8e8e93);
+            --hint-color: var(--tg-theme-hint-color, #777777);
             --link-color: var(--tg-theme-link-color, #007aff);
-            
-            /* Новые iOS 17 цвета */
-            --ios-surface: var(--tg-theme-secondary-bg-color, #f2f2f7);
-            --ios-elevated: #ffffff;
-            --ios-card: #ffffff;
-            --ios-border: rgba(0, 0, 0, 0.08);
-            
-            /* Градиенты для разделов */
-            --tasks-gradient: linear-gradient(135deg, #007aff, #5856d6);
-            --ai-gradient: linear-gradient(135deg, #af52de, #ff2d55);
-            --stats-gradient: linear-gradient(135deg, #34c759, #32d74b);
-            
-            /* Тени iOS */
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.16);
-            
-            /* Скругления iOS */
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 20px;
-            --radius-full: 999px;
+            /* Новые переменные для стиля iOS */
+            --input-bg-color: var(--tg-theme-secondary-bg-color, #ffffff);
+            --input-border-color: var(--tg-theme-hint-color, #e0e0e0);
+            /* Цвета для разделов */
+            --tasks-color: var(--link-color);
+            --ai-color: #8a2be2;
+            --stats-color: #34c759;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: var(--tg-theme-bg-color, #000000);
-                --secondary-bg-color: var(--tg-theme-secondary-bg-color, #1c1c1e);
-                --text-color: var(--tg-theme-text-color, #ffffff);
-                --hint-color: var(--tg-theme-hint-color, #8e8e93);
-                
-                /* Темные режимы iOS */
-                --ios-surface: var(--tg-theme-secondary-bg-color, #1c1c1e);
-                --ios-elevated: #2c2c2e;
-                --ios-card: #2c2c2e;
-                --ios-border: rgba(255, 255, 255, 0.08);
-                
-                /* Тени для темной темы */
-                --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-                --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-                --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-                --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.6);
+                --bg-color: var(--tg-theme-bg-color, #1a1a1a);
+                --secondary-bg-color: var(--tg-theme-secondary-bg-color, #2a2a2a);
+                --text-color: var(--tg-theme-text-color, #ecf0f1);
+                --hint-color: var(--tg-theme-hint-color, #aaa);
+                --input-bg-color: var(--tg-theme-secondary-bg-color, #3a3a3a);
+                --input-border-color: var(--tg-theme-hint-color, #4a4a4a);
             }
         }
 
-        /* === БАЗОВЫЕ СТИЛИ === */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            line-height: 1.4;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            overflow-x: hidden;
+            padding: 0; 
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* === НОВЫЕ АНИМАЦИИ === */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* NEW: Visually Hidden Class for Accessibility */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+        
+        /* --- СТИЛИ ДЛЯ SPA КОНТЕНТА И НАВИГАЦИИ --- */
+        
+        /* NEW: Add padding for the fixed bottom nav */
+        main {
+            padding-bottom: 95px; 
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
-
-        /* === ОБНОВЛЕННЫЙ КОНТЕЙНЕР КОНТЕНТА === */
         .content-section {
             display: none;
-            padding: 16px;
-            padding-bottom: calc(120px + env(safe-area-inset-bottom));
-            animation: fadeIn 0.4s ease-out;
-            min-height: 100vh;
+            /* Adjusted for new fixed nav size/position */
+            padding: 15px;
+            padding-bottom: calc(150px + env(safe-area-inset-bottom)); 
         }
-
         .content-section.active {
             display: block;
         }
 
-        /* === УЛУЧШЕННЫЕ ЗАГОЛОВКИ === */
-        .page-header {
+        /* ЕДИНЫЙ СТИЛЬ ЗАГОЛОВКОВ */
+        h1 {
+            color: var(--text-color);
+            font-size: 1.6em;
+            margin-top: 0;
+            margin-bottom: 25px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid;
+            font-weight: 700;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 28px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--ios-border);
+            gap: 10px;
             position: relative;
         }
 
-        .page-header::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 40px;
-            height: 3px;
-            border-radius: 1.5px;
-            transition: width 0.3s ease;
+        /* Цвета границ для разных разделов */
+        #tasks-content h1 {
+            border-color: var(--tasks-color);
         }
 
-        #tasks-content .page-header::after {
-            background: var(--tasks-gradient);
+        #ai-chat-content h1 {
+            border-color: var(--ai-color);
         }
 
-        #ai-chat-content .page-header::after {
-            background: var(--ai-gradient);
+        #stats-content h1 {
+            border-color: var(--stats-color);
         }
 
-        #stats-content .page-header::after {
-            background: var(--stats-gradient);
-        }
-
-        .logo-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
-            display: flex;
+        /* ЛОГОТИП В ЗАГОЛОВКАХ - ЕДИНЫЙ СТИЛЬ */
+        .logo-header {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: var(--tasks-gradient);
-            box-shadow: var(--shadow-md);
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            padding: 6px;
+            box-shadow: 0 3px 10px rgba(0, 122, 255, 0.2);
             position: relative;
             overflow: hidden;
         }
 
-        #ai-chat-content .logo-icon {
-            background: var(--ai-gradient);
-        }
-
-        #stats-content .logo-icon {
-            background: var(--stats-gradient);
-        }
-
-        .logo-icon::before {
+        /* Иконки для разделов */
+        .logo-header::before {
             content: '';
             position: absolute;
-            inset: 0;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            animation: shimmer 3s infinite linear;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: 60% 60%;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: brightness(0) invert(1);
         }
 
-        .logo-icon i {
-            font-size: 24px;
-            color: white;
-            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        #tasks-content .logo-header::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm-2 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>');
         }
 
-        .header-title {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, var(--text-color), color-mix(in srgb, var(--text-color) 70%, transparent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+        #ai-chat-content .logo-header::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
         }
 
-        .header-subtitle {
-            font-size: 14px;
-            color: var(--hint-color);
-            margin-top: 2px;
-            font-weight: 400;
+        #stats-content .logo-header::before {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M16 11V3H8v6H2v12h20V11h-6zm-6-6h4v14h-4V5zm-6 6h4v8H4v-8zm16 8h-4v-6h4v6z"/></svg>');
         }
 
-        /* === ОБНОВЛЕННАЯ ФОРМА === */
-        .form-card {
-            background: var(--ios-elevated);
-            border-radius: var(--radius-lg);
-            margin-bottom: 24px;
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--ios-border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Для темной темы - другой эффект */
+        @media (prefers-color-scheme: dark) {
+            .logo-header {
+                box-shadow: 0 3px 15px rgba(0, 122, 255, 0.3);
+            }
         }
 
-        .form-card:active {
-            transform: scale(0.99);
+        /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
+        .form-section {
+            background: transparent;
+            margin-bottom: 20px;
+            overflow: hidden; 
+            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            max-height: 60px;
         }
 
+        .form-section.expanded {
+            max-height: 500px;
+        }
+
+        /* Улучшенный Заголовок */
         .form-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
             cursor: pointer;
+            padding: 20px;
+            height: 60px; 
+            box-sizing: border-box;
+            background: var(--secondary-bg-color); 
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
             transition: background-color 0.2s;
-        }
-
-        .form-header:hover {
-            background-color: color-mix(in srgb, var(--secondary-bg-color) 50%, transparent);
-        }
-
-        .form-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 17px;
-            font-weight: 600;
-        }
-
-        .form-title i {
-            font-size: 20px;
-            color: var(--link-color);
-        }
-
-        .form-arrow {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: var(--hint-color);
-            font-size: 14px;
-        }
-
-        .form-section.expanded .form-arrow {
-            transform: rotate(180deg);
-        }
-
-        .form-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            background: color-mix(in srgb, var(--secondary-bg-color) 30%, transparent);
-        }
-
-        .form-section.expanded .form-content {
-            max-height: 500px;
-        }
-
-        /* === СОВРЕМЕННЫЕ ПОЛЯ ВВОДА iOS === */
-        .ios-input-group {
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            margin: 0 20px 20px;
-            border: 1px solid var(--ios-border);
-            background: var(--ios-card);
-        }
-
-        .ios-input-row {
-            display: flex;
-            align-items: center;
-            padding: 16px;
-            min-height: 52px;
-            border-bottom: 1px solid var(--ios-border);
-            transition: background-color 0.2s;
-        }
-
-        .ios-input-row:last-child {
-            border-bottom: none;
-        }
-
-        .ios-input-row:active {
-            background-color: color-mix(in srgb, var(--secondary-bg-color) 50%, transparent);
-        }
-
-        .ios-label {
-            flex: 0 0 100px;
-            font-size: 16px;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .ios-input {
-            flex: 1;
-            border: none;
-            background: transparent;
-            color: var(--text-color);
-            font-size: 16px;
-            text-align: right;
-            padding: 0;
+            /* NEW: Add focus state for keyboard navigation */
             outline: none;
         }
 
-        .ios-input::placeholder {
+        .form-header:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
+        }
+        
+        .form-section.expanded .form-header {
+             border-bottom-left-radius: 0;
+             border-bottom-right-radius: 0;
+        }
+
+        .form-header:hover {
+            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
+        }
+        
+        .form-header h2 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+            font-weight: 600; 
+            color: var(--text-color);
+        }
+
+        .form-header h2 span#form-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+            color: var(--link-color); 
+        }
+
+        .form-section-content {
+            padding: 0;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+            height: 0;
+            overflow: hidden;
+            background: var(--input-bg-color); 
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-section.expanded .form-section-content {
+            visibility: visible;
+            opacity: 1;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* --- НОВЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
+
+        .ios-group {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .ios-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px; 
+            border-bottom: 1px solid var(--input-border-color); 
+            background: var(--input-bg-color); 
+            min-height: 44px; 
+            box-sizing: border-box;
+        }
+
+        .ios-row:last-child {
+            border-bottom: none;
+        }
+
+        .ios-label {
+            color: var(--text-color);
+            font-size: 1.0em;
+            font-weight: 400; 
+            flex-shrink: 0; 
+            width: 90px; 
+            margin-right: 15px;
+        }
+        
+        .ios-row input, .ios-row select {
+            flex-grow: 1;
+            padding: 0; 
+            margin: 0; 
+            box-sizing: border-box;
+            background: transparent;
+            color: var(--text-color);
+            border: none;
+            outline: none;
+            font-size: 1.0em;
+            text-align: right; 
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding-right: 5px; 
+            transition: box-shadow 0.2s; /* NEW: for focus state */
+        }
+        
+        /* NEW: Better input focus visual feedback */
+        .ios-row input:focus, .ios-row select:focus {
+            box-shadow: 0 0 0 1px var(--link-color);
+            border-radius: 4px;
+        }
+
+        /* Гарантируем, что дата, время и select выравниваются справа */
+        .ios-row input[type="date"], 
+        .ios-row input[type="time"],
+        .ios-row select {
+            text-align: right !important;
+            padding-right: 5px; 
+        }
+
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
+        .task-card { 
+            border-left: 6px solid #444;
+            padding: 15px; 
+            margin-bottom: 15px; 
+            border-radius: 12px; 
+            background: var(--secondary-bg-color); 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer; /* NEW: Explicitly set cursor */
+            outline: none; /* NEW: Manage focus state manually */
+        }
+
+        /* NEW: Task Card Focus State */
+        .task-card:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
+        }
+        
+        .task-card:active { transform: scale(0.99);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+        .task-card.expired { border-left-color: #e74c3c;
+            opacity: 0.9; }
+        .task-info { flex-grow: 1;
+        }
+        .task-header { display: flex; align-items: flex-start; margin-bottom: 5px;
+        }
+        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1;
+        }
+        .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0;
+        }
+        .task-card.expired p { color: #ff5555; font-weight: bold;
+        } 
+        
+        .importance-tag { font-size: 0.7em;
+            font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+            min-width: 60px; text-align: center; }
+        .importance-tag.high { background-color: #e74c3c;
+        }
+        .importance-tag.medium { background-color: #f39c12;
+        }
+        .importance-tag.low { background-color: #2ecc71;
+        }
+        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color);
+        }
+        
+        /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
+        .menu-button {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 0 5px;
+            margin-left: 10px;
+            line-height: 1; 
+            margin-top: -5px;
+        }
+
+        #context-menu {
+            position: fixed;
+            background: var(--secondary-bg-color); /* NEW: Use secondary for cleaner look */
+            border: none; /* NEW: Remove border */
+            border-radius: 12px; 
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); 
+            z-index: 1000;
+            min-width: 180px;
+            display: none; 
+            overflow: hidden;
+        }
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: background-color 0.2s;
+            font-size: 0.95em;
+            border-bottom: 1px solid var(--input-border-color); /* NEW: Softer border */
+            outline: none; /* NEW: Manage focus state manually */
+        }
+        /* NEW: Menu Item Focus State */
+        .menu-item:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: -1px;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .menu-item:hover {
+            background-color: var(--secondary-bg-color);
+        }
+        .menu-item.disabled {
+            color: var(--hint-color);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* === УЛУЧШЕННЫЕ СТИЛИ AI CHAT === */
+        #ai-chat-content {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #ai-chat-content:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at top right, rgba(138, 43, 226, 0.1), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #ai-chat-content:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle at bottom left, rgba(147, 112, 219, 0.05), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Стили для приветственного сообщения */
+        .ai-welcome {
+            text-align: center;
+            padding: 25px 20px;
+            color: var(--hint-color);
+            font-style: italic;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(147, 112, 219, 0.05));
+            border-radius: 16px;
+            border: 1px solid rgba(138, 43, 226, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-welcome:before {
+            content: '✨';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+            opacity: 0.3;
+        }
+
+        .ai-welcome:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.3), transparent);
+        }
+
+        /* Улучшенные стили для пузырей чата */
+        .chat-message {
+            display: flex;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: messageAppear 0.3s ease-out forwards;
+        }
+
+        @keyframes messageAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 0.95em;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .chat-bubble:hover {
+            transform: scale(1.01);
+        }
+
+        /* Сообщения пользователя */
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .user-message .chat-bubble {
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            color: white;
+            border-bottom-right-radius: 5px;
+            border-top-right-radius: 20px;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            margin-left: auto;
+            box-shadow: 0 4px 12px rgba(var(--link-color-rgb, 0, 122, 255), 0.2);
+        }
+
+        /* Сообщения AI */
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .ai-message .chat-bubble {
+            background: var(--secondary-bg-color);
+            color: var(--text-color);
+            border-bottom-left-radius: 5px;
+            border-top-right-radius: 20px;
+            border-top-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            border: 1px solid rgba(138, 43, 226, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Индикатор загрузки AI с улучшенной анимацией */
+        .ai-loading {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: loadingAppear 0.3s ease-out 0.1s forwards;
+        }
+
+        @keyframes loadingAppear {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .ai-loading .chat-bubble {
+            background: linear-gradient(90deg, var(--secondary-bg-color), rgba(138, 43, 226, 0.1), var(--secondary-bg-color));
+            background-size: 200% 100%;
+            animation: loadingShine 1.5s infinite linear;
+            color: var(--hint-color);
+            font-style: italic;
+            border: 1px solid rgba(138, 43, 226, 0.15);
+            min-width: 100px;
+        }
+
+        @keyframes loadingShine {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Анимация точек в сообщении загрузки */
+        .ai-loading .chat-bubble:after {
+            content: '...';
+            display: inline-block;
+            width: 20px;
+            animation: loadingDots 1.5s infinite steps(4);
+        }
+
+        @keyframes loadingDots {
+            0%, 100% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
+        }
+
+        /* Улучшенное поле ввода AI Chat */
+        #ai-chat-input-area {
+            position: fixed;
+            bottom: calc(95px + env(safe-area-inset-bottom));
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(to top, var(--bg-color) 80%, transparent);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            gap: 12px;
+            z-index: 990;
+            border-top: 1px solid var(--secondary-bg-color);
+        }
+
+        #aiChatInput {
+            flex-grow: 1;
+            padding: 12px 20px;
+            border-radius: 25px;
+            background: var(--secondary-bg-color);
+            color: var(--text-color);
+            border: 2px solid transparent;
+            outline: none;
+            font-size: 1.0em;
+            height: 48px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #aiChatInput:focus {
+            border-color: rgba(138, 43, 226, 0.3);
+            background: var(--input-bg-color);
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.15);
+        }
+
+        #aiChatInput::placeholder {
             color: var(--hint-color);
             opacity: 0.7;
         }
 
-        select.ios-input {
-            appearance: none;
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right center;
-            padding-right: 24px;
-        }
-
-        /* === УЛУЧШЕННЫЕ КАРТОЧКИ ЗАДАЧ === */
-        .tasks-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.01em;
-        }
-
-        .tasks-count {
-            background: var(--secondary-bg-color);
-            padding: 6px 12px;
-            border-radius: var(--radius-full);
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--hint-color);
-        }
-
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .task-card {
-            background: var(--ios-elevated);
-            border-radius: var(--radius-lg);
-            padding: 18px;
-            border: 1px solid var(--ios-border);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            animation: slideIn 0.4s ease-out;
-            animation-fill-mode: both;
-        }
-
-        .task-card:nth-child(1) { animation-delay: 0.1s; }
-        .task-card:nth-child(2) { animation-delay: 0.2s; }
-        .task-card:nth-child(3) { animation-delay: 0.3s; }
-        .task-card:nth-child(4) { animation-delay: 0.4s; }
-
-        .task-card:active {
-            transform: scale(0.98);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .task-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            border-radius: 2px;
-        }
-
-        .task-card.high::before { background: #ff3b30; }
-        .task-card.medium::before { background: #ff9500; }
-        .task-card.low::before { background: #34c759; }
-        .task-card.expired::before { background: #ff2d55; }
-
-        .task-card.expired {
-            opacity: 0.9;
-            background: color-mix(in srgb, var(--ios-elevated) 90%, #ff2d55 10%);
-        }
-
-        .task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px;
-        }
-
-        .task-priority {
-            font-size: 12px;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: var(--radius-full);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .task-priority.high { 
-            background: linear-gradient(135deg, #ff3b30, #ff375f);
-            color: white; 
-        }
-        .task-priority.medium { 
-            background: linear-gradient(135deg, #ff9500, #ffcc00);
-            color: white; 
-        }
-        .task-priority.low { 
-            background: linear-gradient(135deg, #34c759, #30d158);
-            color: white; 
-        }
-
-        .task-text {
-            font-size: 17px;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 8px;
-            color: var(--text-color);
-        }
-
-        .task-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            color: var(--hint-color);
-        }
-
-        .task-meta i {
-            font-size: 12px;
-            margin-right: 4px;
-        }
-
-        .task-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid var(--ios-border);
-        }
-
-        .task-menu-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: 1px solid var(--ios-border);
-            color: var(--hint-color);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .task-menu-btn:hover {
-            background: var(--secondary-bg-color);
-            color: var(--text-color);
-        }
-
-        /* === УЛУЧШЕННЫЙ AI ЧАТ === */
-        #ai-chat-content {
-            position: relative;
-        }
-
-        .chat-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(175, 82, 222, 0.05) 0%, rgba(255, 45, 85, 0.05) 100%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .chat-messages {
-            max-height: calc(100vh - 280px);
-            overflow-y: auto;
-            padding-right: 8px;
-            margin-bottom: 16px;
-        }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: var(--ios-border);
-            border-radius: 2px;
-        }
-
-        .welcome-card {
-            background: var(--ios-elevated);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            text-align: center;
-            margin-bottom: 24px;
-            border: 1px solid var(--ios-border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .welcome-icon {
-            font-size: 40px;
-            margin-bottom: 16px;
-            opacity: 0.8;
-        }
-
-        .welcome-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .welcome-text {
-            font-size: 15px;
-            color: var(--hint-color);
-            line-height: 1.5;
-        }
-
-        .message {
-            display: flex;
-            margin-bottom: 16px;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .message.user {
-            justify-content: flex-end;
-        }
-
-        .message-bubble {
-            max-width: 85%;
-            padding: 14px 18px;
-            border-radius: var(--radius-xl);
-            line-height: 1.5;
-            position: relative;
-            word-wrap: break-word;
-        }
-
-        .message.user .message-bubble {
-            background: var(--ai-gradient);
+        #sendAiChat {
+            background: linear-gradient(135deg, #8a2be2, #9370db);
             color: white;
-            border-bottom-right-radius: var(--radius-sm);
-            box-shadow: var(--shadow-md);
-        }
-
-        .message.ai .message-bubble {
-            background: var(--ios-elevated);
-            color: var(--text-color);
-            border: 1px solid var(--ios-border);
-            border-bottom-left-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .ai-typing {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 18px;
-            background: var(--ios-elevated);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--ios-border);
-            width: fit-content;
-        }
-
-        .typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--hint-color);
-            animation: pulse 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        .chat-input-container {
-            position: fixed;
-            bottom: calc(80px + env(safe-area-inset-bottom));
-            left: 16px;
-            right: 16px;
-            background: var(--ios-elevated);
-            border-radius: var(--radius-full);
-            padding: 8px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--ios-border);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 1000;
-        }
-
-        .chat-input {
-            flex: 1;
             border: none;
-            background: transparent;
-            color: var(--text-color);
-            font-size: 16px;
-            padding: 12px 16px;
-            outline: none;
-            min-height: 44px;
-        }
-
-        .send-button {
-            width: 44px;
-            height: 44px;
             border-radius: 50%;
-            background: var(--ai-gradient);
-            border: none;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            flex-shrink: 0;
-            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+            position: relative;
+            overflow: hidden;
+            outline: none; /* NEW: Manage focus manually */
+        }
+        /* NEW: Button Focus State */
+        #sendAiChat:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
         }
 
-        .send-button:active {
+        #sendAiChat:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(138, 43, 226, 0.4);
+        }
+
+        #sendAiChat:active:not(:disabled) {
             transform: scale(0.95);
         }
 
-        .send-button:disabled {
+        #sendAiChat:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none !important;
         }
 
-        /* === УЛУЧШЕННАЯ СТАТИСТИКА === */
+        #sendAiChat:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        #sendAiChat:hover:before {
+            left: 100%;
+        }
+
+        #sendAiChat span {
+            font-size: 1.3em;
+            transition: transform 0.3s;
+        }
+
+        #sendAiChat:hover span:not(:disabled) {
+            transform: translateX(2px);
+        }
+
+        /* Кнопка очистки чата */
+        #clear-chat-btn {
+            position: absolute;
+            top: 0;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            z-index: 1;
+            outline: none; /* NEW: Manage focus manually */
+        }
+
+        /* NEW: Clear Button Focus State */
+        #clear-chat-btn:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
+        }
+
+        #clear-chat-btn:hover {
+            color: var(--link-color);
+            background: var(--secondary-bg-color);
+        }
+
+        /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
+        #bottom-nav {
+            position: fixed;
+            bottom: calc(10px + env(safe-area-inset-bottom));
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: calc(100% - 30px); 
+            max-width: 500px;
+            background: color-mix(in srgb, var(--secondary-bg-color) 80%, transparent);
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px); 
+            border-top: none;
+            border-radius: 25px; 
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+        }
+        
+        /* NEW: Center the nav content inside the floating bar */
+        #bottom-nav nav {
+            display: flex;
+            width: 100%;
+            justify-content: space-around;
+        }
+        
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: none; 
+            border: none;
+            cursor: pointer;
+            padding: 5px 10px;
+            color: var(--hint-color);
+            font-size: 0.7em;
+            transition: color 0.2s;
+            min-width: 60px;
+            text-align: center;
+            outline: none; /* NEW: Manage focus manually */
+        }
+        
+        /* NEW: Nav Button Focus State */
+        .nav-button:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
+            border-radius: 20px;
+        }
+        
+        .nav-button.active {
+            color: var(--link-color);
+            font-weight: 600;
+        }
+        
+        .nav-button-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            margin-bottom: 2px;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .nav-button-icon span {
+            font-size: 1.5em;
+            line-height: 1;
+        }
+        
+        .nav-button.active .nav-button-icon {
+            background-color: color-mix(in srgb, var(--link-color) 20%, transparent);
+            box-shadow: none; 
+        }
+
+        /* --- СТИЛИ РАЗДЕЛА СТАТИСТИКИ (iOS 2025 / Telegram Style) --- */
+        #stats-container {
+            margin-top: 15px;
+        }
+
+        /* Главные метрики в стиле виджетов iOS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 25px;
         }
 
-        .stat-card {
-            background: var(--ios-elevated);
-            border-radius: var(--radius-lg);
+        .stat-widget {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
             padding: 20px;
-            border: 1px solid var(--ios-border);
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            transition: transform 0.2s, background-color 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            outline: none; /* NEW: Manage focus manually */
+        }
+        /* NEW: Stat Widget Focus State */
+        .stat-widget:focus {
+            outline: 2px solid var(--link-color);
+            outline-offset: 2px;
         }
 
-        .stat-card:active {
+        .stat-widget:active {
             transform: scale(0.98);
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--stats-gradient);
+        .stat-widget-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            width: 100%;
         }
 
         .stat-icon {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            font-size: 20px;
-            background: color-mix(in srgb, var(--stats-gradient) 20%, transparent);
-            color: #34c759;
+            margin-right: 12px;
+            font-size: 1.3em;
         }
 
-        .stat-value {
-            font-size: 32px;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 4px;
-            background: linear-gradient(135deg, var(--text-color), color-mix(in srgb, var(--text-color) 70%, transparent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .stat-icon.total { background-color: rgba(52, 199, 89, 0.15); color: #34c759; }
+        .stat-icon.active { background-color: rgba(0, 122, 255, 0.15); color: var(--link-color); }
+        .stat-icon.completed { background-color: rgba(52, 199, 89, 0.15); color: #34c759; }
+        .stat-icon.high-priority { background-color: rgba(255, 59, 48, 0.15); color: #ff3b30; }
+        .stat-icon.today { background-color: rgba(255, 149, 0, 0.15); color: #ff9500; }
+        .stat-icon.expired { background-color: rgba(255, 59, 48, 0.15); color: #ff3b30; }
 
-        .stat-label {
-            font-size: 14px;
+        .stat-title {
+            font-size: 0.9em;
             color: var(--hint-color);
             font-weight: 500;
         }
 
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--text-color);
+            line-height: 1.2;
+            margin-bottom: 5px;
+        }
+
+        .stat-subtitle {
+            font-size: 0.8em;
+            color: var(--hint-color);
+            opacity: 0.8;
+        }
+
+        /* Прогресс-бар для выполнения */
         .progress-section {
-            background: var(--ios-elevated);
-            border-radius: var(--radius-lg);
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
             padding: 20px;
-            margin-bottom: 24px;
-            border: 1px solid var(--ios-border);
+            margin-bottom: 25px;
         }
 
         .progress-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 15px;
         }
 
         .progress-title {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-color);
         }
 
-        .progress-percent {
-            font-size: 20px;
-            font-weight: 800;
+        .progress-percentage {
+            font-size: 1.1em;
+            font-weight: 700;
             color: #34c759;
         }
 
+        .progress-bar-container {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
         .progress-bar {
-            height: 8px;
-            background: var(--secondary-bg-color);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .progress-fill {
             height: 100%;
-            background: var(--stats-gradient);
-            border-radius: 4px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(90deg, #34c759, #30d158);
+            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        /* === ОБНОВЛЕННАЯ НАВИГАЦИЯ === */
-        #bottom-nav {
-            position: fixed;
-            bottom: calc(16px + env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 32px);
-            max-width: 400px;
-            background: var(--ios-elevated);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: var(--radius-xl);
-            padding: 8px;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--ios-border);
+        .progress-stats {
             display: flex;
-            justify-content: space-around;
-            z-index: 1001;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: transparent;
-            border: none;
+            justify-content: space-between;
+            font-size: 0.9em;
             color: var(--hint-color);
-            padding: 8px 12px;
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            flex: 1;
-            max-width: 100px;
         }
 
-        .nav-item.active {
-            color: var(--link-color);
-            background: color-mix(in srgb, var(--link-color) 10%, transparent);
+        /* Распределение приоритетов */
+        .priority-section {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
         }
 
-        .nav-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 4px;
-            font-size: 20px;
-        }
-
-        .nav-label {
-            font-size: 11px;
+        .priority-title {
+            font-size: 1.1em;
             font-weight: 600;
-            letter-spacing: 0.02em;
+            color: var(--text-color);
+            margin-bottom: 15px;
         }
 
-        /* === КОНТЕКСТНОЕ МЕНЮ === */
-        #context-menu {
-            position: fixed;
-            background: var(--ios-elevated);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--ios-border);
-            z-index: 1100;
-            min-width: 200px;
-            display: none;
-            overflow: hidden;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-        }
-
-        .context-item {
-            padding: 14px 18px;
+        .priority-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: background-color 0.2s;
-            border-bottom: 1px solid var(--ios-border);
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--input-border-color);
         }
 
-        .context-item:last-child {
+        .priority-item:last-child {
             border-bottom: none;
         }
 
-        .context-item:active {
-            background-color: var(--secondary-bg-color);
+        .priority-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 15px;
+            flex-shrink: 0;
         }
 
-        .context-item i {
-            font-size: 18px;
-            width: 24px;
+        .priority-color.high { background-color: #e74c3c; }
+        .priority-color.medium { background-color: #f39c12; }
+        .priority-color.low { background-color: #2ecc71; }
+
+        .priority-info {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
         }
 
-        .context-item.done i { color: #34c759; }
-        .context-item.edit i { color: #007aff; }
-        .context-item.delete i { color: #ff3b30; }
+        .priority-name {
+            font-size: 1.0em;
+            font-weight: 500;
+            color: var(--text-color);
+            min-width: 80px;
+        }
 
-        /* === ЗАГРУЗКИ И СООБЩЕНИЯ === */
-        .loading-state, .empty-state {
-            text-align: center;
-            padding: 48px 24px;
+        .priority-count {
+            font-size: 0.9em;
             color: var(--hint-color);
         }
 
-        .loading-icon, .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-            animation: pulse 2s infinite;
+        .priority-percentage {
+            font-size: 1.0em;
+            font-weight: 600;
+            color: var(--link-color);
         }
 
-        .empty-icon {
-            animation: none;
-        }
-
-        .loading-text, .empty-text {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .error-state {
-            background: color-mix(in srgb, #ff3b30 10%, transparent);
-            border: 1px solid color-mix(in srgb, #ff3b30 30%, transparent);
-            border-radius: var(--radius-lg);
+        /* Еженедельная активность */
+        .weekly-section {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
             padding: 20px;
+            margin-top: 25px;
+        }
+
+        .weekly-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .weekly-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .day-cell {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 10px 5px;
             text-align: center;
-            margin: 20px 0;
+            transition: background-color 0.2s;
+        }
+        /* NEW: Highlight current day in the weekly grid */
+        .day-cell.current-day {
+            background: color-mix(in srgb, var(--link-color) 20%, transparent);
+            border: 1px solid var(--link-color);
         }
 
-        .error-icon {
-            color: #ff3b30;
-            font-size: 32px;
-            margin-bottom: 12px;
+        .day-name {
+            font-size: 0.7em;
+            color: var(--hint-color);
+            margin-bottom: 5px;
         }
 
-        /* === АДАПТИВНОСТЬ === */
-        @media (max-width: 360px) {
-            .header-title { font-size: 24px; }
-            .logo-icon { width: 40px; height: 40px; }
-            .stat-value { font-size: 28px; }
-            .nav-label { font-size: 10px; }
+        .day-count {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--text-color);
         }
 
-        @media (min-width: 768px) {
-            .content-section {
-                max-width: 600px;
-                margin: 0 auto;
+        /* Анимации для статистики */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
             }
-            
-            #bottom-nav {
-                max-width: 500px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(3, 1fr);
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        /* === УТИЛИТЫ === */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
+        .stat-widget, .progress-section, .priority-section, .weekly-section {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .stat-widget:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .stat-widget:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .stat-widget:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .stat-widget:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .progress-section {
+            animation-delay: 0.5s;
+        }
+
+        .priority-section {
+            animation-delay: 0.6s;
+        }
+
+        .weekly-section {
+            animation-delay: 0.7s;
+        }
+
+        /* Адаптивность для маленьких экранов */
+        @media (max-width: 480px) {
+            .chat-bubble {
+                max-width: 90%;
+                padding: 10px 14px;
+            }
+
+            #aiChatInput {
+                height: 44px;
+                padding: 10px 16px;
+            }
+
+            #sendAiChat {
+                width: 44px;
+                height: 44px;
+            }
+
+            .logo-header {
+                width: 35px;
+                height: 35px;
+            }
+
+            h1 {
+                font-size: 1.4em;
+            }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Tasks Content -->
-    <div id="tasks-content" class="content-section active">
-        <div class="page-header">
-            <div class="logo-icon">
-                <i class="fas fa-tasks"></i>
-            </div>
-            <div>
-                <h1 class="header-title">Мои задачи</h1>
-                <div class="header-subtitle">Управляйте своими задачами</div>
-            </div>
-        </div>
+    <main>
+        <section id="tasks-content" class="content-section active" role="region" aria-labelledby="tasks-heading">
+            <h1 id="tasks-heading">
+                <span class="logo-header"></span> Мои задачи
+            </h1>
 
-        <div class="form-section" id="form-section">
-            <div class="form-card">
-                <div class="form-header" onclick="toggleForm()">
-                    <div class="form-title">
-                        <i class="fas fa-plus-circle"></i>
-                        <span id="form-title-text">Новая задача</span>
-                    </div>
-                    <div class="form-arrow">
-                        <i class="fas fa-chevron-down"></i>
-                    </div>
+            <div class="form-section" id="form-section">
+                <div class="form-header" onclick="toggleForm()" role="button" aria-expanded="false" aria-controls="task-form-content" tabindex="0">
+                    <h2 id="form-title">
+                        <span id="form-icon">💡</span> Новая задача
+                    </h2>
+                    <span id="form-arrow" aria-hidden="true">▼</span>
                 </div>
-                <div class="form-content">
+                <div class="form-section-content" id="task-form-content">
                     <form id="task-form">
-                        <div class="ios-input-group">
-                            <div class="ios-input-row">
-                                <label class="ios-label">Задача</label>
-                                <input type="text" id="taskInput" class="ios-input" placeholder="Что нужно сделать?" required>
+                        <fieldset class="ios-group"> 
+                            <legend class="visually-hidden">Параметры задачи</legend>
+                            <div class="ios-row">
+                                <label for="taskInput" class="ios-label">Текст задачи</label>
+                                <input type="text" id="taskInput" placeholder="Введите задачу" required aria-required="true">
                             </div>
-                            <div class="ios-input-row">
-                                <label class="ios-label">Дата</label>
-                                <input type="date" id="dateInput" class="ios-input" required>
+                            <div class="ios-row">
+                                <label for="dateInput" class="ios-label">Дата</label>
+                                <input type="date" id="dateInput" required aria-required="true">
                             </div>
-                            <div class="ios-input-row">
-                                <label class="ios-label">Время</label>
-                                <input type="time" id="timeInput" class="ios-input" required>
+                            <div class="ios-row">
+                                <label for="timeInput" class="ios-label">Время</label>
+                                <input type="time" id="timeInput" required aria-required="true">
                             </div>
-                            <div class="ios-input-row">
-                                <label class="ios-label">Приоритет</label>
-                                <select id="importanceInput" class="ios-input" required>
-                                    <option value="medium">Средний</option>
-                                    <option value="high">Высокий</option>
-                                    <option value="low">Низкий</option>
+                            <div class="ios-row">
+                                <label for="importanceInput" class="ios-label">Важность</label>
+                                <select id="importanceInput" required aria-required="true">
+                                    <option value="low">Низкая</option>
+                                    <option value="medium">Средняя</option>
+                                    <option value="high">Высокая</option>
                                 </select>
                             </div>
-                        </div>
+                        </fieldset>
                     </form>
                 </div>
             </div>
-        </div>
 
-        <div class="tasks-header">
-            <h2 class="section-title">Активные задачи</h2>
-            <div class="tasks-count" id="tasks-count">0 задач</div>
-        </div>
-
-        <div id="tasks-list" class="task-list">
-            <div class="loading-state">
-                <div class="loading-icon">
-                    <i class="fas fa-spinner fa-spin"></i>
-                </div>
-                <div class="loading-text">Загрузка задач...</div>
+            <div id="tasks-list">
+                <p class="loading-message">Загрузка задач...</p>
             </div>
-        </div>
+        </section>
+
+        <section id="ai-chat-content" class="content-section" role="region" aria-labelledby="ai-heading">
+            <h1 id="ai-heading">
+                <span class="logo-header"></span> AI Ассистент
+                <button id="clear-chat-btn" title="Очистить чат" aria-label="Очистить чат">🗑️</button>
+            </h1>
+            <div id="ai-chat-messages" role="log" aria-live="polite">
+                <div class="ai-welcome">
+                    Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
+                </div>
+            </div>
+        </section>
+
+        <section id="stats-content" class="content-section" role="region" aria-labelledby="stats-heading">
+            <h1 id="stats-heading">
+                <span class="logo-header"></span> Статистика
+            </h1>
+            <div id="stats-container">
+                <p class="loading-message">Загрузка статистики...</p>
+
+                <div class="stats-grid">
+                    <div class="stat-widget" tabindex="0" aria-label="Всего задач">
+                        <div class="stat-widget-header">
+                            <div class="stat-icon total">Σ</div>
+                            <div>
+                                <div class="stat-title">Всего</div>
+                                <div class="stat-value" id="stat-total">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-subtitle">Общее количество</div>
+                    </div>
+                    <div class="stat-widget" tabindex="0" aria-label="Активных задач">
+                        <div class="stat-widget-header">
+                            <div class="stat-icon active">📝</div>
+                            <div>
+                                <div class="stat-title">Активных</div>
+                                <div class="stat-value" id="stat-active">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-subtitle">Требуют выполнения</div>
+                    </div>
+                    <div class="stat-widget" tabindex="0" aria-label="Выполненных задач">
+                        <div class="stat-widget-header">
+                            <div class="stat-icon completed">✅</div>
+                            <div>
+                                <div class="stat-title">Выполнено</div>
+                                <div class="stat-value" id="stat-completed">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-subtitle">Успешно завершено</div>
+                    </div>
+                    <div class="stat-widget" tabindex="0" aria-label="Задач с высоким приоритетом">
+                        <div class="stat-widget-header">
+                            <div class="stat-icon high-priority">🚨</div>
+                            <div>
+                                <div class="stat-title">Высокий приоритет</div>
+                                <div class="stat-value" id="stat-high-priority">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-subtitle">Срочные задачи</div>
+                    </div>
+                    <div class="stat-widget" tabindex="0" aria-label="Выполнено сегодня">
+                        <div class="stat-widget-header">
+                            <div class="stat-icon today">📅</div>
+                            <div>
+                                <div class="stat-title">Выполнено сегодня</div>
+                                <div class="stat-value" id="stat-today">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-subtitle">Завершённые сегодня</div>
+                    </div>
+                    <div class="stat-widget" tabindex="0" aria-label="Просроченных задач">
+                        <div class="stat-widget-header">
+                            <div class="stat-icon expired">⏰</div>
+                            <div>
+                                <div class="stat-title">Просрочено</div>
+                                <div class="stat-value" id="stat-expired">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-subtitle">Истёк срок выполнения</div>
+                    </div>
+                </div>
+
+                <div class="progress-section" aria-label="Прогресс выполнения задач">
+                    <div class="progress-header">
+                        <div class="progress-title">Прогресс выполнения</div>
+                        <div class="progress-percentage" id="progress-percentage">0%</div>
+                    </div>
+                    <div class="progress-bar-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-stats">
+                        <span id="progress-active">0 активных</span>
+                        <span id="progress-completed">0 выполнено</span>
+                    </div>
+                </div>
+
+                <div class="priority-section">
+                    <div class="priority-title">Распределение по приоритетам</div>
+                    <div class="priority-item">
+                        <div class="priority-color high"></div>
+                        <div class="priority-info">
+                            <span class="priority-name">Высокий</span>
+                            <span class="priority-count" id="priority-high">0</span>
+                        </div>
+                        <div class="priority-percentage" id="percentage-high">0%</div>
+                    </div>
+                    <div class="priority-item">
+                        <div class="priority-color medium"></div>
+                        <div class="priority-info">
+                            <span class="priority-name">Средний</span>
+                            <span class="priority-count" id="priority-medium">0</span>
+                        </div>
+                        <div class="priority-percentage" id="percentage-medium">0%</div>
+                    </div>
+                    <div class="priority-item">
+                        <div class="priority-color low"></div>
+                        <div class="priority-info">
+                            <span class="priority-name">Низкий</span>
+                            <span class="priority-count" id="priority-low">0</span>
+                        </div>
+                        <div class="priority-percentage" id="percentage-low">0%</div>
+                    </div>
+                </div>
+
+                <div class="weekly-section">
+                    <div class="weekly-title">Еженедельная активность</div>
+                    <div class="weekly-grid" id="weekly-grid">
+                        </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="context-menu" role="menu">
+        <div class="menu-item" id="menu-done" role="menuitem" tabindex="0">✅ Отметить как выполненную</div>
+        <div class="menu-item" id="menu-edit" role="menuitem" tabindex="0">📝 Редактировать</div>
+        <div class="menu-item" id="menu-delete" role="menuitem" tabindex="0">🗑️ Удалить</div>
     </div>
 
-    <!-- AI Chat Content -->
-    <div id="ai-chat-content" class="content-section">
-        <div class="chat-background"></div>
-        <div class="page-header">
-            <div class="logo-icon">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div>
-                <h1 class="header-title">AI Помощник</h1>
-                <div class="header-subtitle">Задавайте вопросы о задачах</div>
-            </div>
-            <button id="clear-chat-btn" class="task-menu-btn" title="Очистить чат">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        </div>
-
-        <div id="ai-chat-messages" class="chat-messages">
-            <div class="welcome-card">
-                <div class="welcome-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3 class="welcome-title">Привет! Я ваш AI-помощник</h3>
-                <p class="welcome-text">
-                    Помогу с планированием задач, дам советы по продуктивности 
-                    или помогу разбить большую задачу на подзадачи.
-                </p>
-            </div>
-        </div>
-
-        <div class="chat-input-container">
-            <input type="text" id="aiChatInput" class="chat-input" placeholder="Напишите сообщение...">
-            <button id="sendAiChat" class="send-button">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
+    <div id="ai-chat-input-area">
+        <input type="text" id="aiChatInput" placeholder="Напишите сообщение..." aria-label="Поле ввода для AI ассистента">
+        <button id="sendAiChat" aria-label="Отправить сообщение" disabled>
+            <span>➤</span>
+        </button>
     </div>
 
-    <!-- Stats Content -->
-    <div id="stats-content" class="content-section">
-        <div class="page-header">
-            <div class="logo-icon">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <div>
-                <h1 class="header-title">Аналитика</h1>
-                <div class="header-subtitle">Статистика продуктивности</div>
-            </div>
-        </div>
-
-        <div id="stats-container">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-list-check"></i>
-                    </div>
-                    <div class="stat-value" id="stat-total">0</div>
-                    <div class="stat-label">Всего задач</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-value" id="stat-active">0</div>
-                    <div class="stat-label">Активных</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-value" id="stat-completed">0</div>
-                    <div class="stat-label">Выполнено</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-fire"></i>
-                    </div>
-                    <div class="stat-value" id="stat-high-priority">0</div>
-                    <div class="stat-label">Высокий приоритет</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-day"></i>
-                    </div>
-                    <div class="stat-value" id="stat-today">0</div>
-                    <div class="stat-label">Сегодня</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-hourglass-end"></i>
-                    </div>
-                    <div class="stat-value" id="stat-expired">0</div>
-                    <div class="stat-label">Просрочено</div>
-                </div>
-            </div>
-
-            <div class="progress-section">
-                <div class="progress-header">
-                    <div class="progress-title">Прогресс выполнения</div>
-                    <div class="progress-percent" id="progress-percentage">0%</div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-bar" style="width: 0%"></div>
-                </div>
-                <div style="display: flex; justify-content: space-between; font-size: 14px; color: var(--hint-color);">
-                    <span id="progress-active">0 активных</span>
-                    <span id="progress-completed">0 выполнено</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Context Menu -->
-    <div id="context-menu">
-        <div class="context-item done" id="menu-done">
-            <i class="fas fa-check-circle"></i>
-            <span>Выполнено</span>
-        </div>
-        <div class="context-item edit" id="menu-edit">
-            <i class="fas fa-edit"></i>
-            <span>Редактировать</span>
-        </div>
-        <div class="context-item delete" id="menu-delete">
-            <i class="fas fa-trash-alt"></i>
-            <span>Удалить</span>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation -->
     <div id="bottom-nav">
-        <button class="nav-item active" data-section="tasks-content">
-            <div class="nav-icon">
-                <i class="fas fa-tasks"></i>
-            </div>
-            <div class="nav-label">Задачи</div>
-        </button>
-        <button class="nav-item" data-section="ai-chat-content">
-            <div class="nav-icon">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="nav-label">AI Чат</div>
-        </button>
-        <button class="nav-item" data-section="stats-content">
-            <div class="nav-icon">
-                <i class="fas fa-chart-bar"></i>
-            </div>
-            <div class="nav-label">Аналитика</div>
-        </button>
+        <nav aria-label="Основная навигация">
+            <button class="nav-button active" data-section="tasks-content" aria-current="page" aria-label="Задачи">
+                <div class="nav-button-icon"><span>📝</span></div>
+                Задачи
+            </button>
+            <button class="nav-button" data-section="ai-chat-content" aria-label="AI Ассистент">
+                <div class="nav-button-icon"><span>🤖</span></div>
+                AI Ассистент
+            </button>
+            <button class="nav-button" data-section="stats-content" aria-label="Статистика">
+                <div class="nav-button-icon"><span>📊</span></div>
+                Статистика
+            </button>
+        </nav>
     </div>
 
     <script>
-        // JavaScript код остается практически идентичным предыдущей версии
-        // (используется тот же функционал с n8n и Telegram WebApp)
-        // Для экономии места, вставляю только основные изменения
-        
+        // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
         tg.ready();
-        tg.expand();
-        
-        // Конфигурация N8N (оставляем без изменений)
-        const N8N_GET_URL = 'https://i74s52gg.rcld.app/webhook/get-tasks';
-        const N8N_POST_URL = 'https://i74s52gg.rcld.app/webhook/add-task';
-        const N8N_UPDATE_URL = 'https://i74s52gg.rcld.app/webhook/update-task-status';
-        const N8N_EDIT_URL = N8N_UPDATE_URL;
-        const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
-        const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task';
-        const N8N_GET_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats';
-        const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx';
-        
-        // Инициализация элементов
+        // Включение тактильной отдачи
+        tg.HapticFeedback.impactOccurred('light');
+
+        // Глобальные переменные для работы приложения
+        const N8N_FETCH_URL = '{{ N8N_URL_FETCH }}';
+        const N8N_UPDATE_URL = '{{ N8N_URL_UPDATE }}';
+        const N8N_DELETE_URL = '{{ N8N_URL_DELETE }}';
+        const N8N_GET_STATS_URL = '{{ N8N_URL_STATS }}';
+        const N8N_AI_CHAT_URL = '{{ N8N_URL_AI_CHAT }}';
+        const N8N_AUTH_HEADER = 'Bearer {{ AUTH_TOKEN }}';
+
+        // Элементы DOM
         const tasksList = document.getElementById('tasks-list');
-        const taskForm = document.getElementById('task-form');
         const formSection = document.getElementById('form-section');
+        const formHeader = document.querySelector('.form-header'); // NEW: Select form header
+        const taskForm = document.getElementById('task-form');
+        const formTitle = document.getElementById('form-title');
         const contextMenu = document.getElementById('context-menu');
         const bottomNav = document.getElementById('bottom-nav');
+        const aiChatMessages = document.getElementById('ai-chat-messages');
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
-        const aiChatMessages = document.getElementById('ai-chat-messages');
         const clearChatButton = document.getElementById('clear-chat-btn');
         
-        let currentTaskId = null;
+        let allTasksData = [];
         let isEditing = false;
         let currentEditingId = null;
-        let allTasksData = [];
-        
-        // Остальной JavaScript код (функции fetchTasks, sendTask, switchSection и т.д.)
-        // остается практически идентичным предыдущей версии
-        
-        // Для экономии места в ответе, здесь будут только ключевые изменения:
-        
-        // 1. Улучшенная инициализация Telegram
+        let currentTaskId = null; // Для контекстного меню
+
+        // --- Вспомогательные функции ---
+
+        // Установка стандартных значений для формы
+        function setDefaultFormValues() {
+            const now = new Date();
+            // 1. Установка даты (Сегодня)
+            const today = now.toISOString().split('T')[0];
+            document.getElementById('dateInput').value = today;
+            // 2. Установка времени (Ближайший час)
+            const nextHour = new Date(now.getTime());
+            nextHour.setHours(now.getHours() + 1);
+            nextHour.setMinutes(0);
+            nextHour.setSeconds(0);
+            const timeString = nextHour.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+            document.getElementById('timeInput').value = timeString;
+            // 3. Установка важности (Средняя)
+            document.getElementById('importanceInput').value = 'medium';
+        }
+
+        // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
+        function toggleForm() {
+            // NEW: Select form header inside the function or use the already selected one
+            const formHeader = document.querySelector('.form-header'); 
+            if (formSection.classList.contains('expanded') && isEditing) {
+                exitEditMode();
+            }
+            const isExpanding = !formSection.classList.contains('expanded');
+            formSection.classList.toggle('expanded');
+            document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
+            
+            // NEW: Update ARIA-expanded state 
+            formHeader.setAttribute('aria-expanded', formSection.classList.contains('expanded'));
+            
+            if (isExpanding) {
+                setDefaultFormValues();
+            }
+
+            if (document.getElementById('tasks-content').classList.contains('active')) {
+                if (formSection.classList.contains('expanded')) {
+                    if (!isEditing) {
+                        tg.MainButton.setText('➕ Добавить задачу').show();
+                    }
+                } else {
+                    if (!isEditing) {
+                        tg.MainButton.hide();
+                    }
+                }
+            }
+        }
+
+        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
+        function enterEditMode(task) {
+            if (!task) return;
+            isEditing = true;
+            currentEditingId = task.id;
+            document.getElementById('taskInput').value = task.task_text || task.task;
+            document.getElementById('dateInput').value = task.date;
+            document.getElementById('timeInput').value = task.time;
+            document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
+            formSection.classList.add('expanded');
+            document.getElementById('form-arrow').textContent = '▲';
+            document.querySelector('.form-header').setAttribute('aria-expanded', 'true'); // NEW: Set ARIA
+            formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
+            tg.MainButton.setText('✍️ Сохранить изменения').show();
+            tg.HapticFeedback.notificationOccurred('success');
+        }
+
+        function exitEditMode() {
+            isEditing = false;
+            currentEditingId = null;
+            taskForm.reset();
+            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
+            setDefaultFormValues();
+            if (document.getElementById('tasks-content').classList.contains('active') && formSection.classList.contains('expanded')) {
+                tg.MainButton.setText('➕ Добавить задачу').show();
+            } else {
+                tg.MainButton.hide();
+            }
+        }
+
+        // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
+        async function sendTask() {
+            const taskName = document.getElementById('taskInput').value;
+            const taskDate = document.getElementById('dateInput').value;
+            const taskTime = document.getElementById('timeInput').value;
+            const taskImportance = document.getElementById('importanceInput').value;
+
+            if (!taskName || !taskDate || !taskTime) {
+                tg.showAlert('Пожалуйста, заполните все поля.');
+                return;
+            }
+
+            const isUpdate = isEditing;
+            const payload = {
+                task_text: taskName,
+                date: taskDate,
+                time: taskTime,
+                importance: taskImportance,
+                done: 'no',
+            };
+
+            if (isUpdate) {
+                payload.id = currentEditingId;
+            }
+
+            try {
+                tg.MainButton.showProgress(true);
+                const url = isUpdate ? N8N_UPDATE_URL : N8N_FETCH_URL;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success || (result.data && result.data.message.includes('successfully'))) {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert(isUpdate ? 'Задача успешно обновлена!' : 'Задача успешно добавлена!');
+                    if (isEditing) {
+                        exitEditMode();
+                    } else {
+                        taskForm.reset();
+                        setDefaultFormValues();
+                    }
+                    formSection.classList.remove('expanded');
+                    document.getElementById('form-arrow').textContent = '▼';
+                    document.querySelector('.form-header').setAttribute('aria-expanded', 'false'); // NEW: Set ARIA
+                    tg.MainButton.hide();
+                    await fetchTasks();
+                } else {
+                    throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
+                }
+            } catch (error) {
+                console.error('Operation error:', error);
+                tg.showAlert(`Ошибка: ${error.message}`);
+            } finally {
+                tg.MainButton.hideProgress();
+            }
+        }
+
         tg.MainButton.setText('➕ Добавить задачу').hide();
-        tg.MainButton.setParams({ color: '#007AFF' });
-        
-        // 2. Обновленная функция переключения разделов
+        tg.onEvent('mainButtonClicked', sendTask);
+
+        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
+        function showMenu(taskId, buttonElement) {
+            contextMenu.style.display = 'none';
+            currentTaskId = taskId;
+            const viewportWidth = window.innerWidth;
+            const rect = buttonElement.getBoundingClientRect();
+            const offset = 10;
+
+            contextMenu.style.display = 'block';
+            
+            // Set focus to the first item for keyboard users
+            document.getElementById('menu-done').focus();
+
+            const menuWidth = contextMenu.offsetWidth;
+            let leftPosition;
+            let defaultLeft = rect.right - menuWidth + 5;
+
+            // Горизонтальное позиционирование (привязано к кнопке или краю экрана)
+            if (defaultLeft + menuWidth > viewportWidth - offset) {
+                leftPosition = viewportWidth - menuWidth - offset;
+            } else {
+                leftPosition = defaultLeft;
+            }
+
+            if (leftPosition < offset) {
+                leftPosition = offset;
+            }
+
+            // Вертикальное позиционирование (сразу под кнопкой)
+            contextMenu.style.top = `${rect.bottom + 5}px`;
+            contextMenu.style.left = `${leftPosition}px`;
+        }
+
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', (event) => {
+            if (contextMenu.style.display === 'block' && !contextMenu.contains(event.target) && !event.target.classList.contains('menu-button')) {
+                contextMenu.style.display = 'none';
+                currentTaskId = null;
+            }
+        });
+
+        // Обработчики пунктов меню
+        document.getElementById('menu-done').addEventListener('click', () => {
+            if (currentTaskId) {
+                contextMenu.style.display = 'none';
+                markTaskAsDone(currentTaskId);
+            }
+        });
+
+        document.getElementById('menu-edit').addEventListener('click', () => {
+            if (currentTaskId) {
+                contextMenu.style.display = 'none';
+                const taskToEdit = allTasksData.find(t => t.id == currentTaskId);
+                if (taskToEdit) {
+                    enterEditMode(taskToEdit);
+                } else {
+                    tg.showAlert('Не удалось найти задачу для редактирования.');
+                }
+            }
+        });
+
+        async function markTaskAsDone(taskId) {
+            const performUpdate = async () => {
+                try {
+                    tg.MainButton.showProgress(true);
+                    const response = await fetch(N8N_UPDATE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: taskId,
+                            done: 'yes',
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.success || (result.data && result.data.message.includes('successfully'))) {
+                        tg.HapticFeedback.notificationOccurred('success');
+                        tg.showAlert('Задача отмечена как выполненная!');
+                        await fetchTasks();
+                    } else {
+                        throw new Error(result.message || 'Не удалось отметить задачу. (Проверь n8n log)');
+                    }
+
+                } catch (error) {
+                    console.error('Mark as Done error:', error);
+                    tg.showAlert(`Ошибка: ${error.message}`);
+                } finally {
+                    tg.MainButton.hideProgress();
+                }
+            };
+
+            // Добавляем тактильный отклик при запросе на подтверждение
+            tg.HapticFeedback.impactOccurred('medium'); 
+            tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none';
+                    await performUpdate();
+                }
+            });
+        }
+
+        async function deleteTask(taskId) {
+            const performDelete = async () => {
+                try {
+                    tg.MainButton.showProgress(true);
+                    const response = await fetch(N8N_DELETE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: taskId })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (!(result.success || (result.data && result.data.message.includes('successfully')))) {
+                        throw new Error(result.message || 'Не удалось удалить задачу. (Проверь n8n log)');
+                    }
+                    
+                    tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert('Задача успешно удалена!');
+                    await fetchTasks();
+                } catch (error) {
+                    console.error('DELETE error:', error);
+                    tg.showAlert(`Ошибка удаления: ${error.message}.`);
+                } finally {
+                    tg.MainButton.hideProgress();
+                }
+            };
+            
+            // Добавляем тактильный отклик при запросе на подтверждение
+            tg.HapticFeedback.impactOccurred('medium');
+            tg.showConfirm('Вы уверены, что хотите удалить эту задачу?', async (confirmed) => {
+                if (confirmed) {
+                    contextMenu.style.display = 'none';
+                    await performDelete();
+                }
+            });
+        }
+
+        document.getElementById('menu-delete').addEventListener('click', () => {
+            if (currentTaskId) {
+                deleteTask(currentTaskId);
+            }
+        });
+
+        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            if (dateStr.includes('-')) {
+                const parts = dateStr.split('-');
+                if (parts.length === 3 && parts[0].length === 4) {
+                    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+                }
+            }
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        function formatTaskDateTime(dateStr, timeStr) {
+            const dateOnly = parseDate(dateStr);
+            const timeParts = (timeStr || '00:00').split(':');
+
+            if (!dateOnly) {
+                const formattedTime = timeStr || '00:00';
+                return { formattedText: `📅 НЕВЕРНАЯ ДАТА в ⏰ ${formattedTime}`, isExpired: false };
+            }
+
+            const taskDateTime = new Date(dateOnly.getTime());
+            // Adjust for local time zone offset to treat 'YYYY-MM-DD' as local date
+            taskDateTime.setHours(taskDateTime.getHours() + (new Date().getTimezoneOffset() / 60)); 
+            
+            // Set time
+            taskDateTime.setHours(taskDateTime.getHours() + parseInt(timeParts[0] || 0));
+            taskDateTime.setMinutes(taskDateTime.getMinutes() + parseInt(timeParts[1] || 0));
+
+            const now = new Date();
+            const isExpired = taskDateTime < now;
+
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const taskDateOnly = new Date(taskDateTime.getFullYear(), taskDateTime.getMonth(), taskDateTime.getDate());
+
+            let dateDisplay;
+            const dayDifference = Math.round((taskDateOnly.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+
+            if (dayDifference === 0) {
+                dateDisplay = 'Сегодня';
+            } else if (dayDifference === 1) {
+                dateDisplay = 'Завтра';
+            } else {
+                const options = { day: 'numeric', month: 'short' };
+                dateDisplay = taskDateOnly.toLocaleDateString('ru-RU', options).toUpperCase().replace(/\./g, '');
+            }
+
+            return { formattedText: `📅 ${dateDisplay} в ⏰ ${timeStr}`, isExpired: isExpired };
+        }
+
+        function displayError(message) {
+            tasksList.innerHTML = `<p class="error-message">API Error: ${message}</p>`;
+            tg.showAlert('Ошибка загрузки задач.');
+        }
+
+        async function fetchTasks() {
+            try {
+                if (!tg.initData) {
+                    displayError('Telegram initData is missing. Cannot authorize.');
+                    return;
+                }
+
+                tasksList.innerHTML = '<p class="loading-message">Загрузка...</p>';
+
+                const response = await fetch(N8N_FETCH_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                // Проверка и обработка структуры ответа
+                if (!result || !result.tasks) {
+                    throw new Error('Неверный формат ответа от сервера: ожидался массив задач.');
+                }
+                
+                allTasksData = result.tasks;
+
+                const activeTasks = allTasksData.filter(t => (t.done || 'no').toLowerCase() === 'no');
+                
+                if (activeTasks.length === 0) {
+                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
+                    return;
+                }
+
+                // Сортировка по дате/времени (самые ранние - в начале)
+                activeTasks.sort((a, b) => {
+                    const aTimeStr = a.date + ' ' + (a.time || '00:00');
+                    const bTimeStr = b.date + ' ' + (b.time || '00:00');
+                    const aDate = new Date(aTimeStr);
+                    const bDate = new Date(bTimeStr);
+                    
+                    if (isNaN(aDate.getTime())) return 1;
+                    if (isNaN(bDate.getTime())) return -1;
+                    return aDate.getTime() - bDate.getTime();
+                });
+
+                tasksList.innerHTML = '';
+                activeTasks.forEach(taskData => {
+                    const importance = (taskData.importance || 'low').toLowerCase();
+                    const taskCard = document.createElement('div');
+                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи';
+                    const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
+                    const taskId = taskData.id;
+                    let cardClasses = `task-card ${importance}`;
+                    
+                    if (dateTimeInfo.isExpired) {
+                        cardClasses += ' expired';
+                    }
+
+                    taskCard.className = cardClasses;
+                    taskCard.setAttribute('data-task-id', taskId);
+                    // NEW: Add tabindex="0" and onclick to the card itself for better usability/accessibility
+                    taskCard.setAttribute('tabindex', '0');
+                    taskCard.setAttribute('onclick', `enterEditMode(allTasksData.find(t => t.id == '${taskId}'))`);
+                    
+                    taskCard.innerHTML = `
+                        <div class="task-info">
+                            <div class="task-header">
+                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span>
+                                <span class="task-text">${taskText}</span>
+                            </div>
+                            <p>${dateTimeInfo.formattedText}</p>
+                        </div>
+                        <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции" aria-label="Опции для задачи"> ⋮ </button>
+                    `;
+                    tasksList.appendChild(taskCard);
+                });
+
+            } catch (error) {
+                console.error('Fetch error:', error);
+                displayError(error.message);
+            }
+        }
+
+        // --- 6. ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ (SPA) ---
         function switchSection(sectionId, buttonElement) {
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
             document.getElementById(sectionId).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(button => {
+
+            document.querySelectorAll('.nav-button').forEach(button => {
                 button.classList.remove('active');
+                // NEW: Remove aria-current from all buttons
+                button.removeAttribute('aria-current'); 
+                button.querySelector('.nav-button-icon').style.boxShadow = 'none';
+                button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
             });
             
             buttonElement.classList.add('active');
-            
-            // Анимация подчеркивания в заголовке
-            const headerLine = document.querySelector(`#${sectionId} .page-header::after`);
-            if (headerLine) {
-                headerLine.style.width = '40px';
-                setTimeout(() => {
-                    headerLine.style.width = '100%';
-                }, 100);
-            }
-            
-            // Логика для каждого раздела
+            // NEW: Set aria-current="page" on the active button
+            buttonElement.setAttribute('aria-current', 'page');
+
+            const activeColor = tg.themeParams.link_color || '#007aff';
+            buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
+
             if (sectionId === 'tasks-content') {
                 if (formSection.classList.contains('expanded')) {
                     tg.MainButton.show();
+                    tg.MainButton.setText(isEditing ? '✍️ Сохранить изменения' : '➕ Добавить задачу');
                 } else {
                     tg.MainButton.hide();
                 }
-                fetchTasks();
+                // Проверяем, если список пуст (включая загрузочное сообщение), то загружаем
+                if (document.getElementById('tasks-list').children.length < 2) { 
+                     fetchTasks();
+                }
             } else if (sectionId === 'stats-content') {
                 tg.MainButton.hide();
                 fetchStats();
             } else {
                 tg.MainButton.hide();
-                // Фокус на поле ввода AI чата
-                setTimeout(() => {
+            }
+        }
+
+        // --- 7. ЛОГИКА AI CHAT ---
+        
+        // 7.1. Вспомогательная функция для добавления сообщения в чат
+        function appendMessage(text, type) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${type}-message`;
+            messageElement.innerHTML = `<div class="chat-bubble">${text}</div>`;
+            aiChatMessages.appendChild(messageElement);
+            // Плавный скролл к последнему сообщению
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        // 7.2. Индикатор загрузки AI
+        let loadingMessageElement = null;
+
+        function showAILoading() {
+            loadingMessageElement = document.createElement('div');
+            loadingMessageElement.className = 'ai-loading ai-message';
+            loadingMessageElement.innerHTML = `<div class="chat-bubble">AI печатает</div>`;
+            aiChatMessages.appendChild(loadingMessageElement);
+            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+        }
+
+        function hideAILoading() {
+            if (loadingMessageElement) {
+                loadingMessageElement.remove();
+                loadingMessageElement = null;
+            }
+        }
+
+        // 7.3. Отправка сообщения AI
+        async function sendAiMessage() {
+            const messageText = aiChatInput.value.trim();
+            if (messageText) {
+                // 1. Отображаем сообщение пользователя
+                appendMessage(messageText, 'user');
+
+                // 2. Очистка поля и блокировка ввода
+                aiChatInput.value = '';
+                aiChatInput.disabled = true;
+                sendAiChatButton.disabled = true;
+
+                // 3. Показываем индикатор загрузки AI
+                showAILoading();
+
+                try {
+                    const response = await fetch(N8N_AI_CHAT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message: messageText })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответа)";
+
+                    // Проверка на ожидаемые поля в ответе
+                    if (result && result.aiResponse) {
+                        aiResponseText = result.aiResponse;
+                    } else if (result && result.response) {
+                        aiResponseText = result.response;
+                    }
+
+                    // 4. Убираем индикатор загрузки и показываем ответ AI
+                    hideAILoading();
+                    appendMessage(aiResponseText, 'ai');
+
+                } catch (error) {
+                    console.error('AI Chat Error:', error);
+                    hideAILoading();
+                    appendMessage(`❌ Ошибка: Не удалось подключиться к AI ассистенту. ${error.message}`, 'ai');
+                } finally {
+                    // 5. Разблокировка ввода
+                    aiChatInput.disabled = false;
+                    sendAiChatButton.disabled = false;
                     aiChatInput.focus();
-                }, 300);
+                }
             }
         }
         
-        // 3. Обновленное отображение задач
-        function displayTasks(tasks) {
-            const tasksCount = document.getElementById('tasks-count');
-            const activeTasks = tasks.filter(task => task.done !== 'yes');
-            
-            tasksCount.textContent = `${activeTasks.length} ${getRussianWord(activeTasks.length, ['задача', 'задачи', 'задач'])}`;
-            
-            // ... остальная логика отображения задач
-        }
-        
-        // 4. Вспомогательная функция для русских окончаний
-        function getRussianWord(number, words) {
-            const cases = [2, 0, 1, 1, 1, 2];
-            return words[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[Math.min(number % 10, 5)]];
-        }
-        
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', () => {
-            // Установка сегодняшней даты по умолчанию
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('dateInput').value = today;
-            
-            // Инициализация времени (следующий час)
-            const nextHour = new Date();
-            nextHour.setHours(nextHour.getHours() + 1);
-            document.getElementById('timeInput').value = nextHour.toTimeString().slice(0, 5);
-            
-            // Навигация
-            bottomNav.querySelectorAll('.nav-item').forEach(button => {
-                button.addEventListener('click', () => {
-                    switchSection(button.getAttribute('data-section'), button);
-                    tg.HapticFeedback.impactOccurred('light');
-                });
-            });
-            
-            // AI Chat события
-            aiChatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendAiMessage();
-                }
-            });
-            
-            sendAiChatButton.addEventListener('click', sendAiMessage);
-            
+        // 7.4. ЛОГИКА ОЧИСТКИ ЧАТА
+        if (clearChatButton) {
             clearChatButton.addEventListener('click', () => {
-                tg.showConfirm('Очистить историю чата?', (confirmed) => {
+                tg.showConfirm('Очистить всю историю чата?', (confirmed) => {
                     if (confirmed) {
                         aiChatMessages.innerHTML = `
-                            <div class="welcome-card">
-                                <div class="welcome-icon">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <h3 class="welcome-title">Привет! Я ваш AI-помощник</h3>
-                                <p class="welcome-text">
-                                    Помогу с планированием задач, дам советы по продуктивности 
-                                    или помогу разбить большую задачу на подзадачи.
-                                </p>
+                            <div class="ai-welcome">
+                                Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
                             </div>
                         `;
                         tg.showAlert('История чата очищена');
@@ -1305,73 +1932,166 @@
                     }
                 });
             });
-            
-            // Активируем первый раздел
-            const firstNav = bottomNav.querySelector('.nav-item[data-section="tasks-content"]');
-            switchSection('tasks-content', firstNav);
+        }
+        
+        // 7.5. Блокировка кнопки отправки, если поле пустое
+        aiChatInput.addEventListener('input', () => {
+            sendAiChatButton.disabled = aiChatInput.value.trim() === '';
         });
+
+        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ИСПРАВЛЕННАЯ) ---
         
-        // Экспорт функций в глобальную область видимости
-        window.toggleForm = function() {
-            formSection.classList.toggle('expanded');
-            const arrow = document.querySelector('.form-arrow i');
-            const formContent = document.querySelector('.form-content');
-            
-            if (formSection.classList.contains('expanded')) {
-                arrow.classList.remove('fa-chevron-down');
-                arrow.classList.add('fa-chevron-up');
-                formContent.style.maxHeight = '500px';
-                tg.MainButton.show();
-            } else {
-                arrow.classList.remove('fa-chevron-up');
-                arrow.classList.add('fa-chevron-down');
-                formContent.style.maxHeight = '0';
-                tg.MainButton.hide();
-                exitEditMode();
-            }
-        };
-        
-        window.showMenu = function(taskId, buttonElement) {
-            currentTaskId = taskId;
-            
-            const rect = buttonElement.getBoundingClientRect();
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = `${rect.right - contextMenu.offsetWidth}px`;
-            contextMenu.style.top = `${rect.bottom + 8}px`;
-            
-            tg.HapticFeedback.impactOccurred('light');
-        };
-        
-        // Закрытие контекстного меню при клике вне его
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.task-menu-btn') && !e.target.closest('#context-menu')) {
-                contextMenu.style.display = 'none';
-            }
-        });
-        
-        // Обработчики контекстного меню
-        document.getElementById('menu-done').addEventListener('click', () => {
-            if (currentTaskId) markTaskAsDone(currentTaskId);
-            contextMenu.style.display = 'none';
-        });
-        
-        document.getElementById('menu-edit').addEventListener('click', () => {
-            if (currentTaskId) {
-                const task = allTasksData.find(t => t.id == currentTaskId);
-                if (task) enterEditMode(task);
-                contextMenu.style.display = 'none';
-            }
-        });
-        
-        document.getElementById('menu-delete').addEventListener('click', () => {
-            if (currentTaskId) {
-                tg.showConfirm('Удалить задачу?', (confirmed) => {
-                    if (confirmed) {
-                        deleteTask(currentTaskId);
-                        contextMenu.style.display = 'none';
+        // Функция для получения названия дня недели
+        function getDayName(dayIndex) {
+            const days = ['ВС', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
+            return days[dayIndex] || '?';
+        }
+
+        async function fetchStats() {
+            try {
+                if (!tg.initData) {
+                    document.getElementById('stats-container').innerHTML = '<p class="error-message">Ошибка авторизации Telegram.</p>';
+                    return;
+                }
+
+                document.getElementById('stats-container').innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
+
+                const response = await fetch(N8N_GET_STATS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
                     }
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const statData = await response.json();
+
+                if (!statData || !statData.totalTasks) {
+                    throw new Error('Неверный формат ответа от сервера статистики.');
+                }
+                
+                // Обновление прогресс-бара для скринридеров
+                document.querySelector('.progress-bar-container').setAttribute('aria-valuenow', statData.totalTasks > 0 ? Math.round((statData.completedTasks / statData.totalTasks) * 100) : 0);
+
+                // Динамическое заполнение контейнера статистики (обязательно после получения данных)
+                renderStats(statData);
+
+            } catch (error) {
+                console.error('Stats fetch error:', error);
+                document.getElementById('stats-container').innerHTML = `<p class="error-message">Ошибка загрузки статистики: ${error.message}</p>`;
+                tg.showAlert('Ошибка загрузки статистики.');
             }
+        }
+
+        function renderStats(statData) {
+            // Разбор данных
+            const totalTasks = statData.totalTasks || 0;
+            const activeTasks = statData.activeTasks || 0;
+            const completedTasks = statData.completedTasks || 0;
+            const highPriority = statData.importanceDistribution?.high || 0;
+            const todayDone = statData.todayDone || 0;
+            const expiredCount = statData.expiredCount || 0;
+            const mediumPriority = statData.importanceDistribution?.medium || 0;
+            const lowPriority = statData.importanceDistribution?.low || 0;
+
+            // Данные о еженедельной активности
+            // Приводим ключи к строковому виду, если они приходят как числа: {0: count, 1: count, ...}
+            const weeklyActivity = statData.weeklyActivity || {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}; 
+
+            // Обновляем виджеты
+            document.getElementById('stat-total').textContent = totalTasks;
+            document.getElementById('stat-active').textContent = activeTasks;
+            document.getElementById('stat-completed').textContent = completedTasks;
+            document.getElementById('stat-high-priority').textContent = highPriority;
+            document.getElementById('stat-today').textContent = todayDone;
+            document.getElementById('stat-expired').textContent = expiredCount;
+
+            // Обновляем прогресс-бар
+            const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('progress-percentage').textContent = `${progressPercentage}%`;
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            document.getElementById('progress-active').textContent = `${activeTasks} активных`;
+            document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
+            document.querySelector('.progress-bar-container').setAttribute('aria-valuenow', progressPercentage); // Update ARIA
+
+            // Обновляем распределение по приоритетам
+            const totalPriority = highPriority + mediumPriority + lowPriority;
+            document.getElementById('priority-high').textContent = highPriority;
+            document.getElementById('priority-medium').textContent = mediumPriority;
+            document.getElementById('priority-low').textContent = lowPriority;
+
+            // Рассчитываем проценты
+            const calcPercentage = (count) => totalPriority > 0 ? `${Math.round((count / totalPriority) * 100)}%` : '0%';
+            document.getElementById('percentage-high').textContent = calcPercentage(highPriority);
+            document.getElementById('percentage-medium').textContent = calcPercentage(mediumPriority);
+            document.getElementById('percentage-low').textContent = calcPercentage(lowPriority);
+
+            // Обновляем еженедельную активность
+            const weeklyGrid = document.getElementById('weekly-grid');
+            weeklyGrid.innerHTML = '';
+            
+            const currentDay = new Date().getDay(); // 0 for Sunday, 6 for Saturday
+
+            // Проходимся по всем дням недели (0-6)
+            for (let i = 0; i <= 6; i++) {
+                const dayIndex = i;
+                const count = weeklyActivity[dayIndex] || 0;
+                const cell = document.createElement('div');
+                
+                let dayClasses = 'day-cell';
+                if (dayIndex === currentDay) {
+                    dayClasses += ' current-day';
+                }
+
+                cell.className = dayClasses;
+                cell.setAttribute('title', `${getDayName(dayIndex)}: ${count} задач`);
+                cell.innerHTML = `
+                    <div class="day-name">${getDayName(dayIndex)}</div>
+                    <div class="day-count">${count}</div>
+                `;
+                weeklyGrid.appendChild(cell);
+            }
+        }
+
+        // Event Listeners
+        bottomNav.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', () => {
+                switchSection(button.getAttribute('data-section'), button);
+            });
+        });
+        
+        // Привязка обработчиков для AI Chat
+        sendAiChatButton.addEventListener('click', sendAiMessage);
+        aiChatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); 
+                sendAiMessage();
+            }
+        });
+
+        window.markTaskAsDone = markTaskAsDone;
+        window.showMenu = showMenu;
+        window.toggleForm = toggleForm;
+        window.enterEditMode = enterEditMode; 
+        window.exitEditMode = exitEditMode; 
+        window.setDefaultFormValues = setDefaultFormValues; 
+        window.deleteTask = deleteTask; 
+
+        // Инициализация при загрузке
+        window.addEventListener('load', () => {
+            const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
+            switchSection('tasks-content', tasksButton); // Активируем вкладку Tasks при старте
+            
+            if (formSection.classList.contains('expanded')) {
+                setDefaultFormValues();
+            }
+            
+            // NEW: Initial check for AI input button state
+            sendAiChatButton.disabled = aiChatInput.value.trim() === '';
         });
     </script>
 </body>
