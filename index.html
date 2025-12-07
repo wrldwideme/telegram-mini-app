@@ -1846,17 +1846,20 @@
             else if (currentSectionIndex === 1) currentSectionId = 'ai-chat-content';
             else if (currentSectionIndex === 2) currentSectionId = 'stats-content';
             
-            // Находим текущий активный раздел
-            const currentSection = document.getElementById(currentSectionId);
-            
             // Убираем класс ai-active у всех разделов
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('ai-active');
             });
             
-            // Добавляем класс ai-active только к AI разделу
+            // Добавляем класс ai-active только к AI разделу И ОДНОВРЕМЕННО
+            // показываем/скрываем панель ввода напрямую
             if (currentSectionId === 'ai-chat-content') {
-                currentSection.classList.add('ai-active');
+                document.getElementById('ai-chat-content').classList.add('ai-active');
+                // Также показываем панель ввода напрямую для надежности
+                aiChatInputArea.style.display = 'flex';
+            } else {
+                // Скрываем панель ввода при переходе в другие разделы
+                aiChatInputArea.style.display = 'none';
             }
         }
         
