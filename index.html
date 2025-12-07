@@ -58,7 +58,7 @@
             display: flex;
             width: 300%;
             height: 100%;
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1); /* Менее агрессивная анимация */
             will-change: transform;
         }
         
@@ -71,62 +71,27 @@
             padding: 15px;
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
             box-sizing: border-box;
+            position: relative;
         }
         
-        /* --- ИНДИКАТОРЫ СВАЙПА --- */
-        .swipe-indicators {
-            position: absolute;
-            bottom: calc(90px + env(safe-area-inset-bottom));
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            z-index: 10;
-            transition: opacity 0.3s;
-        }
-        
-        .swipe-indicator {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--hint-color);
-            opacity: 0.3;
-            transition: all 0.3s ease;
-        }
-        
-        .swipe-indicator.active {
-            width: 20px;
-            border-radius: 10px;
-            background: var(--link-color);
-            opacity: 1;
-        }
-        
-        /* Скрываем индикаторы через 2 секунды после взаимодействия */
-        .swipe-indicators.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        /* Анимация для текущего раздела */
+        /* Анимация для текущего раздела - менее агрессивная */
         .content-section.swipe-active {
-            animation: swipePulse 0.3s ease-out;
+            animation: swipePulse 0.4s ease-out;
         }
         
         @keyframes swipePulse {
-            0% { transform: scale(0.98); opacity: 0.8; }
-            50% { transform: scale(1.01); }
+            0% { transform: scale(0.99); opacity: 0.95; }
+            50% { transform: scale(1.005); }
             100% { transform: scale(1); opacity: 1; }
         }
         
-        /* Эффект параллакса для следующего/предыдущего раздела */
+        /* Эффект параллакса для следующего/предыдущего раздела - уменьшенный */
         .swipe-wrapper.swiping .content-section:nth-child(2) {
-            transform: translateX(calc(var(--swipe-distance) * 0.1));
+            transform: translateX(calc(var(--swipe-distance) * 0.05));
         }
         
         .swipe-wrapper.swiping .content-section:nth-child(3) {
-            transform: translateX(calc(var(--swipe-distance) * 0.05));
+            transform: translateX(calc(var(--swipe-distance) * 0.02));
         }
         
         /* --- СТИЛИ ДЛЯ SPA КОНТЕНТА И НАВИГАЦИИ --- */
@@ -683,7 +648,7 @@
             75% { content: '...'; }
         }
 
-        /* Улучшенное поле ввода AI Chat */
+        /* Улучшенное поле ввода AI Chat - ИСПРАВЛЕНО: ТОЛЬКО ВНУТРИ AI РАЗДЕЛА */
         #ai-chat-input-area {
             position: fixed;
             bottom: calc(75px + env(safe-area-inset-bottom));
@@ -699,6 +664,12 @@
             gap: 12px;
             z-index: 990;
             border-top: 1px solid var(--secondary-bg-color);
+            display: none; /* По умолчанию скрыто */
+        }
+
+        /* Показываем только в AI разделе - ИСПРАВЛЕНО */
+        .content-section.ai-active #ai-chat-input-area {
+            display: flex;
         }
 
         #aiChatInput {
@@ -840,6 +811,7 @@
             transition: color 0.2s;
             min-width: 55px;
             text-align: center;
+            position: relative;
         }
         
         .nav-button.active {
@@ -866,6 +838,17 @@
         .nav-button.active .nav-button-icon {
             background-color: color-mix(in srgb, var(--link-color) 20%, transparent);
             box-shadow: none; 
+        }
+
+        /* Анимация для кнопок навигации при переключении */
+        .nav-button.transitioning .nav-button-icon {
+            animation: navButtonBounce 0.4s ease;
+        }
+
+        @keyframes navButtonBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
         }
 
         /* --- ИСПРАВЛЕННЫЕ СТИЛИ РАЗДЕЛА СТАТИСТИКИ --- */
@@ -1374,11 +1357,6 @@
                         Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
                     </div>
                 </div>
-
-                <div id="ai-chat-input-area">
-                    <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
-                    <button id="sendAiChat">🚀</button>
-                </div>
             </div>
             
             <div id="stats-content" class="content-section">
@@ -1510,13 +1488,12 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Индикаторы свайпов -->
-        <div class="swipe-indicators" id="swipeIndicators">
-            <div class="swipe-indicator active" data-index="0"></div>
-            <div class="swipe-indicator" data-index="1"></div>
-            <div class="swipe-indicator" data-index="2"></div>
-        </div>
+    </div>
+
+    <!-- ПАНЕЛЬ ВВОДА AI ЧАТА - ВЫНЕСЕНА ОТДЕЛЬНО И БУДЕТ ПОКАЗЫВАТЬСЯ ТОЛЬКО В AI РАЗДЕЛЕ -->
+    <div id="ai-chat-input-area">
+        <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
+        <button id="sendAiChat">🚀</button>
     </div>
 
     <div id="context-menu">
@@ -1526,7 +1503,7 @@
     </div>
     
     <div id="bottom-nav">
-        <button class="nav-button" data-section="tasks-content">
+        <button class="nav-button active" data-section="tasks-content">
             <div class="nav-button-icon"><span>📋</span></div>
             Задачи
         </button>
@@ -1568,14 +1545,13 @@
         // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПОВ ---
         const swipeContainer = document.getElementById('swipeContainer');
         const swipeWrapper = document.getElementById('swipeWrapper');
-        const swipeIndicators = document.getElementById('swipeIndicators');
-        const indicatorDots = swipeIndicators.querySelectorAll('.swipe-indicator');
         
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
         const aiChatMessages = document.getElementById('ai-chat-messages');
         const clearChatButton = document.getElementById('clear-chat-btn');
+        const aiChatInputArea = document.getElementById('ai-chat-input-area');
         
         let currentTaskId = null; 
         let isEditing = false;
@@ -1589,7 +1565,6 @@
         let touchEndX = 0;
         let isSwiping = false;
         let swipeTimeout = null;
-        let hideIndicatorsTimeout = null;
         
         // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
         
@@ -1609,13 +1584,6 @@
             swipeContainer.addEventListener('mousemove', handleMouseMove);
             swipeContainer.addEventListener('mouseup', handleMouseEnd);
             swipeContainer.addEventListener('mouseleave', handleMouseCancel);
-            
-            // Показываем индикаторы при взаимодействии
-            swipeContainer.addEventListener('touchstart', showIndicators);
-            swipeContainer.addEventListener('mousedown', showIndicators);
-            
-            // Прячем индикаторы через 2 секунды после последнего взаимодействия
-            resetHideIndicatorsTimeout();
         }
         
         function handleTouchStart(e) {
@@ -1647,8 +1615,8 @@
                 // Добавляем класс для анимации при свайпе
                 swipeWrapper.classList.add('swiping');
                 
-                // Рассчитываем смещение с эффектом резинки
-                const resistance = 0.5;
+                // Рассчитываем смещение с эффектом резинки - уменьшили резинку
+                const resistance = 0.3; // Было 0.5
                 const swipeDistance = diffX * resistance;
                 
                 // Устанавливаем CSS переменную для параллакс эффекта
@@ -1657,7 +1625,6 @@
                 // Вычисляем новую позицию с учетом границ
                 const wrapperWidth = swipeWrapper.offsetWidth;
                 const containerWidth = swipeContainer.offsetWidth;
-                const maxTranslate = (wrapperWidth - containerWidth) / 3;
                 
                 // Ограничиваем свайп на границах
                 let newTranslate = -currentSectionIndex * (containerWidth) + swipeDistance;
@@ -1679,7 +1646,7 @@
             
             const diffX = touchStartX - touchEndX;
             const containerWidth = swipeContainer.offsetWidth;
-            const threshold = containerWidth * 0.2; // Порог для переключения - 20% ширины экрана
+            const threshold = containerWidth * 0.15; // Уменьшили порог для более плавного переключения
             
             let newIndex = currentSectionIndex;
             
@@ -1701,9 +1668,6 @@
             isSwiping = false;
             swipeWrapper.classList.remove('swiping');
             document.documentElement.style.removeProperty('--swipe-distance');
-            
-            // Сбрасываем таймер скрытия индикаторов
-            resetHideIndicatorsTimeout();
         }
         
         function handleTouchCancel() {
@@ -1741,14 +1705,13 @@
                 
                 swipeWrapper.classList.add('swiping');
                 
-                const resistance = 0.5;
+                const resistance = 0.3;
                 const swipeDistance = diffX * resistance;
                 
                 document.documentElement.style.setProperty('--swipe-distance', `${swipeDistance}px`);
                 
                 const wrapperWidth = swipeWrapper.offsetWidth;
                 const containerWidth = swipeContainer.offsetWidth;
-                const maxTranslate = (wrapperWidth - containerWidth) / 3;
                 
                 let newTranslate = -currentSectionIndex * (containerWidth) + swipeDistance;
                 if (currentSectionIndex === 0 && swipeDistance > 0) {
@@ -1769,7 +1732,7 @@
             
             const diffX = touchStartX - touchEndX;
             const containerWidth = swipeContainer.offsetWidth;
-            const threshold = containerWidth * 0.2;
+            const threshold = containerWidth * 0.15;
             
             let newIndex = currentSectionIndex;
             
@@ -1787,8 +1750,6 @@
             isSwiping = false;
             swipeWrapper.classList.remove('swiping');
             document.documentElement.style.removeProperty('--swipe-distance');
-            
-            resetHideIndicatorsTimeout();
         }
         
         function handleMouseCancel() {
@@ -1808,20 +1769,20 @@
             currentSectionIndex = index;
             updateSwipePosition();
             
-            // Обновляем навигацию
-            updateNavigation();
+            // Обновляем навигацию с анимацией
+            updateNavigationWithAnimation();
             
             // Показываем анимацию перехода
             const sections = document.querySelectorAll('.content-section');
             sections[index].classList.add('swipe-active');
             
-            // Убираем анимацию через 300мс
+            // Убираем анимацию через 400мс
             clearTimeout(swipeTimeout);
             swipeTimeout = setTimeout(() => {
                 sections[index].classList.remove('swipe-active');
-            }, 300);
+            }, 400);
             
-            // Виброотдача для мобильных устройств
+            // Виброотдача для мобильных устройств (легкая)
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
@@ -1832,34 +1793,71 @@
             const containerWidth = swipeContainer.offsetWidth;
             const translateX = -currentSectionIndex * containerWidth;
             swipeWrapper.style.transform = `translateX(${translateX}px)`;
+        }
+        
+        // Обновление навигации с анимацией кнопок
+        function updateNavigationWithAnimation() {
+            // Находим соответствующую кнопку навигации
+            let sectionId = '';
+            if (currentSectionIndex === 0) sectionId = 'tasks-content';
+            else if (currentSectionIndex === 1) sectionId = 'ai-chat-content';
+            else if (currentSectionIndex === 2) sectionId = 'stats-content';
             
-            // Обновляем индикаторы
-            updateIndicators();
-        }
-        
-        // Обновление индикаторов
-        function updateIndicators() {
-            indicatorDots.forEach((dot, index) => {
-                if (index === currentSectionIndex) {
-                    dot.classList.add('active');
-                } else {
-                    dot.classList.remove('active');
+            const buttonElement = document.querySelector(`.nav-button[data-section="${sectionId}"]`);
+            if (buttonElement) {
+                // Сначала убираем активный класс у всех кнопок
+                document.querySelectorAll('.nav-button').forEach(button => {
+                    button.classList.remove('active');
+                    button.classList.remove('transitioning');
+                    button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
+                    button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
+                });
+                
+                // Добавляем активный класс к текущей кнопке
+                buttonElement.classList.add('active');
+                const activeColor = tg.themeParams.link_color || '#007aff';
+                buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
+                
+                // Добавляем анимацию к текущей кнопке
+                buttonElement.classList.add('transitioning');
+                setTimeout(() => {
+                    buttonElement.classList.remove('transitioning');
+                }, 400);
+            }
+            
+            // ОБНОВЛЯЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА - ИСПРАВЛЕНИЕ
+            updateAIChatVisibility();
+            
+            // Выполняем действия для раздела
+            if (sectionId === 'tasks-content') {
+                if (document.getElementById('tasks-list').children.length < 2) {
+                    fetchTasks(); 
                 }
+            } else if (sectionId === 'stats-content') {
+                fetchStats(); 
+            }
+        }
+        
+        // ИСПРАВЛЕНИЕ: Функция для обновления видимости панели AI чата
+        function updateAIChatVisibility() {
+            // Определяем текущий раздел
+            let currentSectionId = '';
+            if (currentSectionIndex === 0) currentSectionId = 'tasks-content';
+            else if (currentSectionIndex === 1) currentSectionId = 'ai-chat-content';
+            else if (currentSectionIndex === 2) currentSectionId = 'stats-content';
+            
+            // Находим текущий активный раздел
+            const currentSection = document.getElementById(currentSectionId);
+            
+            // Убираем класс ai-active у всех разделов
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('ai-active');
             });
-        }
-        
-        // Показ индикаторов
-        function showIndicators() {
-            swipeIndicators.classList.remove('hidden');
-            resetHideIndicatorsTimeout();
-        }
-        
-        // Сброс таймера скрытия индикаторов
-        function resetHideIndicatorsTimeout() {
-            clearTimeout(hideIndicatorsTimeout);
-            hideIndicatorsTimeout = setTimeout(() => {
-                swipeIndicators.classList.add('hidden');
-            }, 2000);
+            
+            // Добавляем класс ai-active только к AI разделу
+            if (currentSectionId === 'ai-chat-content') {
+                currentSection.classList.add('ai-active');
+            }
         }
         
         // --- ИСПРАВЛЕННАЯ ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ ---
@@ -1873,10 +1871,11 @@
             // Анимируем переход к выбранному разделу
             animateSwipeTo(index);
             
-            // Обновляем нижнюю навигацию
+            // Обновляем нижнюю навигацию с анимацией
             if (buttonElement) {
                 document.querySelectorAll('.nav-button').forEach(button => {
                     button.classList.remove('active');
+                    button.classList.remove('transitioning');
                     button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
                     button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
                 });
@@ -1884,7 +1883,16 @@
                 buttonElement.classList.add('active');
                 const activeColor = tg.themeParams.link_color || '#007aff';
                 buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
+                
+                // Добавляем анимацию к текущей кнопке
+                buttonElement.classList.add('transitioning');
+                setTimeout(() => {
+                    buttonElement.classList.remove('transitioning');
+                }, 400);
             }
+            
+            // ОБНОВЛЯЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА - ИСПРАВЛЕНИЕ
+            updateAIChatVisibility();
             
             // Выполняем действия для конкретного раздела
             if (sectionId === 'tasks-content') {
@@ -1895,40 +1903,6 @@
                         addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
                     }
                 }
-                if (document.getElementById('tasks-list').children.length < 2) {
-                    fetchTasks(); 
-                }
-            } else if (sectionId === 'stats-content') {
-                fetchStats(); 
-            }
-            
-            // Показываем индикаторы свайпа
-            showIndicators();
-        }
-        
-        // Обновление навигации при свайпе
-        function updateNavigation() {
-            // Находим соответствующую кнопку навигации
-            let sectionId = '';
-            if (currentSectionIndex === 0) sectionId = 'tasks-content';
-            else if (currentSectionIndex === 1) sectionId = 'ai-chat-content';
-            else if (currentSectionIndex === 2) sectionId = 'stats-content';
-            
-            const buttonElement = document.querySelector(`.nav-button[data-section="${sectionId}"]`);
-            if (buttonElement) {
-                document.querySelectorAll('.nav-button').forEach(button => {
-                    button.classList.remove('active');
-                    button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
-                    button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
-                });
-                
-                buttonElement.classList.add('active');
-                const activeColor = tg.themeParams.link_color || '#007aff';
-                buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
-            }
-            
-            // Выполняем действия для раздела
-            if (sectionId === 'tasks-content') {
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
@@ -2391,8 +2365,6 @@
             }
         }
         
-        // --- 6. ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ (SPA) - ИСПРАВЛЕНА ---
-        
         // --- 7. ЛОГИКА AI CHAT (ИСПРАВЛЕННАЯ) ---
         
         // 7.1. ФУНКЦИИ ЧАТА UI
@@ -2474,7 +2446,7 @@
                     
                     const result = await response.json();
                     
-                    let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответа)";
+                    let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответта)";
 
                     // Проверка на ожидаемые поля в ответе
                     if (result && result.aiResponse) {
@@ -2670,6 +2642,9 @@
                 // Инициализируем свайпы
                 initSwipe();
                 
+                // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
+                updateAIChatVisibility();
+                
                 // Активируем вкладку задач по умолчанию
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
@@ -2687,6 +2662,9 @@
                 console.warn('Telegram WebApp not fully initialized');
                 // Инициализируем свайпы в любом случае
                 initSwipe();
+                
+                // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
+                updateAIChatVisibility();
                 
                 // Активируем вкладку задач в любом случае
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
