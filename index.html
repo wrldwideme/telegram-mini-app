@@ -45,17 +45,92 @@
             max-width: 100vw; /* Ограничиваем максимальную ширину */
         }
         
-        /* --- СТИЛИ ДЛЯ SPA КОНТЕНТА И НАВИГАЦИИ --- */
+        /* --- ОБЕРТКА ДЛЯ СВАЙПОВ --- */
+        .swipe-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: pan-y;
+        }
+        
+        .swipe-wrapper {
+            display: flex;
+            width: 300%;
+            height: 100%;
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+        
         .content-section {
-            display: none;
+            width: 100vw;
+            height: 100%;
+            flex-shrink: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             padding: 15px;
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
             box-sizing: border-box;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden; /* Предотвращаем горизонтальный скролл в секциях */
         }
-        .content-section.active {
+        
+        /* --- ИНДИКАТОРЫ СВАЙПА --- */
+        .swipe-indicators {
+            position: absolute;
+            bottom: calc(90px + env(safe-area-inset-bottom));
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+        
+        .swipe-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--hint-color);
+            opacity: 0.3;
+            transition: all 0.3s ease;
+        }
+        
+        .swipe-indicator.active {
+            width: 20px;
+            border-radius: 10px;
+            background: var(--link-color);
+            opacity: 1;
+        }
+        
+        /* Скрываем индикаторы через 2 секунды после взаимодействия */
+        .swipe-indicators.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Анимация для текущего раздела */
+        .content-section.swipe-active {
+            animation: swipePulse 0.3s ease-out;
+        }
+        
+        @keyframes swipePulse {
+            0% { transform: scale(0.98); opacity: 0.8; }
+            50% { transform: scale(1.01); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Эффект параллакса для следующего/предыдущего раздела */
+        .swipe-wrapper.swiping .content-section:nth-child(2) {
+            transform: translateX(calc(var(--swipe-distance) * 0.1));
+        }
+        
+        .swipe-wrapper.swiping .content-section:nth-child(3) {
+            transform: translateX(calc(var(--swipe-distance) * 0.05));
+        }
+        
+        /* --- СТИЛИ ДЛЯ SPA КОНТЕНТА И НАВИГАЦИИ --- */
+        .content-section.visible {
             display: block;
         }
 
@@ -1223,211 +1298,224 @@
     </style>
 </head>
 <body>
-
-    <div id="tasks-content" class="content-section active">
-        <h1>
-            <span class="logo-header"></span>
-            Мои задачи
-        </h1>
-        
-        <div class="form-section" id="form-section">
-            <div class="form-header" onclick="toggleForm()">
-                <h2 id="form-title">
-                    <span id="form-icon">💡</span> Новая задача
-                </h2>
-                <span id="form-arrow">▼</span>
-            </div>
-            <div class="form-section-content">
-                <form id="task-form">
-                    
-                    <div class="ios-group">
-                        
-                        <div class="ios-row">
-                            <label for="taskInput" class="ios-label">Текст задачи</label>
-                            <input type="text" id="taskInput" placeholder="Введите задачу" required>
-                        </div>
-                        
-                        <div class="ios-row">
-                            <label for="dateInput" class="ios-label">Дата</label>
-                            <input type="date" id="dateInput" required>
-                        </div>
-                        
-                        <div class="ios-row">
-                            <label for="timeInput" class="ios-label">Время</label>
-                            <input type="time" id="timeInput" required>
-                        </div>
-
-                        <div class="ios-row">
-                            <label for="importanceInput" class="ios-label">Важность</label>
-                            <select id="importanceInput" required>
-                                <option value="medium">Средняя</option>
-                                <option value="high">Высокая</option>
-                                <option value="low">Низкая</option>
-                            </select>
-                        </div>
-
-                    </div>
-                    
-                    <div class="form-submit-button">
-                        <button type="button" id="add-task-button">
-                            <span>➕</span> Добавить задачу
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <h2>📝 Активные задачи</h2>
-        <div id="tasks-list">
-            <p class="loading-message">Загрузка задач...</p>
-        </div>
-    </div>
-
-    <div id="ai-chat-content" class="content-section">
-        <h1>
-            <span class="logo-header"></span>
-            AI-помощник
-        </h1>
-        <button id="clear-chat-btn" title="Очистить чат">🗑️</button>
-        
-        <div id="ai-chat-messages">
-            <div class="ai-welcome">
-                Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
-            </div>
-        </div>
-
-        <div id="ai-chat-input-area">
-            <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
-            <button id="sendAiChat">🚀</button>
-        </div>
-    </div>
     
-    <div id="stats-content" class="content-section">
-        <h1>
-            <span class="logo-header"></span>
-            Аналитика
-        </h1>
+    <!-- Обертка для свайпов -->
+    <div class="swipe-container" id="swipeContainer">
+        <div class="swipe-wrapper" id="swipeWrapper">
+            <!-- Разделы теперь в обертке для свайпов -->
+            <div id="tasks-content" class="content-section">
+                <h1>
+                    <span class="logo-header"></span>
+                    Мои задачи
+                </h1>
+                
+                <div class="form-section" id="form-section">
+                    <div class="form-header" onclick="toggleForm()">
+                        <h2 id="form-title">
+                            <span id="form-icon">💡</span> Новая задача
+                        </h2>
+                        <span id="form-arrow">▼</span>
+                    </div>
+                    <div class="form-section-content">
+                        <form id="task-form">
+                            
+                            <div class="ios-group">
+                                
+                                <div class="ios-row">
+                                    <label for="taskInput" class="ios-label">Текст задачи</label>
+                                    <input type="text" id="taskInput" placeholder="Введите задачу" required>
+                                </div>
+                                
+                                <div class="ios-row">
+                                    <label for="dateInput" class="ios-label">Дата</label>
+                                    <input type="date" id="dateInput" required>
+                                </div>
+                                
+                                <div class="ios-row">
+                                    <label for="timeInput" class="ios-label">Время</label>
+                                    <input type="time" id="timeInput" required>
+                                </div>
+
+                                <div class="ios-row">
+                                    <label for="importanceInput" class="ios-label">Важность</label>
+                                    <select id="importanceInput" required>
+                                        <option value="medium">Средняя</option>
+                                        <option value="high">Высокая</option>
+                                        <option value="low">Низкая</option>
+                                    </select>
+                                </div>
+
+                            </div>
+                            
+                            <div class="form-submit-button">
+                                <button type="button" id="add-task-button">
+                                    <span>➕</span> Добавить задачу
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <h2>📝 Активные задачи</h2>
+                <div id="tasks-list">
+                    <p class="loading-message">Загрузка задач...</p>
+                </div>
+            </div>
+
+            <div id="ai-chat-content" class="content-section">
+                <h1>
+                    <span class="logo-header"></span>
+                    AI-помощник
+                </h1>
+                <button id="clear-chat-btn" title="Очистить чат">🗑️</button>
+                
+                <div id="ai-chat-messages">
+                    <div class="ai-welcome">
+                        Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
+                    </div>
+                </div>
+
+                <div id="ai-chat-input-area">
+                    <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
+                    <button id="sendAiChat">🚀</button>
+                </div>
+            </div>
+            
+            <div id="stats-content" class="content-section">
+                <h1>
+                    <span class="logo-header"></span>
+                    Аналитика
+                </h1>
+                
+                <div id="stats-container">
+                    <div class="stats-grid">
+                        <div class="stat-widget">
+                            <div class="stat-widget-header">
+                                <div class="stat-icon total">🔢</div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Всего задач</div>
+                                    <div class="stat-value" id="stat-total">0</div>
+                                    <div class="stat-subtitle">Все созданные задачи</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-widget">
+                            <div class="stat-widget-header">
+                                <div class="stat-icon active">📝</div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Активных</div>
+                                    <div class="stat-value" id="stat-active">0</div>
+                                    <div class="stat-subtitle">Требуют выполнения</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-widget">
+                            <div class="stat-widget-header">
+                                <div class="stat-icon completed">✅</div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Выполнено</div>
+                                    <div class="stat-value" id="stat-completed">0</div>
+                                    <div class="stat-subtitle">Успешно завершено</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-widget">
+                            <div class="stat-widget-header">
+                                <div class="stat-icon high-priority">🚨</div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Высокий приоритет</div>
+                                    <div class="stat-value" id="stat-high-priority">0</div>
+                                    <div class="stat-subtitle">Срочные задачи</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-widget">
+                            <div class="stat-widget-header">
+                                <div class="stat-icon today">📅</div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Выполнено сегодня</div>
+                                    <div class="stat-value" id="stat-today">0</div>
+                                    <div class="stat-subtitle">Завершённые сегодня</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-widget">
+                            <div class="stat-widget-header">
+                                <div class="stat-icon expired">⏰</div>
+                                <div class="stat-content">
+                                    <div class="stat-title">Просрочено</div>
+                                    <div class="stat-value" id="stat-expired">0</div>
+                                    <div class="stat-subtitle">Истёк срок выполнения</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <div class="progress-title">Прогресс выполнения</div>
+                            <div class="progress-percentage" id="progress-percentage">0%</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-stats">
+                            <span id="progress-active">0 активных</span>
+                            <span id="progress-completed">0 выполнено</span>
+                        </div>
+                    </div>
+                    
+                    <div class="priority-section">
+                        <div class="priority-title">Распределение по приоритетам</div>
+                        
+                        <div class="priority-item">
+                            <div class="priority-color high"></div>
+                            <div class="priority-info">
+                                <span class="priority-name">Высокий</span>
+                                <span class="priority-count" id="priority-high">0</span>
+                            </div>
+                            <div class="priority-percentage" id="percentage-high">0%</div>
+                        </div>
+                        
+                        <div class="priority-item">
+                            <div class="priority-color medium"></div>
+                            <div class="priority-info">
+                                <span class="priority-name">Средний</span>
+                                <span class="priority-count" id="priority-medium">0</span>
+                            </div>
+                            <div class="priority-percentage" id="percentage-medium">0%</div>
+                        </div>
+                        
+                        <div class="priority-item">
+                            <div class="priority-color low"></div>
+                            <div class="priority-info">
+                                <span class="priority-name">Низкий</span>
+                                <span class="priority-count" id="priority-low">0</span>
+                            </div>
+                            <div class="priority-percentage" id="percentage-low">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="weekly-section">
+                        <div class="weekly-title">Еженедельная активность</div>
+                        <div class="weekly-grid" id="weekly-grid">
+                            <!-- Заполняется динамически -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
-        <div id="stats-container">
-            <div class="stats-grid">
-                <div class="stat-widget">
-                    <div class="stat-widget-header">
-                        <div class="stat-icon total">🔢</div>
-                        <div class="stat-content">
-                            <div class="stat-title">Всего задач</div>
-                            <div class="stat-value" id="stat-total">0</div>
-                            <div class="stat-subtitle">Все созданные задачи</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-widget">
-                    <div class="stat-widget-header">
-                        <div class="stat-icon active">📝</div>
-                        <div class="stat-content">
-                            <div class="stat-title">Активных</div>
-                            <div class="stat-value" id="stat-active">0</div>
-                            <div class="stat-subtitle">Требуют выполнения</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-widget">
-                    <div class="stat-widget-header">
-                        <div class="stat-icon completed">✅</div>
-                        <div class="stat-content">
-                            <div class="stat-title">Выполнено</div>
-                            <div class="stat-value" id="stat-completed">0</div>
-                            <div class="stat-subtitle">Успешно завершено</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-widget">
-                    <div class="stat-widget-header">
-                        <div class="stat-icon high-priority">🚨</div>
-                        <div class="stat-content">
-                            <div class="stat-title">Высокий приоритет</div>
-                            <div class="stat-value" id="stat-high-priority">0</div>
-                            <div class="stat-subtitle">Срочные задачи</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-widget">
-                    <div class="stat-widget-header">
-                        <div class="stat-icon today">📅</div>
-                        <div class="stat-content">
-                            <div class="stat-title">Выполнено сегодня</div>
-                            <div class="stat-value" id="stat-today">0</div>
-                            <div class="stat-subtitle">Завершённые сегодня</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stat-widget">
-                    <div class="stat-widget-header">
-                        <div class="stat-icon expired">⏰</div>
-                        <div class="stat-content">
-                            <div class="stat-title">Просрочено</div>
-                            <div class="stat-value" id="stat-expired">0</div>
-                            <div class="stat-subtitle">Истёк срок выполнения</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="progress-section">
-                <div class="progress-header">
-                    <div class="progress-title">Прогресс выполнения</div>
-                    <div class="progress-percentage" id="progress-percentage">0%</div>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
-                </div>
-                <div class="progress-stats">
-                    <span id="progress-active">0 активных</span>
-                    <span id="progress-completed">0 выполнено</span>
-                </div>
-            </div>
-            
-            <div class="priority-section">
-                <div class="priority-title">Распределение по приоритетам</div>
-                
-                <div class="priority-item">
-                    <div class="priority-color high"></div>
-                    <div class="priority-info">
-                        <span class="priority-name">Высокий</span>
-                        <span class="priority-count" id="priority-high">0</span>
-                    </div>
-                    <div class="priority-percentage" id="percentage-high">0%</div>
-                </div>
-                
-                <div class="priority-item">
-                    <div class="priority-color medium"></div>
-                    <div class="priority-info">
-                        <span class="priority-name">Средний</span>
-                        <span class="priority-count" id="priority-medium">0</span>
-                    </div>
-                    <div class="priority-percentage" id="percentage-medium">0%</div>
-                </div>
-                
-                <div class="priority-item">
-                    <div class="priority-color low"></div>
-                    <div class="priority-info">
-                        <span class="priority-name">Низкий</span>
-                        <span class="priority-count" id="priority-low">0</span>
-                    </div>
-                    <div class="priority-percentage" id="percentage-low">0%</div>
-                </div>
-            </div>
-            
-            <div class="weekly-section">
-                <div class="weekly-title">Еженедельная активность</div>
-                <div class="weekly-grid" id="weekly-grid">
-                    <!-- Заполняется динамически -->
-                </div>
-            </div>
+        <!-- Индикаторы свайпов -->
+        <div class="swipe-indicators" id="swipeIndicators">
+            <div class="swipe-indicator active" data-index="0"></div>
+            <div class="swipe-indicator" data-index="1"></div>
+            <div class="swipe-indicator" data-index="2"></div>
         </div>
     </div>
 
@@ -1477,6 +1565,12 @@
         const bottomNav = document.getElementById('bottom-nav'); 
         const addTaskButton = document.getElementById('add-task-button');
         
+        // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПОВ ---
+        const swipeContainer = document.getElementById('swipeContainer');
+        const swipeWrapper = document.getElementById('swipeWrapper');
+        const swipeIndicators = document.getElementById('swipeIndicators');
+        const indicatorDots = swipeIndicators.querySelectorAll('.swipe-indicator');
+        
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
@@ -1487,6 +1581,361 @@
         let isEditing = false;
         let currentEditingId = null; 
         let allTasksData = []; 
+        
+        // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПОВ ---
+        let currentSectionIndex = 0; // 0 = задачи, 1 = AI, 2 = аналитика
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let isSwiping = false;
+        let swipeTimeout = null;
+        let hideIndicatorsTimeout = null;
+        
+        // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
+        
+        // Инициализация свайпов
+        function initSwipe() {
+            // Устанавливаем начальную позицию
+            updateSwipePosition();
+            
+            // Добавляем обработчики событий
+            swipeContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+            swipeContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+            swipeContainer.addEventListener('touchend', handleTouchEnd);
+            swipeContainer.addEventListener('touchcancel', handleTouchCancel);
+            
+            // Также добавляем обработчики для мыши (для десктоп тестирования)
+            swipeContainer.addEventListener('mousedown', handleMouseStart);
+            swipeContainer.addEventListener('mousemove', handleMouseMove);
+            swipeContainer.addEventListener('mouseup', handleMouseEnd);
+            swipeContainer.addEventListener('mouseleave', handleMouseCancel);
+            
+            // Показываем индикаторы при взаимодействии
+            swipeContainer.addEventListener('touchstart', showIndicators);
+            swipeContainer.addEventListener('mousedown', showIndicators);
+            
+            // Прячем индикаторы через 2 секунды после последнего взаимодействия
+            resetHideIndicatorsTimeout();
+        }
+        
+        function handleTouchStart(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isSwiping = false;
+        }
+        
+        function handleTouchMove(e) {
+            if (!touchStartX) return;
+            
+            touchEndX = e.touches[0].clientX;
+            const touchEndY = e.touches[0].clientY;
+            
+            // Проверяем, что это горизонтальный свайп, а не вертикальный скролл
+            const diffX = touchStartX - touchEndX;
+            const diffY = Math.abs(touchStartY - touchEndY);
+            
+            // Если движение по вертикали больше, чем по горизонтали, это скролл
+            if (Math.abs(diffY) > Math.abs(diffX) * 1.5) {
+                return; // Это вертикальный скролл, игнорируем
+            }
+            
+            // Предотвращаем скролл страницы при горизонтальном свайпе
+            if (Math.abs(diffX) > 10) {
+                e.preventDefault();
+                isSwiping = true;
+                
+                // Добавляем класс для анимации при свайпе
+                swipeWrapper.classList.add('swiping');
+                
+                // Рассчитываем смещение с эффектом резинки
+                const resistance = 0.5;
+                const swipeDistance = diffX * resistance;
+                
+                // Устанавливаем CSS переменную для параллакс эффекта
+                document.documentElement.style.setProperty('--swipe-distance', `${swipeDistance}px`);
+                
+                // Вычисляем новую позицию с учетом границ
+                const wrapperWidth = swipeWrapper.offsetWidth;
+                const containerWidth = swipeContainer.offsetWidth;
+                const maxTranslate = (wrapperWidth - containerWidth) / 3;
+                
+                // Ограничиваем свайп на границах
+                let newTranslate = -currentSectionIndex * (containerWidth) + swipeDistance;
+                if (currentSectionIndex === 0 && swipeDistance > 0) {
+                    newTranslate = 0; // Нельзя свайпать левее первой вкладки
+                } else if (currentSectionIndex === 2 && swipeDistance < 0) {
+                    newTranslate = -2 * (containerWidth); // Нельзя свайпать правее последней вкладки
+                }
+                
+                swipeWrapper.style.transform = `translateX(${newTranslate}px)`;
+            }
+        }
+        
+        function handleTouchEnd() {
+            if (!isSwiping) {
+                touchStartX = 0;
+                return;
+            }
+            
+            const diffX = touchStartX - touchEndX;
+            const containerWidth = swipeContainer.offsetWidth;
+            const threshold = containerWidth * 0.2; // Порог для переключения - 20% ширины экрана
+            
+            let newIndex = currentSectionIndex;
+            
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0 && currentSectionIndex < 2) {
+                    // Свайп влево -> переходим к следующему разделу
+                    newIndex = currentSectionIndex + 1;
+                } else if (diffX < 0 && currentSectionIndex > 0) {
+                    // Свайп вправо -> переходим к предыдущему разделу
+                    newIndex = currentSectionIndex - 1;
+                }
+            }
+            
+            // Анимируем переход
+            animateSwipeTo(newIndex);
+            
+            // Сбрасываем состояние
+            touchStartX = 0;
+            isSwiping = false;
+            swipeWrapper.classList.remove('swiping');
+            document.documentElement.style.removeProperty('--swipe-distance');
+            
+            // Сбрасываем таймер скрытия индикаторов
+            resetHideIndicatorsTimeout();
+        }
+        
+        function handleTouchCancel() {
+            // Если свайп отменен, возвращаемся к текущей позиции
+            if (isSwiping) {
+                animateSwipeTo(currentSectionIndex);
+                isSwiping = false;
+                swipeWrapper.classList.remove('swiping');
+                document.documentElement.style.removeProperty('--swipe-distance');
+            }
+            touchStartX = 0;
+        }
+        
+        // Аналогичные функции для мыши (для десктоп тестирования)
+        function handleMouseStart(e) {
+            touchStartX = e.clientX;
+            touchStartY = e.clientY;
+            isSwiping = false;
+        }
+        
+        function handleMouseMove(e) {
+            if (!touchStartX) return;
+            
+            touchEndX = e.clientX;
+            const touchEndY = e.clientY;
+            
+            const diffX = touchStartX - touchEndX;
+            const diffY = Math.abs(touchStartY - touchEndY);
+            
+            if (Math.abs(diffY) > Math.abs(diffX) * 1.5) return;
+            
+            if (Math.abs(diffX) > 10) {
+                e.preventDefault();
+                isSwiping = true;
+                
+                swipeWrapper.classList.add('swiping');
+                
+                const resistance = 0.5;
+                const swipeDistance = diffX * resistance;
+                
+                document.documentElement.style.setProperty('--swipe-distance', `${swipeDistance}px`);
+                
+                const wrapperWidth = swipeWrapper.offsetWidth;
+                const containerWidth = swipeContainer.offsetWidth;
+                const maxTranslate = (wrapperWidth - containerWidth) / 3;
+                
+                let newTranslate = -currentSectionIndex * (containerWidth) + swipeDistance;
+                if (currentSectionIndex === 0 && swipeDistance > 0) {
+                    newTranslate = 0;
+                } else if (currentSectionIndex === 2 && swipeDistance < 0) {
+                    newTranslate = -2 * (containerWidth);
+                }
+                
+                swipeWrapper.style.transform = `translateX(${newTranslate}px)`;
+            }
+        }
+        
+        function handleMouseEnd() {
+            if (!isSwiping) {
+                touchStartX = 0;
+                return;
+            }
+            
+            const diffX = touchStartX - touchEndX;
+            const containerWidth = swipeContainer.offsetWidth;
+            const threshold = containerWidth * 0.2;
+            
+            let newIndex = currentSectionIndex;
+            
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0 && currentSectionIndex < 2) {
+                    newIndex = currentSectionIndex + 1;
+                } else if (diffX < 0 && currentSectionIndex > 0) {
+                    newIndex = currentSectionIndex - 1;
+                }
+            }
+            
+            animateSwipeTo(newIndex);
+            
+            touchStartX = 0;
+            isSwiping = false;
+            swipeWrapper.classList.remove('swiping');
+            document.documentElement.style.removeProperty('--swipe-distance');
+            
+            resetHideIndicatorsTimeout();
+        }
+        
+        function handleMouseCancel() {
+            if (isSwiping) {
+                animateSwipeTo(currentSectionIndex);
+                isSwiping = false;
+                swipeWrapper.classList.remove('swiping');
+                document.documentElement.style.removeProperty('--swipe-distance');
+            }
+            touchStartX = 0;
+        }
+        
+        // Функция для анимированного перехода к разделу
+        function animateSwipeTo(index) {
+            if (index === currentSectionIndex) return;
+            
+            currentSectionIndex = index;
+            updateSwipePosition();
+            
+            // Обновляем навигацию
+            updateNavigation();
+            
+            // Показываем анимацию перехода
+            const sections = document.querySelectorAll('.content-section');
+            sections[index].classList.add('swipe-active');
+            
+            // Убираем анимацию через 300мс
+            clearTimeout(swipeTimeout);
+            swipeTimeout = setTimeout(() => {
+                sections[index].classList.remove('swipe-active');
+            }, 300);
+            
+            // Виброотдача для мобильных устройств
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        // Обновление позиции свайпа
+        function updateSwipePosition() {
+            const containerWidth = swipeContainer.offsetWidth;
+            const translateX = -currentSectionIndex * containerWidth;
+            swipeWrapper.style.transform = `translateX(${translateX}px)`;
+            
+            // Обновляем индикаторы
+            updateIndicators();
+        }
+        
+        // Обновление индикаторов
+        function updateIndicators() {
+            indicatorDots.forEach((dot, index) => {
+                if (index === currentSectionIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        // Показ индикаторов
+        function showIndicators() {
+            swipeIndicators.classList.remove('hidden');
+            resetHideIndicatorsTimeout();
+        }
+        
+        // Сброс таймера скрытия индикаторов
+        function resetHideIndicatorsTimeout() {
+            clearTimeout(hideIndicatorsTimeout);
+            hideIndicatorsTimeout = setTimeout(() => {
+                swipeIndicators.classList.add('hidden');
+            }, 2000);
+        }
+        
+        // --- ИСПРАВЛЕННАЯ ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ ---
+        function switchSection(sectionId, buttonElement) {
+            // Определяем индекс раздела по ID
+            let index = 0;
+            if (sectionId === 'tasks-content') index = 0;
+            else if (sectionId === 'ai-chat-content') index = 1;
+            else if (sectionId === 'stats-content') index = 2;
+            
+            // Анимируем переход к выбранному разделу
+            animateSwipeTo(index);
+            
+            // Обновляем нижнюю навигацию
+            if (buttonElement) {
+                document.querySelectorAll('.nav-button').forEach(button => {
+                    button.classList.remove('active');
+                    button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
+                    button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
+                });
+                
+                buttonElement.classList.add('active');
+                const activeColor = tg.themeParams.link_color || '#007aff';
+                buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
+            }
+            
+            // Выполняем действия для конкретного раздела
+            if (sectionId === 'tasks-content') {
+                if (formSection.classList.contains('expanded')) {
+                    if (isEditing) {
+                        addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
+                    } else {
+                        addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
+                    }
+                }
+                if (document.getElementById('tasks-list').children.length < 2) {
+                    fetchTasks(); 
+                }
+            } else if (sectionId === 'stats-content') {
+                fetchStats(); 
+            }
+            
+            // Показываем индикаторы свайпа
+            showIndicators();
+        }
+        
+        // Обновление навигации при свайпе
+        function updateNavigation() {
+            // Находим соответствующую кнопку навигации
+            let sectionId = '';
+            if (currentSectionIndex === 0) sectionId = 'tasks-content';
+            else if (currentSectionIndex === 1) sectionId = 'ai-chat-content';
+            else if (currentSectionIndex === 2) sectionId = 'stats-content';
+            
+            const buttonElement = document.querySelector(`.nav-button[data-section="${sectionId}"]`);
+            if (buttonElement) {
+                document.querySelectorAll('.nav-button').forEach(button => {
+                    button.classList.remove('active');
+                    button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
+                    button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
+                });
+                
+                buttonElement.classList.add('active');
+                const activeColor = tg.themeParams.link_color || '#007aff';
+                buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
+            }
+            
+            // Выполняем действия для раздела
+            if (sectionId === 'tasks-content') {
+                if (document.getElementById('tasks-list').children.length < 2) {
+                    fetchTasks(); 
+                }
+            } else if (sectionId === 'stats-content') {
+                fetchStats(); 
+            }
+        }
         
         // --- Установка значений по умолчанию для формы ---
         function setDefaultFormValues() {
@@ -1942,39 +2391,7 @@
             }
         }
         
-        // --- 6. ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ (SPA) ---
-        function switchSection(sectionId, buttonElement) {
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionId).classList.add('active');
-
-            document.querySelectorAll('.nav-button').forEach(button => {
-                button.classList.remove('active');
-                button.querySelector('.nav-button-icon').style.boxShadow = 'none'; 
-                button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
-            });
-            
-            buttonElement.classList.add('active');
-            const activeColor = tg.themeParams.link_color || '#007aff';
-            buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`; 
-
-            if (sectionId === 'tasks-content') {
-                if (formSection.classList.contains('expanded')) {
-                    // Обновляем кнопку внутри формы
-                    if (isEditing) {
-                        addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
-                    } else {
-                        addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
-                    }
-                }
-                if (document.getElementById('tasks-list').children.length < 2) {
-                    fetchTasks(); 
-                }
-            } else if (sectionId === 'stats-content') {
-                fetchStats(); 
-            }
-        }
+        // --- 6. ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ (SPA) - ИСПРАВЛЕНА ---
         
         // --- 7. ЛОГИКА AI CHAT (ИСПРАВЛЕННАЯ) ---
         
@@ -2250,6 +2667,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Убедимся, что Telegram WebApp инициализирован
             if (tg.initData) {
+                // Инициализируем свайпы
+                initSwipe();
+                
                 // Активируем вкладку задач по умолчанию
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
@@ -2265,6 +2685,9 @@
                 }
             } else {
                 console.warn('Telegram WebApp not fully initialized');
+                // Инициализируем свайпы в любом случае
+                initSwipe();
+                
                 // Активируем вкладку задач в любом случае
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
