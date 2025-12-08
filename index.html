@@ -669,10 +669,13 @@
             opacity: 0.6;
         }
 
-        /* === УЛУЧШЕННЫЕ СТИЛИ AI CHAT === */
+        /* === ИСПРАВЛЕННЫЕ СТИЛИ AI CHAT === */
         #ai-chat-content {
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         #ai-chat-content:before {
@@ -711,6 +714,7 @@
             border: 1px solid rgba(138, 43, 226, 0.15);
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .ai-welcome:before {
@@ -732,13 +736,49 @@
             background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.3), transparent);
         }
 
+        /* === ИСПРАВЛЕНИЕ: КОНТЕЙНЕР СООБЩЕНИЙ CHAT === */
+        #ai-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 5px 20px 5px;
+            margin-bottom: 20px;
+            max-height: calc(100vh - 220px); /* Ограничение высоты */
+            min-height: 200px; /* Минимальная высота */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: stretch;
+            gap: 15px;
+        }
+
+        /* Скроллбар для чата */
+        #ai-chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #ai-chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #ai-chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(138, 43, 226, 0.3);
+            border-radius: 2px;
+        }
+
+        #ai-chat-messages::-webkit-scrollbar-thumb:hover {
+            background: rgba(138, 43, 226, 0.5);
+        }
+
         /* Улучшенные стили для пузырей чата */
         .chat-message {
             display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             opacity: 0;
             transform: translateY(10px);
             animation: messageAppear 0.3s ease-out forwards;
+            flex-shrink: 0;
         }
 
         @keyframes messageAppear {
@@ -767,6 +807,7 @@
         /* Сообщения пользователя */
         .user-message {
             justify-content: flex-end;
+            align-self: flex-end;
         }
 
         .user-message .chat-bubble {
@@ -783,6 +824,7 @@
         /* Сообщения AI */
         .ai-message {
             justify-content: flex-start;
+            align-self: flex-start;
         }
 
         .ai-message .chat-bubble {
@@ -800,9 +842,11 @@
         .ai-loading {
             display: flex;
             justify-content: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             opacity: 0;
             animation: loadingAppear 0.3s ease-out 0.1s forwards;
+            flex-shrink: 0;
+            align-self: flex-start;
         }
 
         @keyframes loadingAppear {
@@ -1388,6 +1432,12 @@
                 font-size: 1.3em;
             }
             
+            /* ИСПРАВЛЕНИЕ ДЛЯ AI ЧАТА НА iPhone */
+            #ai-chat-messages {
+                max-height: calc(100vh - 200px);
+                padding: 5px 2px 15px 2px;
+            }
+            
             /* Адаптивность для статистики на iPhone */
             .stats-grid {
                 gap: 10px;
@@ -1569,6 +1619,7 @@
                 </h1>
                 <button id="clear-chat-btn" title="Очистить чат">🗑️</button>
                 
+                <!-- ИСПРАВЛЕННЫЙ КОНТЕЙНЕР СООБЩЕНИЙ -->
                 <div id="ai-chat-messages">
                     <div class="ai-welcome">
                         Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
@@ -1812,7 +1863,7 @@
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
-        const aiChatMessages = document.getElementById('ai-chat-messages');
+        const aiChatMessages = document.getElementById('ai-chat-messages'); // ИСПРАВЛЕННЫЙ ЭЛЕМЕНТ
         const clearChatButton = document.getElementById('clear-chat-btn');
         const aiChatInputArea = document.getElementById('ai-chat-input-area');
         
@@ -2327,6 +2378,10 @@
                 document.getElementById('ai-chat-content').classList.add('ai-active');
                 // Также показываем панель ввода напрямую для надежности
                 aiChatInputArea.style.display = 'flex';
+                // Устанавливаем фокус на поле ввода AI чата при переходе в этот раздел
+                setTimeout(() => {
+                    aiChatInput.focus();
+                }, 100);
             } else {
                 // Скрываем панель ввода при переходе в другие разделы
                 aiChatInputArea.style.display = 'none';
@@ -2859,16 +2914,15 @@
             
             // УВЕЛИЧЕННАЯ ЗАДЕРЖКА И УЛУЧШЕННАЯ ПРОКРУТКА
             setTimeout(() => {
-                // Используем более агрессивный подход к прокрутке
-                const scrollHeight = aiChatMessages.scrollHeight;
-                const clientHeight = aiChatMessages.clientHeight;
-                const maxScroll = scrollHeight - clientHeight;
-                
-                // Прокручиваем к самому низу
-                aiChatMessages.scrollTop = scrollHeight;
+                // Автоматическая прокрутка к последнему сообщению
+                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
                 
                 // Дополнительная проверка через еще одну задержку
                 setTimeout(() => {
+                    const scrollHeight = aiChatMessages.scrollHeight;
+                    const clientHeight = aiChatMessages.clientHeight;
+                    const maxScroll = scrollHeight - clientHeight;
+                    
                     if (aiChatMessages.scrollTop < maxScroll - 50) {
                         aiChatMessages.scrollTop = scrollHeight;
                     }
@@ -2974,7 +3028,9 @@
             clearChatButton.addEventListener('click', () => {
                 tg.showConfirm('Очистить всю историю чата?', (confirmed) => {
                     if (confirmed) {
-                        aiChatMessages.innerHTML = `
+                        // Сохраняем только контейнер сообщений
+                        const messagesContainer = document.getElementById('ai-chat-messages');
+                        messagesContainer.innerHTML = `
                             <div class="ai-welcome">
                                 Привет! Я ваш помощник по планированию задач. Спросите меня, как лучше составить расписание или дайте мне текст задачи!
                             </div>
