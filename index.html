@@ -1839,12 +1839,19 @@
         let isFirstAppLaunch = true;
         let settingsLoaded = false;
         
-        // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ DEBOUNCE НАСТРОЕК ---
+        // --- УЛУЧШЕННЫЕ ПЕРЕМЕННЫЕ ДЛЯ DEBOUNCE НАСТРОЕК ---
         let pendingSettingsChanges = {};
         let settingsDebounceTimer = null;
-        const SETTINGS_DEBOUNCE_DELAY = 500; // 0.5 секунды задержки
+        const SETTINGS_DEBOUNCE_DELAY = 800; // УВЕЛИЧЕНО ДО 800 МС
         
-        // --- ФУНКЦИИ ДЛЯ НАСТРОЕК С DEBOUNCE ---
+        // Храним текущее состояние тумблеров для отката при ошибке
+        let currentSettingsState = {
+            notify_morning: false,
+            notify_one_hour: false,
+            notify_at_start: false
+        };
+        
+        // --- ФУНКЦИИ ДЛЯ НАСТРОЕК С УЛУЧШЕННЫМ DEBOUNCE ---
         
         // Функция для показа/скрытия меню настроек
         function toggleSettingsMenu() {
@@ -1900,11 +1907,16 @@
                 const settings = await response.json();
                 console.log('User settings loaded:', settings);
                 
-                // Обновляем состояние тумблеров
+                // Обновляем состояние тумблеров и сохраняем текущее состояние
                 if (settings) {
                     notifyMorningCheckbox.checked = settings.notify_morning === 'yes';
                     notifyOneHourCheckbox.checked = settings.notify_one_hour === 'yes';
                     notifyAtStartCheckbox.checked = settings.notify_at_start === 'yes';
+                    
+                    // Сохраняем текущее состояние
+                    currentSettingsState.notify_morning = notifyMorningCheckbox.checked;
+                    currentSettingsState.notify_one_hour = notifyOneHourCheckbox.checked;
+                    currentSettingsState.notify_at_start = notifyAtStartCheckbox.checked;
                 }
                 
                 // Помечаем, что настройки загружены
@@ -1916,16 +1928,30 @@
                 notifyMorningCheckbox.checked = true;
                 notifyOneHourCheckbox.checked = true;
                 notifyAtStartCheckbox.checked = false;
+                
+                // Сохраняем текущее состояние
+                currentSettingsState.notify_morning = true;
+                currentSettingsState.notify_one_hour = true;
+                currentSettingsState.notify_at_start = false;
+                
                 settingsLoaded = true; // Все равно помечаем как загруженные, чтобы не пытаться снова
             }
         }
         
-        // Функция для обновления настройки с использованием debounce
+        // Функция для обновления настройки с использованием улучшенного debounce
         function toggleSetting(settingName, isEnabled) {
-            // Добавляем изменение в объект ожидающих изменений
-            pendingSettingsChanges[settingName] = isEnabled ? 'yes' : 'no';
+            // НЕМЕДЛЕННО обновляем состояние тумблера для отображения пользователю
+            const settingValue = isEnabled ? 'yes' : 'no';
             
-            // Сбрасываем таймер, если он уже запущен
+            // Добавляем изменение в объект ожидающих изменений
+            pendingSettingsChanges[settingName] = settingValue;
+            
+            // Обновляем локальное состояние
+            if (settingName === 'notify_morning') currentSettingsState.notify_morning = isEnabled;
+            if (settingName === 'notify_one_hour') currentSettingsState.notify_one_hour = isEnabled;
+            if (settingName === 'notify_at_start') currentSettingsState.notify_at_start = isEnabled;
+            
+            // Сбрасываем предыдущий таймер
             if (settingsDebounceTimer) {
                 clearTimeout(settingsDebounceTimer);
             }
@@ -1956,9 +1982,14 @@
                     return;
                 }
                 
-                // Копируем изменения и очищаем объект
+                // Сохраняем копию текущих изменений перед отправкой
                 const changesToSend = {...pendingSettingsChanges};
+                
+                // КОПИРУЕМ все изменения и очищаем объект ПЕРЕД отправкой
+                // Это предотвращает потерю изменений, если пользователь продолжает нажимать во время отправки
                 pendingSettingsChanges = {};
+                
+                console.log('Sending settings changes:', changesToSend);
                 
                 const response = await fetch(N8N_UPDATE_SETTINGS_URL, {
                     method: 'POST',
@@ -1974,21 +2005,20 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
-                // ИСПРАВЛЕНИЕ: Убираем проверку result.success - просто считаем, что раз JSON распарсился, то успех
                 const result = await response.json();
+                console.log('Settings update response:', result);
                 
-                // Просто всегда считаем, что раз JSON распарсился, то это успех
-                console.log(`Settings updated:`, changesToSend);
+                // Успешно отправлено
                 
             } catch (error) {
                 console.error('Error updating settings:', error);
                 
                 // Для iOS: используем более надежный метод показа сообщения
                 if (window.Telegram && window.Telegram.WebApp && tg.showAlert) {
-                    tg.showAlert(`Ошибка обновления настроек`);
+                    tg.showAlert('Ошибка обновления настроек. Настройки восстановлены.');
                 } else {
                     // Fallback для браузера
-                    alert('Ошибка обновления настроек');
+                    alert('Ошибка обновления настроек. Настройки восстановлены.');
                 }
                 
                 // Восстанавливаем состояние тумблеров при ошибке
@@ -1998,8 +2028,10 @@
         
         // Функция для восстановления состояния тумблеров при ошибке
         function restoreToggleStates() {
-            // Загружаем текущие настройки с сервера для восстановления
-            fetchUserSettings();
+            // Восстанавливаем тумблеры из сохраненного состояния
+            notifyMorningCheckbox.checked = currentSettingsState.notify_morning;
+            notifyOneHourCheckbox.checked = currentSettingsState.notify_one_hour;
+            notifyAtStartCheckbox.checked = currentSettingsState.notify_at_start;
         }
         
         // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
@@ -2825,14 +2857,24 @@
             messageElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(messageElement);
             
-            // ИСПРАВЛЕНИЕ: Задержка для полного рендеринга сообщения перед прокруткой
+            // УВЕЛИЧЕННАЯ ЗАДЕРЖКА И УЛУЧШЕННАЯ ПРОКРУТКА
             setTimeout(() => {
-                // Прокрутка к последнему сообщению с плавной анимацией
-                aiChatMessages.scrollTo({
-                    top: aiChatMessages.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 100);
+                // Используем более агрессивный подход к прокрутке
+                const scrollHeight = aiChatMessages.scrollHeight;
+                const clientHeight = aiChatMessages.clientHeight;
+                const maxScroll = scrollHeight - clientHeight;
+                
+                // Прокручиваем к самому низу
+                aiChatMessages.scrollTop = scrollHeight;
+                
+                // Дополнительная проверка через еще одну задержку
+                setTimeout(() => {
+                    if (aiChatMessages.scrollTop < maxScroll - 50) {
+                        aiChatMessages.scrollTop = scrollHeight;
+                    }
+                }, 50);
+                
+            }, 150); // Увеличили задержку до 150мс
         }
 
         function showAILoading() {
@@ -2847,13 +2889,16 @@
             loadingElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(loadingElement);
             
-            // ИСПРАВЛЕНИЕ: Задержка перед прокруткой
+            // УВЕЛИЧЕННАЯ ЗАДЕРЖКА ПЕРЕД ПРОКРУТКОЙ
             setTimeout(() => {
-                aiChatMessages.scrollTo({
-                    top: aiChatMessages.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }, 50);
+                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                
+                // Дополнительная прокрутка через 50мс
+                setTimeout(() => {
+                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                }, 50);
+                
+            }, 100);
         }
         
         function hideAILoading() {
@@ -2898,7 +2943,7 @@
                     
                     const result = await response.json();
                     
-                    let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответта)";
+                    let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответа)";
 
                     // Проверка на ожидаемые поля в ответе
                     if (result && result.aiResponse) {
