@@ -1839,7 +1839,12 @@
         let isFirstAppLaunch = true;
         let settingsLoaded = false;
         
-        // --- ФУНКЦИИ ДЛЯ НАСТРОЕК ---
+        // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ DEBOUNCE НАСТРОЕК ---
+        let pendingSettingsChanges = {};
+        let settingsDebounceTimer = null;
+        const SETTINGS_DEBOUNCE_DELAY = 500; // 0.5 секунды задержки
+        
+        // --- ФУНКЦИИ ДЛЯ НАСТРОЕК С DEBOUNCE ---
         
         // Функция для показа/скрытия меню настроек
         function toggleSettingsMenu() {
@@ -1915,15 +1920,45 @@
             }
         }
         
-        // Функция для обновления настройки
-        async function toggleSetting(settingName, isEnabled) {
+        // Функция для обновления настройки с использованием debounce
+        function toggleSetting(settingName, isEnabled) {
+            // Добавляем изменение в объект ожидающих изменений
+            pendingSettingsChanges[settingName] = isEnabled ? 'yes' : 'no';
+            
+            // Сбрасываем таймер, если он уже запущен
+            if (settingsDebounceTimer) {
+                clearTimeout(settingsDebounceTimer);
+            }
+            
+            // Устанавливаем новый таймер
+            settingsDebounceTimer = setTimeout(() => {
+                // Отправляем все накопленные изменения одним запросом
+                sendPendingSettings();
+            }, SETTINGS_DEBOUNCE_DELAY);
+            
+            // Легкая виброотдача для подтверждения действия (немедленно)
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        }
+        
+        // Функция для отправки всех ожидающих изменений настроек
+        async function sendPendingSettings() {
+            if (Object.keys(pendingSettingsChanges).length === 0) {
+                return;
+            }
+            
             try {
                 if (!tg.initData) {
                     console.warn('Telegram initData is missing. Cannot update settings.');
+                    // Восстанавливаем состояние тумблеров при ошибке
+                    restoreToggleStates();
                     return;
                 }
                 
-                const settingValue = isEnabled ? 'yes' : 'no';
+                // Копируем изменения и очищаем объект
+                const changesToSend = {...pendingSettingsChanges};
+                pendingSettingsChanges = {};
                 
                 const response = await fetch(N8N_UPDATE_SETTINGS_URL, {
                     method: 'POST',
@@ -1932,9 +1967,7 @@
                         'X-Init-Data': tg.initData,
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        [settingName]: settingValue
-                    })
+                    body: JSON.stringify(changesToSend)
                 });
                 
                 if (!response.ok) {
@@ -1945,36 +1978,28 @@
                 const result = await response.json();
                 
                 // Просто всегда считаем, что раз JSON распарсился, то это успех
-                console.log(`Setting ${settingName} updated to ${settingValue}`);
-                // Легкая виброотдача для подтверждения
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                }
+                console.log(`Settings updated:`, changesToSend);
                 
             } catch (error) {
-                console.error('Error updating setting:', error);
+                console.error('Error updating settings:', error);
                 
                 // Для iOS: используем более надежный метод показа сообщения
                 if (window.Telegram && window.Telegram.WebApp && tg.showAlert) {
-                    tg.showAlert(`Ошибка обновления настройки`);
+                    tg.showAlert(`Ошибка обновления настроек`);
                 } else {
                     // Fallback для браузера
-                    alert('Ошибка обновления настройки');
+                    alert('Ошибка обновления настроек');
                 }
                 
-                // Откатываем состояние тумблера при ошибке
-                switch(settingName) {
-                    case 'notify_morning':
-                        notifyMorningCheckbox.checked = !isEnabled;
-                        break;
-                    case 'notify_one_hour':
-                        notifyOneHourCheckbox.checked = !isEnabled;
-                        break;
-                    case 'notify_at_start':
-                        notifyAtStartCheckbox.checked = !isEnabled;
-                        break;
-                }
+                // Восстанавливаем состояние тумблеров при ошибке
+                restoreToggleStates();
             }
+        }
+        
+        // Функция для восстановления состояния тумблеров при ошибке
+        function restoreToggleStates() {
+            // Загружаем текущие настройки с сервера для восстановления
+            fetchUserSettings();
         }
         
         // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
@@ -2800,8 +2825,14 @@
             messageElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(messageElement);
             
-            // Автоматическая прокрутка к новому сообщению
-            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+            // ИСПРАВЛЕНИЕ: Задержка для полного рендеринга сообщения перед прокруткой
+            setTimeout(() => {
+                // Прокрутка к последнему сообщению с плавной анимацией
+                aiChatMessages.scrollTo({
+                    top: aiChatMessages.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
         }
 
         function showAILoading() {
@@ -2816,8 +2847,13 @@
             loadingElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(loadingElement);
             
-            // Прокрутка вниз
-            aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+            // ИСПРАВЛЕНИЕ: Задержка перед прокруткой
+            setTimeout(() => {
+                aiChatMessages.scrollTo({
+                    top: aiChatMessages.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
         }
         
         function hideAILoading() {
