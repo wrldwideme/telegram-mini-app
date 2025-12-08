@@ -719,6 +719,7 @@
             color: var(--hint-color);
             font-style: italic;
             margin-bottom: 15px;
+            margin-top: 10px; /* Добавлено отступ сверху */
             background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(147, 112, 219, 0.05));
             border-radius: 16px;
             border: 1px solid rgba(138, 43, 226, 0.15);
@@ -751,14 +752,13 @@
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 10px 5px 20px 5px;
-            margin-bottom: 20px;
+            padding: 10px 5px 90px 5px; /* Увеличено снизу до 90px для места под панель ввода */
+            margin-bottom: 0; /* Убрано, чтобы не конфликтовало с паддингом */
             position: relative;
             display: flex;
             flex-direction: column;
             gap: 15px;
             min-height: 0;
-            /* Важное свойство для iOS Safari */
             overflow-anchor: none;
             will-change: transform;
         }
@@ -3278,3 +3278,4 @@
     </script>
 </body>
 </html>
+
