@@ -43,13 +43,19 @@
             overflow-x: hidden; /* Предотвращаем горизонтальный скролл */
             width: 100%;
             max-width: 100vw; /* Ограничиваем максимальную ширину */
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
         /* --- ОБЕРТКА ДЛЯ СВАЙПОВ --- */
         .swipe-container {
             position: relative;
             width: 100%;
-            height: 100vh;
+            height: 100%;
             overflow: hidden;
             touch-action: pan-y;
         }
@@ -66,12 +72,13 @@
             width: 100vw;
             height: 100%;
             flex-shrink: 0;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
             padding: 15px;
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
             box-sizing: border-box;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
         
         /* Анимация для текущего раздела - менее агрессивная */
@@ -114,6 +121,7 @@
             position: relative;
             width: 100%;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         /* Цвета границ для разных разделов */
@@ -384,6 +392,7 @@
             max-height: 60px;
             width: 100%;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .form-section.expanded {
@@ -595,6 +604,7 @@
             transition: transform 0.2s, box-shadow 0.2s;
             width: 100%;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
         
         .task-card:active { transform: scale(0.99);
@@ -743,14 +753,21 @@
             -webkit-overflow-scrolling: touch;
             padding: 10px 5px 20px 5px;
             margin-bottom: 20px;
-            max-height: calc(100vh - 220px); /* Ограничение высоты */
-            min-height: 200px; /* Минимальная высота */
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            align-items: stretch;
             gap: 15px;
+            min-height: 0;
+            /* Важное свойство для iOS Safari */
+            overflow-anchor: none;
+            will-change: transform;
+        }
+
+        /* Фикс для Android Chrome */
+        #ai-chat-messages {
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
         }
 
         /* Скроллбар для чата */
@@ -779,6 +796,7 @@
             transform: translateY(10px);
             animation: messageAppear 0.3s ease-out forwards;
             flex-shrink: 0;
+            max-width: 100%;
         }
 
         @keyframes messageAppear {
@@ -1098,6 +1116,10 @@
             width: 100%;
             box-sizing: border-box;
             padding-right: 0; /* Убираем лишние отступы */
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 20px;
         }
 
         /* Главные метрики в стиле виджетов iOS */
@@ -1434,7 +1456,6 @@
             
             /* ИСПРАВЛЕНИЕ ДЛЯ AI ЧАТА НА iPhone */
             #ai-chat-messages {
-                max-height: calc(100vh - 200px);
                 padding: 5px 2px 15px 2px;
             }
             
@@ -1542,6 +1563,22 @@
                 right: 10px;
             }
         }
+
+        /* Специальные стили для мобильного скролла */
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
+        }
+
+        #tasks-list {
+            flex: 1;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
+            padding-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -1607,7 +1644,7 @@
                 </div>
 
                 <h2>📝 Активные задачи</h2>
-                <div id="tasks-list">
+                <div id="tasks-list" class="scrollable-content">
                     <p class="loading-message">Загрузка задач...</p>
                 </div>
             </div>
@@ -1633,7 +1670,7 @@
                     Аналитика
                 </h1>
                 
-                <div id="stats-container">
+                <div id="stats-container" class="scrollable-content">
                     <div class="stats-grid">
                         <div class="stat-widget">
                             <div class="stat-widget-header">
@@ -1737,7 +1774,7 @@
                             <div class="priority-percentage" id="percentage-medium">0%</div>
                         </div>
                         
-                        <div class="priority-item">
+                        <div class="priority-item {
                             <div class="priority-color low"></div>
                             <div class="priority-info">
                                 <span class="priority-name">Низкий</span>
@@ -2912,23 +2949,25 @@
             messageElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(messageElement);
             
-            // УВЕЛИЧЕННАЯ ЗАДЕРЖКА И УЛУЧШЕННАЯ ПРОКРУТКА
+            // УЛУЧШЕННАЯ ПРОКРУТКА ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
             setTimeout(() => {
-                // Автоматическая прокрутка к последнему сообщению
-                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-                
-                // Дополнительная проверка через еще одну задержку
-                setTimeout(() => {
-                    const scrollHeight = aiChatMessages.scrollHeight;
-                    const clientHeight = aiChatMessages.clientHeight;
-                    const maxScroll = scrollHeight - clientHeight;
+                // Используем requestAnimationFrame для плавной прокрутки
+                requestAnimationFrame(() => {
+                    // Прокручиваем к самому низу
+                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
                     
-                    if (aiChatMessages.scrollTop < maxScroll - 50) {
-                        aiChatMessages.scrollTop = scrollHeight;
-                    }
-                }, 50);
-                
-            }, 150); // Увеличили задержку до 150мс
+                    // Дополнительная проверка для iOS
+                    setTimeout(() => {
+                        const scrollHeight = aiChatMessages.scrollHeight;
+                        const clientHeight = aiChatMessages.clientHeight;
+                        const maxScroll = scrollHeight - clientHeight;
+                        
+                        if (aiChatMessages.scrollTop < maxScroll - 50) {
+                            aiChatMessages.scrollTop = scrollHeight;
+                        }
+                    }, 50);
+                });
+            }, 100);
         }
 
         function showAILoading() {
@@ -2943,15 +2982,15 @@
             loadingElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(loadingElement);
             
-            // УВЕЛИЧЕННАЯ ЗАДЕРЖКА ПЕРЕД ПРОКРУТКОЙ
+            // УЛУЧШЕННАЯ ПРОКРУТКА ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
             setTimeout(() => {
-                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-                
-                // Дополнительная прокрутка через 50мс
-                setTimeout(() => {
+                requestAnimationFrame(() => {
                     aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-                }, 50);
-                
+                    
+                    setTimeout(() => {
+                        aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                    }, 50);
+                });
             }, 100);
         }
         
