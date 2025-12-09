@@ -495,9 +495,10 @@
             text-align: left;
         }
         
+        /* ИСПРАВЛЕНИЕ: Стили для полей ввода на iOS Safari */
         .ios-row input, .ios-row select {
             flex-grow: 1;
-            padding: 8px 0; /* Добавляем вертикальные отступы */
+            padding: 8px 0;
             margin: 0; 
             box-sizing: border-box;
             background: transparent;
@@ -512,15 +513,28 @@
             padding-right: 5px; 
             width: 100%;
             min-height: 28px; /* Минимальная высота для касания */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; /* Принудительный шрифт */
         }
         
-        /* Гарантируем, что дата, время и select выравниваются справа */
+        /* ИСПРАВЛЕНИЕ ДЛЯ iOS: Гарантируем, что дата, время и select выравниваются справа */
         .ios-row input[type="date"], 
         .ios-row input[type="time"],
         .ios-row select {
             text-align: right !important;
             padding-right: 5px; 
-            direction: rtl; /* Для правильного отображения значений справа */
+            direction: ltr !important; /* Важно: ltr вместо rtl для исправления отображения даты */
+        }
+        
+        /* ИСПРАВЛЕНИЕ: Специальные стили для даты на iOS */
+        .ios-row input[type="date"] {
+            text-align: right;
+            position: relative;
+        }
+        
+        /* Убираем браузерные стили для даты в iOS */
+        .ios-row input[type="date"]::-webkit-date-and-time-value {
+            text-align: right;
+            direction: ltr;
         }
         
         /* Стили для placeholder */
@@ -528,15 +542,30 @@
             color: var(--hint-color);
             opacity: 0.7;
             text-align: right;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; /* Принудительный шрифт */
         }
         
-        /* Стили для select стрелки */
+        /* ИСПРАВЛЕНИЕ: Стили для select - исправляем проблему с артефактами в тексте */
         .ios-row select {
             background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777777'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 5px center;
             background-size: 20px;
             padding-right: 30px; /* Место для стрелки */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; /* Принудительный шрифт для исправления артефактов */
+            text-transform: none; /* Убираем любое преобразование текста */
+            letter-spacing: normal; /* Нормальный межбуквенный интервал */
+            word-spacing: normal; /* Нормальный межсловный интервал */
+        }
+        
+        /* ИСПРАВЛЕНИЕ: Стили для option внутри select */
+        .ios-row select option {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            text-transform: none;
+            letter-spacing: normal;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-size: 1.0em;
         }
 
         /* Кнопка добавления задачи внутри формы */
@@ -1507,11 +1536,19 @@
                 padding: 6px 0;
             }
             
-            /* Исправление для полей даты и времени на iOS */
+            /* ИСПРАВЛЕНИЕ: Дополнительные стили для полей даты и времени на iOS */
+            .ios-row input[type="date"],
+            .ios-row input[type="time"] {
+                direction: ltr !important;
+                text-align: right !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+            }
+            
             .ios-row input[type="date"]::-webkit-datetime-edit,
             .ios-row input[type="time"]::-webkit-datetime-edit {
                 padding-right: 0;
                 margin-right: 0;
+                direction: ltr;
             }
             
             .ios-row input[type="date"]::-webkit-calendar-picker-indicator,
