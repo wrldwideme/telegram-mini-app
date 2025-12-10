@@ -22,6 +22,9 @@
             --stats-color: #34c759;
             /* Цвет для онбординга */
             --onboarding-color: #007aff;
+            /* Цвета для свайпов задач */
+            --swipe-complete-color: #34c759;
+            --swipe-delete-color: #ff3b30;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -859,11 +862,29 @@
             font-size: 1.1em;
         }
 
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
-        .task-card { 
+        /* --- НОВЫЕ СТИЛИ ДЛЯ СВАЙПОВ НА ЗАДАЧАХ --- */
+        .task-card-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .task-card-swipeable {
+            position: relative;
+            width: 100%;
+            transform: translateX(0);
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            touch-action: pan-y;
+            user-select: none;
+        }
+
+        .task-card {
             border-left: 6px solid #444;
             padding: 15px; 
-            margin-bottom: 15px; 
+            margin-bottom: 0;
             border-radius: 12px; 
             background: var(--secondary-bg-color); 
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
@@ -874,33 +895,112 @@
             width: 100%;
             box-sizing: border-box;
             flex-shrink: 0;
+            position: relative;
+            z-index: 2;
         }
         
-        .task-card:active { transform: scale(0.99);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
-        .task-card.expired { border-left-color: #e74c3c;
-            opacity: 0.9; }
-        .task-info { flex-grow: 1;
+        .task-card:active { 
+            transform: scale(0.99);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); 
         }
-        .task-header { display: flex; align-items: flex-start; margin-bottom: 5px;
+        
+        .task-card.expired { 
+            border-left-color: #e74c3c;
+            opacity: 0.9; 
         }
-        .task-text { font-weight: 600; font-size: 1.15em; word-wrap: break-word; flex-grow: 1;
+        
+        .task-info { 
+            flex-grow: 1;
         }
-        .task-card p { font-size: 0.9em; color: var(--hint-color); margin: 5px 0 0 0;
+        
+        .task-header { 
+            display: flex; 
+            align-items: flex-start; 
+            margin-bottom: 5px;
         }
-        .task-card.expired p { color: #ff5555; font-weight: bold;
+        
+        .task-text { 
+            font-weight: 600; 
+            font-size: 1.15em; 
+            word-wrap: break-word; 
+            flex-grow: 1;
+        }
+        
+        .task-card p { 
+            font-size: 0.9em; 
+            color: var(--hint-color); 
+            margin: 5px 0 0 0;
+        }
+        
+        .task-card.expired p { 
+            color: #ff5555; 
+            font-weight: bold;
         } 
         
-        .importance-tag { font-size: 0.7em;
-            font-weight: bold; padding: 3px 8px; border-radius: 12px; margin-right: 12px; color: white; text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
-            min-width: 60px; text-align: center; }
-        .importance-tag.high { background-color: #e74c3c;
+        .importance-tag { 
+            font-size: 0.7em;
+            font-weight: bold; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            margin-right: 12px; 
+            color: white; 
+            text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+            min-width: 60px; 
+            text-align: center; 
         }
-        .importance-tag.medium { background-color: #f39c12;
+        
+        .importance-tag.high { 
+            background-color: #e74c3c;
         }
-        .importance-tag.low { background-color: #2ecc71;
+        
+        .importance-tag.medium { 
+            background-color: #f39c12;
         }
-        .loading-message, .empty-message, .error-message { text-align: center; padding: 20px; color: var(--hint-color);
+        
+        .importance-tag.low { 
+            background-color: #2ecc71;
+        }
+        
+        /* Стили для иконок действий при свайпе */
+        .swipe-action {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            z-index: 1;
+            transition: width 0.3s ease;
+        }
+
+        .swipe-action-left {
+            left: 0;
+            background-color: var(--swipe-delete-color);
+            border-radius: 12px 0 0 12px;
+            padding-left: 15px;
+            justify-content: flex-start;
+        }
+
+        .swipe-action-right {
+            right: 0;
+            background-color: var(--swipe-complete-color);
+            border-radius: 0 12px 12px 0;
+            padding-right: 15px;
+            justify-content: flex-end;
+        }
+
+        .swipe-action-icon {
+            margin: 0 8px;
+            font-size: 1.2em;
+        }
+
+        .loading-message, .empty-message, .error-message { 
+            text-align: center; 
+            padding: 20px; 
+            color: var(--hint-color);
         }
         
         /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
@@ -914,6 +1014,8 @@
             margin-left: 10px;
             line-height: 1; 
             margin-top: -5px;
+            z-index: 3;
+            position: relative;
         }
 
         #context-menu {
@@ -927,6 +1029,7 @@
             display: none; 
             overflow: hidden;
         }
+        
         .menu-item {
             padding: 12px 15px;
             cursor: pointer;
@@ -939,9 +1042,11 @@
         .menu-item:last-child {
             border-bottom: none;
         }
+        
         .menu-item:hover {
             background-color: var(--secondary-bg-color);
         }
+        
         .menu-item.disabled {
             color: var(--hint-color);
             cursor: not-allowed;
@@ -1851,6 +1956,22 @@
                 height: 32px;
                 margin-right: 12px;
             }
+            
+            /* Адаптивность для свайпов на задачах */
+            .task-card {
+                padding: 12px;
+            }
+            
+            .task-text {
+                font-size: 1.1em;
+            }
+            
+            .importance-tag {
+                min-width: 55px;
+                font-size: 0.65em;
+                padding: 2px 6px;
+                margin-right: 8px;
+            }
         }
         
         /* Дополнительные исправления для очень маленьких экранов */
@@ -2340,6 +2461,16 @@
         let isSwiping = false;
         let swipeTimeout = null;
         
+        // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПОВ НА ЗАДАЧАХ ---
+        let taskSwipeInProgress = false;
+        let taskTouchStartX = 0;
+        let taskTouchStartY = 0;
+        let taskTouchEndX = 0;
+        let currentSwipedTaskId = null;
+        let currentTaskTransform = 0;
+        const TASK_SWIPE_THRESHOLD = 60; // Порог для активации свайпа на задаче
+        const TASK_SWIPE_MAX = 120; // Максимальное смещение
+        
         // --- ФЛАГ ДЛЯ ОТСЛЕЖИВАНИЯ ПЕРВОГО ОТКРЫТИЯ ---
         let isFirstAppLaunch = true;
         let settingsLoaded = false;
@@ -2592,6 +2723,244 @@
             notifyAtStartCheckbox.checked = currentSettingsState.notify_at_start;
         }
         
+        // --- ФУНКЦИИ ДЛЯ СВАЙПОВ НА ЗАДАЧАХ ---
+        
+        // Инициализация свайпов на задачах
+        function initTaskSwipes() {
+            // Обработчики добавляются динамически при создании карточек задач
+        }
+        
+        // Создание обертки для задачи со свайпом
+        function createTaskCardWrapper(taskData, dateTimeInfo, taskId) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'task-card-wrapper';
+            wrapper.setAttribute('data-task-id', taskId);
+            
+            // Создаем действия для свайпа
+            const swipeLeftAction = document.createElement('div');
+            swipeLeftAction.className = 'swipe-action swipe-action-left';
+            swipeLeftAction.innerHTML = '<span class="swipe-action-icon">🗑️</span> <span>Удалить</span>';
+            swipeLeftAction.style.width = '0';
+            
+            const swipeRightAction = document.createElement('div');
+            swipeRightAction.className = 'swipe-action swipe-action-right';
+            swipeRightAction.innerHTML = '<span class="swipe-action-icon">✅</span> <span>Выполнено</span>';
+            swipeRightAction.style.width = '0';
+            
+            const swipeable = document.createElement('div');
+            swipeable.className = 'task-card-swipeable';
+            swipeable.setAttribute('data-task-id', taskId);
+            
+            const importance = (taskData.importance || 'low').toLowerCase();
+            const taskText = taskData.task_text || taskData.task || 'Нет текста задачи';
+            
+            let cardClasses = `task-card ${importance}`;
+            if (dateTimeInfo.isExpired) {
+                cardClasses += ' expired';
+            }
+            
+            const taskCard = document.createElement('div');
+            taskCard.className = cardClasses;
+            taskCard.innerHTML = `
+                <div class="task-info">
+                    <div class="task-header">
+                        <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
+                        <span class="task-text">${taskText}</span>
+                    </div>
+                    
+                    <p>${dateTimeInfo.formattedText}</p>
+                </div>
+                <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
+                    ⋮
+                </button>
+            `;
+            
+            swipeable.appendChild(taskCard);
+            wrapper.appendChild(swipeLeftAction);
+            wrapper.appendChild(swipeRightAction);
+            wrapper.appendChild(swipeable);
+            
+            // Добавляем обработчики свайпа
+            addTaskSwipeHandlers(swipeable, wrapper, taskId, swipeLeftAction, swipeRightAction);
+            
+            return wrapper;
+        }
+        
+        // Добавление обработчиков свайпа для задачи
+        function addTaskSwipeHandlers(swipeableElement, wrapperElement, taskId, leftAction, rightAction) {
+            let startX = 0;
+            let currentX = 0;
+            let isTaskSwiping = false;
+            
+            const handleTouchStart = (e) => {
+                // Если уже идет свайп навигации, не начинаем свайп задачи
+                if (isSwiping) return;
+                
+                startX = e.touches ? e.touches[0].clientX : e.clientX;
+                currentX = startX;
+                isTaskSwiping = true;
+                currentSwipedTaskId = taskId;
+                taskSwipeInProgress = true;
+                
+                // Предотвращаем прокрутку при свайпе задачи
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
+            };
+            
+            const handleTouchMove = (e) => {
+                if (!isTaskSwiping || currentSwipedTaskId !== taskId) return;
+                
+                currentX = e.touches ? e.touches[0].clientX : e.clientX;
+                const diffX = currentX - startX;
+                
+                // Ограничиваем смещение
+                let newTransform = diffX;
+                if (Math.abs(newTransform) > TASK_SWIPE_MAX) {
+                    newTransform = newTransform > 0 ? TASK_SWIPE_MAX : -TASK_SWIPE_MAX;
+                }
+                
+                // Применяем трансформацию
+                swipeableElement.style.transform = `translateX(${newTransform}px)`;
+                currentTaskTransform = newTransform;
+                
+                // Показываем/скрываем действия
+                if (newTransform > 0) {
+                    // Свайп вправо - показываем действие "Выполнено"
+                    rightAction.style.width = `${Math.min(newTransform, TASK_SWIPE_MAX)}px`;
+                    leftAction.style.width = '0';
+                } else if (newTransform < 0) {
+                    // Свайп влево - показываем действие "Удалить"
+                    leftAction.style.width = `${Math.min(-newTransform, TASK_SWIPE_MAX)}px`;
+                    rightAction.style.width = '0';
+                }
+                
+                // Предотвращаем прокрутку при значительном свайпе
+                if (Math.abs(diffX) > 10 && e.cancelable) {
+                    e.preventDefault();
+                }
+            };
+            
+            const handleTouchEnd = () => {
+                if (!isTaskSwiping || currentSwipedTaskId !== taskId) return;
+                
+                const diffX = currentX - startX;
+                
+                // Проверяем, превышен ли порог для активации действия
+                if (Math.abs(diffX) > TASK_SWIPE_THRESHOLD) {
+                    if (diffX > 0) {
+                        // Свайп вправо - отметить как выполненную
+                        executeSwipeAction(taskId, 'complete');
+                    } else {
+                        // Свайп влево - удалить
+                        executeSwipeAction(taskId, 'delete');
+                    }
+                } else {
+                    // Возвращаем на место
+                    resetTaskSwipe(swipeableElement, leftAction, rightAction);
+                }
+                
+                isTaskSwiping = false;
+                currentSwipedTaskId = null;
+                taskSwipeInProgress = false;
+            };
+            
+            // Добавляем обработчики для touch
+            swipeableElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+            swipeableElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+            swipeableElement.addEventListener('touchend', handleTouchEnd);
+            swipeableElement.addEventListener('touchcancel', () => {
+                if (isTaskSwiping && currentSwipedTaskId === taskId) {
+                    resetTaskSwipe(swipeableElement, leftAction, rightAction);
+                    isTaskSwiping = false;
+                    currentSwipedTaskId = null;
+                    taskSwipeInProgress = false;
+                }
+            });
+            
+            // Добавляем обработчики для мыши (для тестирования)
+            swipeableElement.addEventListener('mousedown', handleTouchStart);
+            swipeableElement.addEventListener('mousemove', (e) => {
+                if (isTaskSwiping && currentSwipedTaskId === taskId) {
+                    handleTouchMove(e);
+                }
+            });
+            swipeableElement.addEventListener('mouseup', handleTouchEnd);
+            swipeableElement.addEventListener('mouseleave', () => {
+                if (isTaskSwiping && currentSwipedTaskId === taskId) {
+                    resetTaskSwipe(swipeableElement, leftAction, rightAction);
+                    isTaskSwiping = false;
+                    currentSwipedTaskId = null;
+                    taskSwipeInProgress = false;
+                }
+            });
+            
+            // Обработчик клика для сброса свайпов других задач
+            swipeableElement.addEventListener('click', (e) => {
+                // Если был свайп, предотвращаем обычный клик
+                if (Math.abs(currentTaskTransform) > 5) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    resetTaskSwipe(swipeableElement, leftAction, rightAction);
+                }
+            });
+        }
+        
+        // Сброс свайпа задачи
+        function resetTaskSwipe(swipeableElement, leftAction, rightAction) {
+            swipeableElement.style.transform = 'translateX(0)';
+            leftAction.style.width = '0';
+            rightAction.style.width = '0';
+            currentTaskTransform = 0;
+            
+            // Плавная анимация возврата
+            swipeableElement.style.transition = 'transform 0.3s ease';
+            setTimeout(() => {
+                swipeableElement.style.transition = '';
+            }, 300);
+        }
+        
+        // Выполнение действия при свайпе
+        function executeSwipeAction(taskId, action) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            }
+            
+            if (action === 'complete') {
+                // Отметить как выполненную
+                tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
+                    if (confirmed) {
+                        await markTaskAsDone(taskId);
+                    } else {
+                        // Сброс свайпа, если пользователь отменил
+                        const wrapper = document.querySelector(`.task-card-wrapper[data-task-id="${taskId}"]`);
+                        if (wrapper) {
+                            const swipeable = wrapper.querySelector('.task-card-swipeable');
+                            const leftAction = wrapper.querySelector('.swipe-action-left');
+                            const rightAction = wrapper.querySelector('.swipe-action-right');
+                            resetTaskSwipe(swipeable, leftAction, rightAction);
+                        }
+                    }
+                });
+            } else if (action === 'delete') {
+                // Удалить задачу
+                tg.showConfirm('Вы уверены, что хотите удалить эту задачу?', async (confirmed) => {
+                    if (confirmed) {
+                        await deleteTask(taskId);
+                    } else {
+                        // Сброс свайпа, если пользователь отменил
+                        const wrapper = document.querySelector(`.task-card-wrapper[data-task-id="${taskId}"]`);
+                        if (wrapper) {
+                            const swipeable = wrapper.querySelector('.task-card-swipeable');
+                            const leftAction = wrapper.querySelector('.swipe-action-left');
+                            const rightAction = wrapper.querySelector('.swipe-action-right');
+                            resetTaskSwipe(swipeable, leftAction, rightAction);
+                        }
+                    }
+                });
+            }
+        }
+        
         // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
         
         // Инициализация свайпов
@@ -2613,6 +2982,9 @@
         }
         
         function handleTouchStart(e) {
+            // Если идет свайп задачи, не начинаем навигационный свайп
+            if (taskSwipeInProgress) return;
+            
             // ИСПРАВЛЕНИЕ ДЛЯ IOS: preventDefault только если это не начало вертикального скролла
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
@@ -2620,6 +2992,9 @@
         }
         
         function handleTouchMove(e) {
+            // Если идет свайп задачи, не обрабатываем навигационный свайп
+            if (taskSwipeInProgress) return;
+            
             if (!touchStartX) return;
             
             touchEndX = e.touches[0].clientX;
@@ -2711,12 +3086,18 @@
         
         // Аналогичные функции для мыши (для десктоп тестирования)
         function handleMouseStart(e) {
+            // Если идет свайп задачи, не начинаем навигационный свайп
+            if (taskSwipeInProgress) return;
+            
             touchStartX = e.clientX;
             touchStartY = e.clientY;
             isSwiping = false;
         }
         
         function handleMouseMove(e) {
+            // Если идет свайп задачи, не обрабатываем навигационный свайп
+            if (taskSwipeInProgress) return;
+            
             if (!touchStartX) return;
             
             touchEndX = e.clientX;
@@ -3254,7 +3635,7 @@
             }
         });
         
-        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ (ОБНОВЛЕННАЯ СО СВАЙПАМИ) ---
 
         function parseDate(dateStr) {
             if (!dateStr) return null;
@@ -3364,34 +3745,12 @@
                 tasksList.innerHTML = ''; 
 
                 activeTasks.forEach(taskData => {
-                    const importance = (taskData.importance || 'low').toLowerCase();
-                    const taskCard = document.createElement('div');
-                    
-                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
                     const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
                     const taskId = taskData.id; 
 
-                    let cardClasses = `task-card ${importance}`;
-                    if (dateTimeInfo.isExpired) {
-                        cardClasses += ' expired';
-                    }
-                    taskCard.className = cardClasses;
-                    taskCard.setAttribute('data-task-id', taskId);
-
-                    taskCard.innerHTML = `
-                        <div class="task-info">
-                            <div class="task-header">
-                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
-                                <span class="task-text">${taskText}</span>
-                            </div>
-                            
-                            <p>${dateTimeInfo.formattedText}</p>
-                        </div>
-                        <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
-                            ⋮
-                        </button>
-                    `;
-                    tasksList.appendChild(taskCard);
+                    // Используем новую функцию для создания карточки со свайпом
+                    const taskCardWrapper = createTaskCardWrapper(taskData, dateTimeInfo, taskId);
+                    tasksList.appendChild(taskCardWrapper);
                 });
 
             } catch (error) {
@@ -3724,6 +4083,9 @@
                 // Инициализируем свайпы
                 initSwipe();
                 
+                // Инициализируем свайпы на задачах
+                initTaskSwipes();
+                
                 // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
                 updateAIChatVisibility();
                 
@@ -3753,6 +4115,9 @@
                 console.warn('Telegram WebApp not fully initialized');
                 // Инициализируем свайпы в любом случае
                 initSwipe();
+                
+                // Инициализируем свайпы на задачах
+                initTaskSwipes();
                 
                 // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
                 updateAIChatVisibility();
