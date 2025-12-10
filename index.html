@@ -2096,7 +2096,7 @@
                     <div class="step-number">5</div>
                     <div class="step-content">
                         <h3 class="step-title">Настройте уведомления</h3>
-                        <p class="step-description">Нажмите на иконку настроек в правом верхнем углу, чтобы настроить напоминания о задачах</p>
+                        <p class="step-description">Нажмите на иконку настроек в правом верхнем углу, чтобы настроить напоминания о задачами</p>
                     </div>
                     <div class="step-icon">🔔</div>
                 </div>
@@ -2921,15 +2921,18 @@
                 }
             });
             
-            // Добавляем обработчик для всей карточки задачи
-            taskCard.addEventListener('click', (e) => {
-                // Если был свайп, не открываем контекстное меню
-                if (Math.abs(currentTaskTransform) > 5) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    resetTaskSwipe(swipeableElement, leftAction, rightAction);
-                }
-            });
+            // Добавляем обработчик клика для самой карточки задачи
+            const taskCard = swipeableElement.querySelector('.task-card');
+            if (taskCard) {
+                taskCard.addEventListener('click', (e) => {
+                    // Если был свайп, предотвращаем обычный клик
+                    if (Math.abs(currentTaskTransform) > 5) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        resetTaskSwipe(swipeableElement, leftAction, rightAction);
+                    }
+                });
+            }
         }
         
         // Сброс свайпа задачи
