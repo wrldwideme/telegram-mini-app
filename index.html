@@ -289,63 +289,120 @@
             position: relative; /* Добавлено для позиционирования индикатора */
         }
         
-        /* === СТИЛИ ДЛЯ СВАЙПА ЗАДАЧ === */
-        .task-swipe-container {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-        
-        .task-swipe-wrapper {
-            position: relative;
-            width: 100%;
-            display: flex;
-            transition: transform 0.3s ease;
-        }
-        
-        .task-swipe-content {
-            width: 100%;
-            flex-shrink: 0;
-        }
-        
-        .task-swipe-action {
-            position: absolute;
-            top: 0;
-            height: 100%;
+        /* === КНОПКА ДОБАВЛЕНИЯ ЗАДАЧИ (FAB) === */
+        #fab-add-task {
+            position: fixed;
+            bottom: calc(85px + env(safe-area-inset-bottom));
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: 600;
-            font-size: 1.1em;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 1;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+            z-index: 999;
+            transition: all 0.3s;
+            border: none;
+            opacity: 0.9;
         }
         
-        .swipe-right-action {
-            left: 0;
-            background: linear-gradient(90deg, #2ecc71, #27ae60);
-            padding-left: 20px;
-            justify-content: flex-start;
-            border-radius: 12px 0 0 12px;
-            min-width: 80px;
-        }
-        
-        .swipe-left-action {
-            right: 0;
-            background: linear-gradient(90deg, #e74c3c, #c0392b);
-            padding-right: 20px;
-            justify-content: flex-end;
-            border-radius: 0 12px 12px 0;
-            min-width: 80px;
-        }
-        
-        .task-swipe-container.swiping .swipe-right-action,
-        .task-swipe-container.swiping .swipe-left-action {
+        #fab-add-task:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.5);
             opacity: 1;
+        }
+        
+        #fab-add-task:active {
+            transform: scale(0.95);
+        }
+        
+        /* Скрываем FAB в других разделах */
+        .content-section:not(.tasks-active) #fab-add-task {
+            display: none;
+        }
+        
+        /* === ФОРМА ДОБАВЛЕНИЯ/РЕДАКТИРОВАНИЯ ЗАДАЧИ (В КОНТЕКСТНОМ МЕНЮ) === */
+        #task-form-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            justify-content: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        #task-form-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        #task-form-container {
+            background: var(--bg-color);
+            border-radius: 20px 20px 0 0;
+            padding: 25px 20px 30px;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        #task-form-overlay.active #task-form-container {
+            transform: translateY(0);
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--input-border-color);
+        }
+        
+        .form-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-header h2 span {
+            font-size: 1.2em;
+        }
+        
+        #close-task-form {
+            background: none;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #close-task-form:hover {
+            background-color: var(--secondary-bg-color);
         }
         
         /* === ОСТАЛЬНЫЕ СТИЛИ (БЕЗ ИЗМЕНЕНИЙ) === */
@@ -547,7 +604,7 @@
             
             .settings-icon:hover::before,
             .settings-icon:active::before {
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007aff'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox="0 0 24 24" fill='%23007aff'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
             }
         }
 
@@ -680,84 +737,6 @@
             input:checked + .ios-toggle-slider {
                 background-color: var(--link-color);
             }
-        }
-
-        /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
-        .form-section {
-            background: transparent;
-            margin-bottom: 20px;
-            overflow: hidden; 
-            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            max-height: 60px;
-            width: 100%;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-
-        .form-section.expanded {
-            max-height: 500px;
-        }
-
-        /* Улучшенный Заголовок */
-        .form-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            padding: 20px;
-            height: 60px; 
-            box-sizing: border-box;
-            background: var(--secondary-bg-color); 
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-            transition: background-color 0.2s;
-            width: 100%;
-        }
-        
-        .form-section.expanded .form-header {
-             border-bottom-left-radius: 0;
-             border-bottom-right-radius: 0;
-        }
-
-        .form-header:hover {
-            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
-        }
-        
-        .form-header h2 {
-            margin: 0;
-            display: flex;
-            align-items: center;
-            font-size: 1.1em;
-            font-weight: 600; 
-            color: var(--text-color);
-        }
-
-        .form-header h2 span#form-icon {
-            font-size: 1.2em;
-            margin-right: 10px;
-            color: var(--link-color); 
-        }
-
-        .form-section-content {
-            padding: 0;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
-            height: 0;
-            overflow: hidden;
-            background: var(--input-bg-color); 
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .form-section.expanded .form-section-content {
-            visibility: visible;
-            opacity: 1;
-            height: auto;
-            overflow: visible;
         }
 
         /* --- ИСПРАВЛЕННЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
@@ -918,7 +897,7 @@
             font-size: 1.1em;
         }
 
-        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ С СВАЙПОМ --- */
+        /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
         .task-card { 
             border-left: 6px solid #444;
             padding: 15px; 
@@ -1911,11 +1890,13 @@
                 margin-right: 12px;
             }
             
-            /* Адаптивность для свайпа задач */
-            .swipe-right-action,
-            .swipe-left-action {
-                min-width: 70px;
-                font-size: 1em;
+            /* Адаптивность для FAB кнопки */
+            #fab-add-task {
+                width: 55px;
+                height: 55px;
+                bottom: calc(80px + env(safe-area-inset-bottom));
+                right: 15px;
+                font-size: 24px;
             }
         }
         
@@ -1962,13 +1943,6 @@
             .onboarding-title {
                 font-size: 1.3em;
             }
-            
-            /* Адаптивность для свайпа задач */
-            .swipe-right-action,
-            .swipe-left-action {
-                min-width: 60px;
-                font-size: 0.9em;
-            }
         }
 
         /* Специальные стили для мобильного скролла */
@@ -2004,7 +1978,7 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <h3 class="step-title">Создавайте задачи</h3>
-                        <p class="step-description">Нажмите "Новая задача", чтобы создать задачу с текстом, датой, временем и приоритетом</p>
+                        <p class="step-description">Нажмите "+" в правом нижнем углу, чтобы создать задачу</p>
                     </div>
                     <div class="step-icon">📝</div>
                 </div>
@@ -2013,7 +1987,7 @@
                     <div class="step-number">2</div>
                     <div class="step-content">
                         <h3 class="step-title">Управляйте задачами</h3>
-                        <p class="step-description">Нажимайте на три точки рядом с задачей, чтобы отметить как выполненную, редактировать или удалить. Или используйте свайпы!</p>
+                        <p class="step-description">Нажимайте на три точки рядом с задачей, чтобы отметить как выполненную, редактировать или удалить</p>
                     </div>
                     <div class="step-icon">⚙️</div>
                 </div>
@@ -2065,7 +2039,7 @@
     <div class="swipe-container" id="swipeContainer">
         <div class="swipe-wrapper" id="swipeWrapper">
             <!-- Разделы теперь в обертке для свайпов -->
-            <div id="tasks-content" class="content-section">
+            <div id="tasks-content" class="content-section tasks-active">
                 <h1>
                     <span class="logo-header"></span>
                     Мои задачи
@@ -2074,58 +2048,14 @@
                         <div class="settings-hint-indicator" id="settings-hint"></div>
                     </button>
                 </h1>
-                
-                <div class="form-section" id="form-section">
-                    <div class="form-header" onclick="toggleForm()">
-                        <h2 id="form-title">
-                            <span id="form-icon">💡</span> Новая задача
-                        </h2>
-                        <span id="form-arrow">▼</span>
-                    </div>
-                    <div class="form-section-content">
-                        <form id="task-form">
-                            
-                            <div class="ios-group">
-                                
-                                <div class="ios-row">
-                                    <label for="taskInput" class="ios-label">Текст задачи</label>
-                                    <input type="text" id="taskInput" placeholder="Введите задачу" required>
-                                </div>
-                                
-                                <div class="ios-row">
-                                    <label for="dateInput" class="ios-label">Дата</label>
-                                    <input type="date" id="dateInput" required>
-                                </div>
-                                
-                                <div class="ios-row">
-                                    <label for="timeInput" class="ios-label">Время</label>
-                                    <input type="time" id="timeInput" required>
-                                </div>
-
-                                <div class="ios-row">
-                                    <label for="importanceInput" class="ios-label">Важность</label>
-                                    <select id="importanceInput" required>
-                                        <option value="medium">Средняя</option>
-                                        <option value="high">Высокая</option>
-                                        <option value="low">Низкая</option>
-                                    </select>
-                                </div>
-
-                            </div>
-                            
-                            <div class="form-submit-button">
-                                <button type="button" id="add-task-button">
-                                    <span>➕</span> Добавить задачу
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
                 <h2>📝 Активные задачи</h2>
                 <div id="tasks-list" class="scrollable-content">
                     <p class="loading-message">Загрузка задач...</p>
                 </div>
+                
+                <!-- Кнопка добавления задачи (FAB) -->
+                <button id="fab-add-task" onclick="showTaskForm()">+</button>
             </div>
 
             <div id="ai-chat-content" class="content-section">
@@ -2279,6 +2209,55 @@
         </div>
     </div>
 
+    <!-- ФОРМА ДОБАВЛЕНИЯ/РЕДАКТИРОВАНИЯ ЗАДАЧИ -->
+    <div id="task-form-overlay">
+        <div id="task-form-container">
+            <div class="form-header">
+                <h2>
+                    <span id="form-icon">💡</span>
+                    <span id="form-title">Новая задача</span>
+                </h2>
+                <button id="close-task-form">✕</button>
+            </div>
+            
+            <form id="task-form">
+                <div class="ios-group">
+                    
+                    <div class="ios-row">
+                        <label for="taskInput" class="ios-label">Текст задачи</label>
+                        <input type="text" id="taskInput" placeholder="Введите задачу" required>
+                    </div>
+                    
+                    <div class="ios-row">
+                        <label for="dateInput" class="ios-label">Дата</label>
+                        <input type="date" id="dateInput" required>
+                    </div>
+                    
+                    <div class="ios-row">
+                        <label for="timeInput" class="ios-label">Время</label>
+                        <input type="time" id="timeInput" required>
+                    </div>
+
+                    <div class="ios-row">
+                        <label for="importanceInput" class="ios-label">Важность</label>
+                        <select id="importanceInput" required>
+                            <option value="medium">Средняя</option>
+                            <option value="high">Высокая</option>
+                            <option value="low">Низкая</option>
+                        </select>
+                    </div>
+
+                </div>
+                
+                <div class="form-submit-button">
+                    <button type="button" id="add-task-button">
+                        <span>➕</span> Добавить задачу
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- МЕНЮ НАСТРОЕК -->
     <div id="settings-menu">
         <div class="settings-header">
@@ -2326,6 +2305,7 @@
         <button id="sendAiChat">🚀</button>
     </div>
 
+    <!-- КОНТЕКСТНОЕ МЕНЮ ДЛЯ ДЕЙСТВИЙ С ЗАДАЧЕЙ -->
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
         <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
@@ -2371,9 +2351,7 @@
         
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
-        const formSection = document.getElementById('form-section');
         const contextMenu = document.getElementById('context-menu');
-        const formTitle = document.getElementById('form-title');
         const bottomNav = document.getElementById('bottom-nav'); 
         const addTaskButton = document.getElementById('add-task-button');
         
@@ -2400,17 +2378,13 @@
         const startUsingButton = document.getElementById('start-using');
         const settingsHintIndicator = document.getElementById('settings-hint');
         
-        // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПА ЗАДАЧ ---
-        let taskSwipeContainers = [];
-        let currentTaskSwipe = {
-            container: null,
-            touchStartX: 0,
-            touchStartY: 0,
-            touchEndX: 0,
-            isSwiping: false,
-            taskId: null,
-            threshold: 60
-        };
+        // --- ПЕРЕМЕННЫЕ ДЛЯ ФОРМЫ ЗАДАЧИ ---
+        const taskFormOverlay = document.getElementById('task-form-overlay');
+        const taskFormContainer = document.getElementById('task-form-container');
+        const closeTaskFormButton = document.getElementById('close-task-form');
+        const formTitle = document.getElementById('form-title');
+        const formIcon = document.getElementById('form-icon');
+        const fabAddTask = document.getElementById('fab-add-task');
         
         let currentTaskId = null; 
         let isEditing = false;
@@ -2677,294 +2651,57 @@
             notifyAtStartCheckbox.checked = currentSettingsState.notify_at_start;
         }
         
-        // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ЗАДАЧ ---
+        // --- ФУНКЦИИ ДЛЯ ФОРМЫ ЗАДАЧИ ---
         
-        // Инициализация свайпов для задач
-        function initTaskSwipes() {
-            taskSwipeContainers = document.querySelectorAll('.task-swipe-container');
+        function showTaskForm() {
+            taskFormOverlay.classList.add('active');
+            setDefaultFormValues();
             
-            taskSwipeContainers.forEach(container => {
-                const taskId = container.getAttribute('data-task-id');
-                
-                // Добавляем обработчики событий для свайпа
-                container.addEventListener('touchstart', handleTaskTouchStart, { passive: true });
-                container.addEventListener('touchmove', handleTaskTouchMove, { passive: false });
-                container.addEventListener('touchend', handleTaskTouchEnd, { passive: true });
-                container.addEventListener('touchcancel', handleTaskTouchCancel, { passive: true });
-                
-                // Также добавляем обработчики для мыши (для десктоп тестирования)
-                container.addEventListener('mousedown', handleTaskMouseStart);
-                container.addEventListener('mousemove', handleTaskMouseMove);
-                container.addEventListener('mouseup', handleTaskMouseEnd);
-                container.addEventListener('mouseleave', handleTaskMouseCancel);
-                
-                // Сохраняем ID задачи в контейнере
-                container.dataset.taskId = taskId;
-            });
-        }
-        
-        function handleTaskTouchStart(e) {
-            // Определяем контейнер задачи
-            const container = e.target.closest('.task-swipe-container');
-            if (!container) return;
+            // Убираем класс редактирования, если он есть
+            isEditing = false;
+            currentEditingId = null;
+            formTitle.textContent = 'Новая задача';
+            formIcon.textContent = '💡';
+            addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
             
-            // Отменяем свайп, если пользователь начал с кнопки меню
-            if (e.target.classList.contains('menu-button') || 
-                e.target.closest('.menu-button')) {
-                return;
-            }
-            
-            currentTaskSwipe.container = container;
-            currentTaskSwipe.taskId = container.getAttribute('data-task-id');
-            currentTaskSwipe.touchStartX = e.touches[0].clientX;
-            currentTaskSwipe.touchStartY = e.touches[0].clientY;
-            currentTaskSwipe.isSwiping = false;
-        }
-        
-        function handleTaskTouchMove(e) {
-            if (!currentTaskSwipe.container || !currentTaskSwipe.touchStartX) return;
-            
-            const touchEndX = e.touches[0].clientX;
-            const touchEndY = e.touches[0].clientY;
-            
-            const diffX = currentTaskSwipe.touchStartX - touchEndX;
-            const diffY = Math.abs(currentTaskSwipe.touchStartY - touchEndY);
-            
-            // Если движение по вертикали больше, чем по горизонтали, это скролл
-            if (Math.abs(diffY) > Math.abs(diffX) * 1.5) {
-                return; // Это вертикальный скролл, игнорируем
-            }
-            
-            // Предотвращаем скролл страницы при горизонтальном свайпе
-            if (Math.abs(diffX) > 10) {
-                e.preventDefault();
-                currentTaskSwipe.isSwiping = true;
-                
-                // Добавляем класс для отображения текста свайпа
-                currentTaskSwipe.container.classList.add('swiping');
-                
-                // Устанавливаем смещение для контента задачи
-                const content = currentTaskSwipe.container.querySelector('.task-swipe-content');
-                if (content) {
-                    // Ограничиваем максимальное смещение
-                    const maxOffset = 80;
-                    let offset = diffX * 0.5; // Коэффициент сопротивления
-                    
-                    if (Math.abs(offset) > maxOffset) {
-                        offset = offset > 0 ? maxOffset : -maxOffset;
-                    }
-                    
-                    content.style.transform = `translateX(${offset}px)`;
-                }
+            // Вибрация для подтверждения действия
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
         }
         
-        function handleTaskTouchEnd() {
-            if (!currentTaskSwipe.container || !currentTaskSwipe.isSwiping) {
-                resetTaskSwipe();
-                return;
-            }
-            
-            const diffX = currentTaskSwipe.touchStartX - currentTaskSwipe.touchEndX;
-            
-            // Проверяем, достигнут ли порог для действия
-            if (Math.abs(diffX) > currentTaskSwipe.threshold) {
-                // Определяем направление свайпа
-                if (diffX > 0) {
-                    // Свайп вправо -> отметка выполнения
-                    markTaskAsDoneWithSwipe(currentTaskSwipe.taskId);
-                } else {
-                    // Свайп влево -> удаление
-                    deleteTaskWithSwipe(currentTaskSwipe.taskId);
-                }
-            } else {
-                // Если порог не достигнут, возвращаем задачу в исходное положение
-                resetTaskSwipePosition();
-            }
-            
-            resetTaskSwipe();
+        function hideTaskForm() {
+            taskFormOverlay.classList.remove('active');
+            // Очищаем форму
+            taskForm.reset();
+            setDefaultFormValues();
+            exitEditMode();
         }
         
-        function handleTaskTouchCancel() {
-            if (currentTaskSwipe.isSwiping) {
-                resetTaskSwipePosition();
-                resetTaskSwipe();
-            }
+        function enterEditMode(task) {
+            if (!task) return;
+            
+            showTaskForm();
+            isEditing = true;
+            currentEditingId = task.id;
+            
+            // Заполняем форму данными задачи
+            document.getElementById('taskInput').value = task.task_text || task.task;
+            document.getElementById('dateInput').value = task.date;
+            document.getElementById('timeInput').value = task.time;
+            document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
+            
+            // Меняем заголовок формы
+            formTitle.textContent = 'Редактирование задачи';
+            formIcon.textContent = '📝';
+            addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
+            
+            tg.HapticFeedback.notificationOccurred('success');
         }
         
-        // Аналогичные функции для мыши
-        function handleTaskMouseStart(e) {
-            const container = e.target.closest('.task-swipe-container');
-            if (!container) return;
-            
-            // Отменяем свайп, если пользователь начал с кнопки меню
-            if (e.target.classList.contains('menu-button') || 
-                e.target.closest('.menu-button')) {
-                return;
-            }
-            
-            currentTaskSwipe.container = container;
-            currentTaskSwipe.taskId = container.getAttribute('data-task-id');
-            currentTaskSwipe.touchStartX = e.clientX;
-            currentTaskSwipe.touchStartY = e.clientY;
-            currentTaskSwipe.isSwiping = false;
-        }
-        
-        function handleTaskMouseMove(e) {
-            if (!currentTaskSwipe.container || !currentTaskSwipe.touchStartX) return;
-            
-            const touchEndX = e.clientX;
-            const touchEndY = e.clientY;
-            
-            const diffX = currentTaskSwipe.touchStartX - touchEndX;
-            const diffY = Math.abs(currentTaskSwipe.touchStartY - touchEndY);
-            
-            if (Math.abs(diffY) > Math.abs(diffX) * 1.5) return;
-            
-            if (Math.abs(diffX) > 10) {
-                e.preventDefault();
-                currentTaskSwipe.isSwiping = true;
-                
-                currentTaskSwipe.container.classList.add('swiping');
-                
-                const content = currentTaskSwipe.container.querySelector('.task-swipe-content');
-                if (content) {
-                    const maxOffset = 80;
-                    let offset = diffX * 0.5;
-                    
-                    if (Math.abs(offset) > maxOffset) {
-                        offset = offset > 0 ? maxOffset : -maxOffset;
-                    }
-                    
-                    content.style.transform = `translateX(${offset}px)`;
-                }
-                
-                currentTaskSwipe.touchEndX = touchEndX;
-            }
-        }
-        
-        function handleTaskMouseEnd() {
-            if (!currentTaskSwipe.container || !currentTaskSwipe.isSwiping) {
-                resetTaskSwipe();
-                return;
-            }
-            
-            const diffX = currentTaskSwipe.touchStartX - currentTaskSwipe.touchEndX;
-            
-            if (Math.abs(diffX) > currentTaskSwipe.threshold) {
-                if (diffX > 0) {
-                    markTaskAsDoneWithSwipe(currentTaskSwipe.taskId);
-                } else {
-                    deleteTaskWithSwipe(currentTaskSwipe.taskId);
-                }
-            } else {
-                resetTaskSwipePosition();
-            }
-            
-            resetTaskSwipe();
-        }
-        
-        function handleTaskMouseCancel() {
-            if (currentTaskSwipe.isSwiping) {
-                resetTaskSwipePosition();
-                resetTaskSwipe();
-            }
-        }
-        
-        // Сброс состояния свайпа задачи
-        function resetTaskSwipe() {
-            if (currentTaskSwipe.container) {
-                currentTaskSwipe.container.classList.remove('swiping');
-            }
-            
-            currentTaskSwipe.container = null;
-            currentTaskSwipe.touchStartX = 0;
-            currentTaskSwipe.touchStartY = 0;
-            currentTaskSwipe.touchEndX = 0;
-            currentTaskSwipe.isSwiping = false;
-            currentTaskSwipe.taskId = null;
-        }
-        
-        // Сброс позиции свайпа задачи
-        function resetTaskSwipePosition() {
-            if (currentTaskSwipe.container) {
-                const content = currentTaskSwipe.container.querySelector('.task-swipe-content');
-                if (content) {
-                    content.style.transform = 'translateX(0)';
-                    content.style.transition = 'transform 0.3s ease';
-                    
-                    setTimeout(() => {
-                        content.style.transition = '';
-                    }, 300);
-                }
-            }
-        }
-        
-        // Отметка задачи как выполненной через свайп
-        async function markTaskAsDoneWithSwipe(taskId) {
-            try {
-                const response = await fetch(N8N_UPDATE_URL, {
-                    method: 'POST', 
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: taskId,
-                        done: 'yes', 
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                // Обновляем список задач (без алерта)
-                await fetchTasks();
-                
-                // Легкая виброотдача для подтверждения
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                }
-
-            } catch (error) {
-                console.error('UPDATE error:', error);
-                // Без алерта при ошибке
-            }
-        }
-        
-        // Удаление задачи через свайп
-        async function deleteTaskWithSwipe(taskId) {
-            try {
-                const response = await fetch(N8N_DELETE_URL, {
-                    method: 'POST', 
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        id: taskId,
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                // Обновляем список задач (без алерта)
-                await fetchTasks();
-                
-                // Легкая виброотдача для подтверждения
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                }
-
-            } catch (error) {
-                console.error('DELETE error:', error);
-                // Без алерта при ошибке
-            }
+        function exitEditMode() {
+            isEditing = false;
+            currentEditingId = null;
         }
         
         // --- ФУНКЦИИ ДЛЯ СВАЙПОВ ---
@@ -3231,6 +2968,9 @@
             // ОБНОВЛЯЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА - ИСПРАВЛЕНИЕ
             updateAIChatVisibility();
             
+            // Обновляем видимость FAB кнопки
+            updateFABVisibility();
+            
             // Выполняем действия для раздела
             if (sectionId === 'tasks-content') {
                 if (document.getElementById('tasks-list').children.length < 2) {
@@ -3238,6 +2978,16 @@
                 }
             } else if (sectionId === 'stats-content') {
                 fetchStats(); 
+            }
+        }
+        
+        // Функция для обновления видимости FAB кнопки
+        function updateFABVisibility() {
+            // Показываем FAB только в разделе задач
+            if (currentSectionIndex === 0) {
+                fabAddTask.style.display = 'flex';
+            } else {
+                fabAddTask.style.display = 'none';
             }
         }
         
@@ -3252,10 +3002,10 @@
             // Убираем класс ai-active у всех разделов
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('ai-active');
+                section.classList.remove('tasks-active');
             });
             
-            // Добавляем класс ai-active только к AI разделу И ОДНОВРЕМЕННО
-            // показываем/скрываем панель ввода напрямую
+            // Добавляем соответствующие классы
             if (currentSectionId === 'ai-chat-content') {
                 document.getElementById('ai-chat-content').classList.add('ai-active');
                 // Также показываем панель ввода напрямую для надежности
@@ -3264,6 +3014,10 @@
                 setTimeout(() => {
                     aiChatInput.focus();
                 }, 100);
+            } else if (currentSectionId === 'tasks-content') {
+                document.getElementById('tasks-content').classList.add('tasks-active');
+                // Скрываем панель ввода при переходе в другие разделы
+                aiChatInputArea.style.display = 'none';
             } else {
                 // Скрываем панель ввода при переходе в другие разделы
                 aiChatInputArea.style.display = 'none';
@@ -3304,15 +3058,11 @@
             // ОБНОВЛЯЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА - ИСПРАВЛЕНИЕ
             updateAIChatVisibility();
             
+            // Обновляем видимость FAB кнопки
+            updateFABVisibility();
+            
             // Выполняем действия для конкретного раздела
             if (sectionId === 'tasks-content') {
-                if (formSection.classList.contains('expanded')) {
-                    if (isEditing) {
-                        addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
-                    } else {
-                        addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
-                    }
-                }
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
@@ -3344,57 +3094,6 @@
 
             // 3. Установка важности (Средняя)
             document.getElementById('importanceInput').value = 'medium';
-        }
-        
-        // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
-        function toggleForm() {
-            if (formSection.classList.contains('expanded') && isEditing) {
-                exitEditMode(); 
-            }
-            
-            const isExpanding = !formSection.classList.contains('expanded');
-            
-            formSection.classList.toggle('expanded');
-            document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
-            
-            if (isExpanding) {
-                setDefaultFormValues();
-            }
-
-            // Обновляем кнопку внутри формы
-            if (isEditing) {
-                addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
-            } else {
-                addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
-            }
-        }
-        
-        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
-        function enterEditMode(task) {
-            if (!task) return;
-            isEditing = true;
-            currentEditingId = task.id;
-            
-            document.getElementById('taskInput').value = task.task_text || task.task;
-            document.getElementById('dateInput').value = task.date;
-            document.getElementById('timeInput').value = task.time;
-            document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
-            
-            formSection.classList.add('expanded');
-            document.getElementById('form-arrow').textContent = '▲';
-            formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
-            
-            addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-        
-        function exitEditMode() {
-            isEditing = false;
-            currentEditingId = null;
-            taskForm.reset(); 
-            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
-            addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
-            setDefaultFormValues(); 
         }
         
         // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
@@ -3458,16 +3157,8 @@
                 if (result.success || response.ok) {
                     tg.showAlert(isUpdate ? 'Задача успешно обновлена!' : 'Задача успешно добавлена!');
                     
-                    if (isEditing) {
-                        exitEditMode(); 
-                    } else {
-                        taskForm.reset(); 
-                        setDefaultFormValues(); 
-                    }
+                    hideTaskForm();
                     
-                    formSection.classList.remove('expanded'); 
-                    document.getElementById('form-arrow').textContent = '▼';
-
                     await fetchTasks(); 
 
                 } else {
@@ -3740,19 +3431,7 @@
 
                 activeTasks.forEach(taskData => {
                     const importance = (taskData.importance || 'low').toLowerCase();
-                    
-                    // Создаем контейнер для свайпа
-                    const swipeContainer = document.createElement('div');
-                    swipeContainer.className = 'task-swipe-container';
-                    swipeContainer.setAttribute('data-task-id', taskData.id);
-                    
-                    // Создаем обертку для контента
-                    const swipeWrapper = document.createElement('div');
-                    swipeWrapper.className = 'task-swipe-wrapper';
-                    
-                    // Создаем контент задачи
-                    const taskContent = document.createElement('div');
-                    taskContent.className = 'task-swipe-content';
+                    const taskCard = document.createElement('div');
                     
                     const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
                     const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
@@ -3762,10 +3441,10 @@
                     if (dateTimeInfo.isExpired) {
                         cardClasses += ' expired';
                     }
-                    taskContent.className = cardClasses;
-                    taskContent.setAttribute('data-task-id', taskId);
+                    taskCard.className = cardClasses;
+                    taskCard.setAttribute('data-task-id', taskId);
 
-                    taskContent.innerHTML = `
+                    taskCard.innerHTML = `
                         <div class="task-info">
                             <div class="task-header">
                                 <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
@@ -3778,28 +3457,8 @@
                             ⋮
                         </button>
                     `;
-                    
-                    // Добавляем действия свайпа
-                    const swipeRightAction = document.createElement('div');
-                    swipeRightAction.className = 'task-swipe-action swipe-right-action';
-                    swipeRightAction.innerHTML = '✅ Выполнить';
-                    
-                    const swipeLeftAction = document.createElement('div');
-                    swipeLeftAction.className = 'task-swipe-action swipe-left-action';
-                    swipeLeftAction.innerHTML = '🗑️ Удалить';
-                    
-                    // Собираем структуру
-                    swipeWrapper.appendChild(taskContent);
-                    swipeContainer.appendChild(swipeRightAction);
-                    swipeContainer.appendChild(swipeLeftAction);
-                    swipeContainer.appendChild(swipeWrapper);
-                    tasksList.appendChild(swipeContainer);
+                    tasksList.appendChild(taskCard);
                 });
-                
-                // Инициализируем свайпы для новых задач
-                setTimeout(() => {
-                    initTaskSwipes();
-                }, 100);
 
             } catch (error) {
                 console.error('Fetch error:', error);
@@ -4110,11 +3769,22 @@
         // Обработчики для онбординга
         skipOnboardingButton.addEventListener('click', hideOnboarding);
         startUsingButton.addEventListener('click', hideOnboarding);
+        
+        // Обработчики для формы задачи
+        closeTaskFormButton.addEventListener('click', hideTaskForm);
+        
+        // Закрытие формы при клике вне ее
+        taskFormOverlay.addEventListener('click', function(e) {
+            if (e.target === taskFormOverlay) {
+                hideTaskForm();
+            }
+        });
 
         // Глобальные функции для доступа из HTML
         window.markTaskAsDone = markTaskAsDone;
         window.showMenu = showMenu;
-        window.toggleForm = toggleForm;
+        window.showTaskForm = showTaskForm;
+        window.hideTaskForm = hideTaskForm;
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
         window.setDefaultFormValues = setDefaultFormValues; 
@@ -4134,6 +3804,9 @@
                 // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
                 updateAIChatVisibility();
                 
+                // Обновляем видимость FAB кнопки
+                updateFABVisibility();
+                
                 // Активируем вкладку задач по умолчанию
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
@@ -4143,13 +3816,8 @@
                 // Загружаем задачи
                 fetchTasks();
                 
-                // НЕ загружаем настройки при старте приложения - только при первом открытии меню
-                // fetchUserSettings(); // Убрано
-                
-                // Устанавливаем значения по умолчанию для формы, если она развернута
-                if (formSection.classList.contains('expanded')) {
-                    setDefaultFormValues();
-                }
+                // Устанавливаем значения по умолчанию для формы
+                setDefaultFormValues();
                 
                 // Показываем онбординг, если пользователь впервые
                 setTimeout(() => {
@@ -4164,11 +3832,17 @@
                 // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
                 updateAIChatVisibility();
                 
+                // Обновляем видимость FAB кнопки
+                updateFABVisibility();
+                
                 // Активируем вкладку задач в любом случае
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
                     switchSection('tasks-content', tasksButton);
                 }
+                
+                // Устанавливаем значения по умолчанию для формы
+                setDefaultFormValues();
                 
                 // Показываем онбординг, если пользователь впервые
                 setTimeout(() => {
