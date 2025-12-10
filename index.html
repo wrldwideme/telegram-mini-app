@@ -2959,40 +2959,10 @@
             
             if (action === 'complete') {
                 // Отметить как выполненную
-                tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
-                    if (confirmed) {
-                        await markTaskAsDone(taskId);
-                        // После успешного выполнения действия обновляем задачи
-                        await fetchTasks();
-                    } else {
-                        // Сброс свайпа, если пользователь отменил
-                        const wrapper = document.querySelector(`.task-card-wrapper[data-task-id="${taskId}"]`);
-                        if (wrapper) {
-                            const swipeable = wrapper.querySelector('.task-card-swipeable');
-                            const leftAction = wrapper.querySelector('.swipe-action-left');
-                            const rightAction = wrapper.querySelector('.swipe-action-right');
-                            resetTaskSwipe(swipeable, leftAction, rightAction);
-                        }
-                    }
-                });
+                markTaskAsDone(taskId);
             } else if (action === 'delete') {
                 // Удалить задачу
-                tg.showConfirm('Вы уверены, что хотите удалить эту задачу?', async (confirmed) => {
-                    if (confirmed) {
-                        await deleteTask(taskId);
-                        // После успешного выполнения действия обновляем задачи
-                        await fetchTasks();
-                    } else {
-                        // Сброс свайпа, если пользователь отменил
-                        const wrapper = document.querySelector(`.task-card-wrapper[data-task-id="${taskId}"]`);
-                        if (wrapper) {
-                            const swipeable = wrapper.querySelector('.task-card-swipeable');
-                            const leftAction = wrapper.querySelector('.swipe-action-left');
-                            const rightAction = wrapper.querySelector('.swipe-action-right');
-                            resetTaskSwipe(swipeable, leftAction, rightAction);
-                        }
-                    }
-                });
+                deleteTask(taskId);
             }
         }
         
