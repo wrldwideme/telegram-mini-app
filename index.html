@@ -280,6 +280,7 @@
             border-radius: 50%;
             animation: pulse 2s infinite;
             z-index: 11;
+            display: none;
         }
         
         @keyframes pulse {
@@ -879,6 +880,7 @@
             transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             touch-action: pan-y;
             user-select: none;
+            cursor: pointer;
         }
 
         .task-card {
@@ -974,27 +976,33 @@
             font-size: 0.9em;
             z-index: 1;
             transition: width 0.3s ease;
+            width: 0;
+            overflow: hidden;
         }
 
         .swipe-action-left {
             left: 0;
             background-color: var(--swipe-delete-color);
             border-radius: 12px 0 0 12px;
-            padding-left: 15px;
             justify-content: flex-start;
+            padding-left: 0;
+            opacity: 0;
         }
 
         .swipe-action-right {
             right: 0;
             background-color: var(--swipe-complete-color);
             border-radius: 0 12px 12px 0;
-            padding-right: 15px;
             justify-content: flex-end;
+            padding-right: 0;
+            opacity: 0;
         }
 
         .swipe-action-icon {
             margin: 0 8px;
             font-size: 1.2em;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
         .loading-message, .empty-message, .error-message { 
@@ -2827,12 +2835,20 @@
                 // Показываем/скрываем действия
                 if (newTransform > 0) {
                     // Свайп вправо - показываем действие "Выполнено"
-                    rightAction.style.width = `${Math.min(newTransform, TASK_SWIPE_MAX)}px`;
+                    const width = Math.min(newTransform, TASK_SWIPE_MAX);
+                    rightAction.style.width = `${width}px`;
+                    rightAction.style.opacity = '1';
+                    rightAction.querySelector('.swipe-action-icon').style.opacity = width > 40 ? '1' : '0';
                     leftAction.style.width = '0';
+                    leftAction.style.opacity = '0';
                 } else if (newTransform < 0) {
                     // Свайп влево - показываем действие "Удалить"
-                    leftAction.style.width = `${Math.min(-newTransform, TASK_SWIPE_MAX)}px`;
+                    const width = Math.min(-newTransform, TASK_SWIPE_MAX);
+                    leftAction.style.width = `${width}px`;
+                    leftAction.style.opacity = '1';
+                    leftAction.querySelector('.swipe-action-icon').style.opacity = width > 40 ? '1' : '0';
                     rightAction.style.width = '0';
+                    rightAction.style.opacity = '0';
                 }
                 
                 // Предотвращаем прокрутку при значительном свайпе
@@ -2896,8 +2912,18 @@
             });
             
             // Обработчик клика для сброса свайпов других задач
-            swipeableElement.addEventListener('click', (e) => {
+            wrapperElement.addEventListener('click', (e) => {
                 // Если был свайп, предотвращаем обычный клик
+                if (Math.abs(currentTaskTransform) > 5) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    resetTaskSwipe(swipeableElement, leftAction, rightAction);
+                }
+            });
+            
+            // Добавляем обработчик для всей карточки задачи
+            taskCard.addEventListener('click', (e) => {
+                // Если был свайп, не открываем контекстное меню
                 if (Math.abs(currentTaskTransform) > 5) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -2910,7 +2936,9 @@
         function resetTaskSwipe(swipeableElement, leftAction, rightAction) {
             swipeableElement.style.transform = 'translateX(0)';
             leftAction.style.width = '0';
+            leftAction.style.opacity = '0';
             rightAction.style.width = '0';
+            rightAction.style.opacity = '0';
             currentTaskTransform = 0;
             
             // Плавная анимация возврата
@@ -2931,6 +2959,8 @@
                 tg.showConfirm('Отметить задачу как выполненную?', async (confirmed) => {
                     if (confirmed) {
                         await markTaskAsDone(taskId);
+                        // После успешного выполнения действия обновляем задачи
+                        await fetchTasks();
                     } else {
                         // Сброс свайпа, если пользователь отменил
                         const wrapper = document.querySelector(`.task-card-wrapper[data-task-id="${taskId}"]`);
@@ -2947,6 +2977,8 @@
                 tg.showConfirm('Вы уверены, что хотите удалить эту задачу?', async (confirmed) => {
                     if (confirmed) {
                         await deleteTask(taskId);
+                        // После успешного выполнения действия обновляем задачи
+                        await fetchTasks();
                     } else {
                         // Сброс свайпа, если пользователь отменил
                         const wrapper = document.querySelector(`.task-card-wrapper[data-task-id="${taskId}"]`);
