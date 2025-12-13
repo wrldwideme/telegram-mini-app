@@ -1090,10 +1090,52 @@
             background-color: #2ecc71;
         }
         
+        /* Стили для кнопок обновления */
+        .refresh-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--link-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            margin-top: 15px;
+            box-shadow: 0 4px 12px rgba(var(--link-color-rgb, 0, 122, 255), 0.2);
+        }
+
+        .refresh-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(var(--link-color-rgb, 0, 122, 255), 0.3);
+        }
+
+        .refresh-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(var(--link-color-rgb, 0, 122, 255), 0.2);
+        }
+
+        .refresh-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
         .loading-message, .empty-message, .error-message { 
             text-align: center; 
             padding: 20px; 
             color: var(--hint-color);
+        }
+
+        .error-message-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            text-align: center;
         }
         
         /* --- СТИЛИ КОНТЕКСТНОГО МЕНЮ --- */
@@ -1409,7 +1451,7 @@
             box-shadow: 0 4px 12px rgba(var(--link-color-rgb, 0, 122, 255), 0.2);
         }
 
-        /* Сообщения AI */
+        /* Сообщения AI с поддержкой Markdown */
         .ai-message {
             justify-content: flex-start;
             align-self: flex-start;
@@ -1424,6 +1466,43 @@
             border-bottom-right-radius: 20px;
             border: 1px solid rgba(138, 43, 226, 0.1);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Стили для Markdown внутри сообщений AI */
+        .ai-message .chat-bubble strong,
+        .ai-message .chat-bubble b {
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .ai-message .chat-bubble em,
+        .ai-message .chat-bubble i {
+            font-style: italic;
+        }
+
+        .ai-message .chat-bubble ul,
+        .ai-message .chat-bubble ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .ai-message .chat-bubble li {
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+
+        .ai-message .chat-bubble code {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .ai-message .chat-bubble code {
+                background: rgba(255, 255, 255, 0.1);
+            }
         }
 
         /* Индикатор загрузки AI с улучшенной анимацией */
@@ -2888,6 +2967,135 @@
             notify_one_hour: false,
             notify_at_start: false
         };
+
+        // --- КЭШ ДЛЯ СТАТИСТИКИ ---
+        let cachedStatsData = null;
+        let statsLastUpdated = null;
+        const STATS_CACHE_DURATION = 5 * 60 * 1000; // 5 минут в миллисекундах
+
+        // --- КЭШ ДЛЯ ЧАТА ---
+        const CHAT_HISTORY_KEY = 'aiChatHistory';
+        const MAX_CHAT_HISTORY = 5; // Максимальное количество сохранённых сообщений
+        
+        // --- ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ЧАТА ---
+        function saveChatHistory(messages) {
+            try {
+                // Сохраняем только последние MAX_CHAT_HISTORY сообщений
+                const limitedMessages = messages.slice(-MAX_CHAT_HISTORY);
+                localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(limitedMessages));
+                console.log('Chat history saved:', limitedMessages.length, 'messages');
+            } catch (error) {
+                console.error('Error saving chat history:', error);
+            }
+        }
+
+        function loadChatHistory() {
+            try {
+                const saved = localStorage.getItem(CHAT_HISTORY_KEY);
+                if (saved) {
+                    const messages = JSON.parse(saved);
+                    console.log('Chat history loaded:', messages.length, 'messages');
+                    return messages;
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+            }
+            return [];
+        }
+
+        function clearChatHistory() {
+            try {
+                localStorage.removeItem(CHAT_HISTORY_KEY);
+                console.log('Chat history cleared');
+            } catch (error) {
+                console.error('Error clearing chat history:', error);
+            }
+        }
+
+        function restoreChatHistory() {
+            const welcome = document.querySelector('.ai-welcome');
+            if (welcome) welcome.remove();
+
+            const messages = loadChatHistory();
+            
+            if (messages.length === 0) {
+                // Если нет истории, показываем приветственное сообщение
+                aiChatMessages.innerHTML = `
+                    <div class="ai-welcome">
+                        Привет! Я твой личный помощник по планированию! ✨<br><br>
+                        Я могу:<br>
+                        • Создать задачу из текста<br>
+                        • Подсказать как лучше спланировать день<br>
+                        • Дать советы по продуктивности<br><br>
+                        Просто скажи: "Поставь задачу завтра глянуть сериал в 9 вечера" и я всё сделаю!
+                    </div>
+                `;
+                return;
+            }
+
+            aiChatMessages.innerHTML = '';
+            
+            messages.forEach(msg => {
+                if (msg.type === 'welcome') {
+                    const welcomeElement = document.createElement('div');
+                    welcomeElement.className = 'ai-welcome';
+                    welcomeElement.innerHTML = msg.text;
+                    aiChatMessages.appendChild(welcomeElement);
+                } else {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = `chat-message ${msg.sender}-message`;
+                    
+                    const bubbleElement = document.createElement('div');
+                    bubbleElement.className = 'chat-bubble';
+                    
+                    // Применяем преобразование markdown для сообщений AI
+                    if (msg.sender === 'ai') {
+                        bubbleElement.innerHTML = markdownToHtml(msg.text);
+                    } else {
+                        bubbleElement.textContent = msg.text;
+                    }
+                    
+                    messageElement.appendChild(bubbleElement);
+                    aiChatMessages.appendChild(messageElement);
+                    
+                    // Немедленно показываем сообщение (без анимации)
+                    messageElement.style.opacity = '1';
+                    messageElement.style.transform = 'translateY(0)';
+                }
+            });
+            
+            // Прокручиваем к последнему сообщению
+            setTimeout(() => {
+                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+            }, 100);
+        }
+
+        // --- ФУНКЦИЯ ПРЕОБРАЗОВАНИЯ MARKDOWN В HTML ---
+        function markdownToHtml(text) {
+            if (!text) return '';
+            
+            // Заменяем **жирный текст**
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Заменяем *курсив*
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Заменяем - пункты списка
+            html = html.replace(/^-\s+(.*?)$/gm, '<li>$1</li>');
+            
+            // Заменяем 1. нумерованные списки
+            html = html.replace(/^\d+\.\s+(.*?)$/gm, '<li>$1</li>');
+            
+            // Группируем li в ul если они идут подряд
+            html = html.replace(/(<li>.*?<\/li>\n?)+/g, function(match) {
+                return '<ul>' + match + '</ul>';
+            });
+            
+            // Заменяем переносы строк на <br>
+            html = html.replace(/\n/g, '<br>');
+            
+            return html;
+        }
         
         // --- НОВАЯ ФУНКЦИЯ: УПРАВЛЕНИЕ ЭКРАНОМ ЗАГРУЗКИ ---
         function hideSplashScreen() {
@@ -3410,7 +3618,8 @@
                     fetchTasks(); 
                 }
             } else if (sectionId === 'stats-content') {
-                fetchStats(); 
+                // Показываем кэшированные данные статистики, если они есть
+                displayCachedStats();
             }
         }
         
@@ -3480,7 +3689,8 @@
                     fetchTasks(); 
                 }
             } else if (sectionId === 'stats-content') {
-                fetchStats(); 
+                // Показываем кэшированные данные статистики, если они есть
+                displayCachedStats();
             }
         }
         
@@ -3617,6 +3827,9 @@
                     closeTaskFormModal();
                     
                     await fetchTasks(); 
+                    
+                    // Обновляем статистику после изменения задачи
+                    await fetchStats(true);
 
                 } else {
                     throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
@@ -4144,6 +4357,9 @@
                     fetchTasks();
                 }, 900);
                 
+                // Обновляем статистику после выполнения задачи
+                await fetchStats(true);
+                
                 console.log('Task marked as done via swipe:', taskId);
                 
             } catch (error) {
@@ -4187,6 +4403,9 @@
                     fetchTasks();
                 }, 900);
                 
+                // Обновляем статистику после удаления задачи
+                await fetchStats(true);
+                
                 console.log('Task deleted via swipe:', taskId);
                 
             } catch (error) {
@@ -4228,6 +4447,10 @@
                     }
 
                     await fetchTasks(); 
+                    
+                    // Обновляем статистику после выполнения задачи
+                    await fetchStats(true);
+                    
                     tg.showAlert('Задача успешно отмечена как выполненная!');
 
                 } catch (error) {
@@ -4271,6 +4494,10 @@
                     }
                     
                     await fetchTasks(); 
+                    
+                    // Обновляем статистику после удаления задачи
+                    await fetchStats(true);
+                    
                     tg.showAlert('Задача успешно удалена!');
 
                 } catch (error) {
@@ -4345,8 +4572,13 @@
             };
         }
 
-        function displayError(message) {
-            tasksList.innerHTML = `<p class="error-message">API Error: ${message}</p>`;
+        function displayError(message, showRefreshButton = true) {
+            tasksList.innerHTML = `
+                <div class="error-message-container">
+                    <p class="error-message">Ошибка загрузки задач: ${message}</p>
+                    ${showRefreshButton ? '<button class="refresh-button" onclick="fetchTasks()">🔄 Обновить</button>' : ''}
+                </div>
+            `;
             tg.showAlert('Ошибка загрузки задач.');
         }
 
@@ -4453,10 +4685,18 @@
             const bubbleElement = document.createElement('div');
             bubbleElement.className = 'chat-bubble';
             
-            bubbleElement.innerHTML = text.replace(/\n/g, '<br>'); 
+            // Применяем преобразование markdown для сообщений AI
+            if (sender === 'ai') {
+                bubbleElement.innerHTML = markdownToHtml(text);
+            } else {
+                bubbleElement.textContent = text;
+            }
             
             messageElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(messageElement);
+            
+            // Сохраняем сообщение в историю
+            saveMessageToHistory(text, sender);
             
             setTimeout(() => {
                 requestAnimationFrame(() => {
@@ -4481,6 +4721,24 @@
                     }
                 });
             }, 50);
+        }
+
+        function saveMessageToHistory(text, sender) {
+            try {
+                const currentHistory = loadChatHistory();
+                
+                // Добавляем новое сообщение
+                currentHistory.push({
+                    text: text,
+                    sender: sender,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Сохраняем историю
+                saveChatHistory(currentHistory);
+            } catch (error) {
+                console.error('Error saving message to history:', error);
+            }
         }
 
         function showAILoading() {
@@ -4571,8 +4829,8 @@
             clearChatButton.addEventListener('click', () => {
                 tg.showConfirm('Очистить всю историю чата?', (confirmed) => {
                     if (confirmed) {
-                        const messagesContainer = document.getElementById('ai-chat-messages');
-                        messagesContainer.innerHTML = `
+                        clearChatHistory();
+                        aiChatMessages.innerHTML = `
                             <div class="ai-welcome">
                                 Привет! Я твой личный помощник по планированию! ✨<br><br>
                                 Я могу:<br>
@@ -4596,13 +4854,106 @@
             return days[dayIndex] || '?';
         }
 
-        async function fetchStats() {
+        function displayCachedStats() {
+            if (!cachedStatsData) return;
+            
+            const statData = cachedStatsData;
+            
+            const activeTasks = statData.activeTotal || 0;
+            const completedTasks = statData.totalCompleted || 0;
+            const totalTasks = activeTasks + completedTasks;
+            const todayDone = statData.todayDone || 0;
+            const expiredCount = statData.expiredCount || 0;
+            
+            const highPriority = statData.importanceDistribution?.high || 0;
+            const mediumPriority = statData.importanceDistribution?.medium || 0;
+            const lowPriority = statData.importanceDistribution?.low || 0;
+            
+            const weeklyActivity = statData.weeklyActivity || {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+            
+            document.getElementById('stat-total').textContent = totalTasks;
+            document.getElementById('stat-active').textContent = activeTasks;
+            document.getElementById('stat-completed').textContent = completedTasks;
+            document.getElementById('stat-high-priority').textContent = highPriority;
+            document.getElementById('stat-today').textContent = todayDone;
+            document.getElementById('stat-expired').textContent = expiredCount;
+            
+            const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('progress-percentage').textContent = `${progressPercentage}%`;
+            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
+            document.getElementById('progress-active').textContent = `${activeTasks} активных`;
+            document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
+            
+            const totalPriority = highPriority + mediumPriority + lowPriority;
+            
+            document.getElementById('priority-high').textContent = highPriority;
+            document.getElementById('priority-medium').textContent = mediumPriority;
+            document.getElementById('priority-low').textContent = lowPriority;
+            
+            document.getElementById('percentage-high').textContent = totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%';
+            document.getElementById('percentage-medium').textContent = totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%';
+            document.getElementById('percentage-low').textContent = totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%';
+            
+            const weeklyGrid = document.getElementById('weekly-grid');
+            weeklyGrid.innerHTML = '';
+            
+            const today = new Date().getDay();
+            const todayInOurSystem = today === 0 ? 6 : today - 1;
+            
+            for (let i = 0; i < 7; i++) {
+                const dayIndex = i;
+                const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
+                
+                const dayCount = weeklyActivity[apiDayIndex] || 0;
+                const dayCell = document.createElement('div');
+                dayCell.className = 'day-cell';
+                
+                if (i === todayInOurSystem) {
+                    dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
+                    dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
+                }
+                
+                dayCell.innerHTML = `
+                    <div class="day-name">${getDayName(i)}</div>
+                    <div class="day-count">${dayCount}</div>
+                `;
+                
+                weeklyGrid.appendChild(dayCell);
+            }
+        }
+
+        function displayStatsError(message) {
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = `
+                <div class="error-message-container">
+                    <p class="error-message">Ошибка загрузки статистики: ${message}</p>
+                    <button class="refresh-button" onclick="fetchStats(true)">🔄 Обновить статистику</button>
+                </div>
+            `;
+            tg.showAlert('Ошибка загрузки статистики.');
+        }
+
+        async function fetchStats(forceRefresh = false) {
+            // Проверяем кэш, если не принудительное обновление
+            const now = Date.now();
+            if (!forceRefresh && cachedStatsData && statsLastUpdated && 
+                (now - statsLastUpdated) < STATS_CACHE_DURATION) {
+                console.log('Using cached stats data');
+                displayCachedStats();
+                return;
+            }
+
             try {
                 if (!tg.initData) {
-                    document.getElementById('stats-container').innerHTML = '<p class="error-message">Ошибка авторизации Telegram.</p>';
+                    displayStatsError('Telegram initData is missing. Cannot authorize.');
                     return;
                 }
 
+                // Показываем загрузку только если это не кэшированные данные
+                if (forceRefresh || !cachedStatsData) {
+                    document.getElementById('stats-container').innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
+                }
+                
                 const response = await fetch(N8N_GET_STATS_URL, {
                     method: 'GET',
                     headers: {
@@ -4619,74 +4970,38 @@
                 
                 console.log('Stats data received:', statData);
 
-                const activeTasks = statData.activeTotal || 0;
-                const completedTasks = statData.totalCompleted || 0;
-                const totalTasks = activeTasks + completedTasks;
-                const todayDone = statData.todayDone || 0;
-                const expiredCount = statData.expiredCount || 0;
+                // Кэшируем данные
+                cachedStatsData = statData;
+                statsLastUpdated = Date.now();
                 
-                const highPriority = statData.importanceDistribution?.high || 0;
-                const mediumPriority = statData.importanceDistribution?.medium || 0;
-                const lowPriority = statData.importanceDistribution?.low || 0;
-                
-                const weeklyActivity = statData.weeklyActivity || {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
-                
-                document.getElementById('stat-total').textContent = totalTasks;
-                document.getElementById('stat-active').textContent = activeTasks;
-                document.getElementById('stat-completed').textContent = completedTasks;
-                document.getElementById('stat-high-priority').textContent = highPriority;
-                document.getElementById('stat-today').textContent = todayDone;
-                document.getElementById('stat-expired').textContent = expiredCount;
-                
-                const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-                document.getElementById('progress-percentage').textContent = `${progressPercentage}%`;
-                document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
-                document.getElementById('progress-active').textContent = `${activeTasks} активных`;
-                document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
-                
-                const totalPriority = highPriority + mediumPriority + lowPriority;
-                
-                document.getElementById('priority-high').textContent = highPriority;
-                document.getElementById('priority-medium').textContent = mediumPriority;
-                document.getElementById('priority-low').textContent = lowPriority;
-                
-                document.getElementById('percentage-high').textContent = totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%';
-                document.getElementById('percentage-medium').textContent = totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%';
-                document.getElementById('percentage-low').textContent = totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%';
-                
-                const weeklyGrid = document.getElementById('weekly-grid');
-                weeklyGrid.innerHTML = '';
-                
-                const today = new Date().getDay();
-                const todayInOurSystem = today === 0 ? 6 : today - 1;
-                
-                for (let i = 0; i < 7; i++) {
-                    const dayIndex = i;
-                    const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
-                    
-                    const dayCount = weeklyActivity[apiDayIndex] || 0;
-                    const dayCell = document.createElement('div');
-                    dayCell.className = 'day-cell';
-                    
-                    if (i === todayInOurSystem) {
-                        dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
-                        dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
-                    }
-                    
-                    dayCell.innerHTML = `
-                        <div class="day-name">${getDayName(i)}</div>
-                        <div class="day-count">${dayCount}</div>
-                    `;
-                    
-                    weeklyGrid.appendChild(dayCell);
-                }
+                // Отображаем данные
+                displayCachedStats();
 
             } catch (error) {
                 console.error('Fetch Stats error:', error);
-                document.getElementById('stats-container').innerHTML = `
-                    <p class="error-message">Ошибка загрузки статистики: ${error.message}</p>
-                `;
-                tg.showAlert('Ошибка загрузки статистики.');
+                
+                // Если есть кэшированные данные, показываем их с предупреждением
+                if (cachedStatsData) {
+                    displayCachedStats();
+                    tg.showAlert('Не удалось обновить статистику. Показаны кэшированные данные.');
+                } else {
+                    displayStatsError(error.message);
+                }
+            }
+        }
+
+        // --- НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ВСЕХ ДАННЫХ ПРИ ЗАПУСКЕ ---
+        async function loadInitialData() {
+            try {
+                // Загружаем задачи и статистику параллельно
+                await Promise.allSettled([
+                    fetchTasks(),
+                    fetchStats()
+                ]);
+                
+                console.log('Initial data loaded successfully');
+            } catch (error) {
+                console.error('Error loading initial data:', error);
             }
         }
         
@@ -4716,6 +5031,7 @@
         window.setDefaultFormValues = setDefaultFormValues; 
         window.deleteTask = deleteTask; 
         window.fetchTasks = fetchTasks; 
+        window.fetchStats = fetchStats;
         window.switchSection = switchSection;
         window.toggleSettingsMenu = toggleSettingsMenu;
         window.toggleSetting = toggleSetting;
@@ -4727,6 +5043,7 @@
         window.prevOnboardingScreen = prevOnboardingScreen;
         window.skipOnboarding = skipOnboarding;
         window.finishOnboarding = finishOnboarding;
+        window.markdownToHtml = markdownToHtml;
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
@@ -4744,9 +5061,12 @@
                     switchSection('tasks-content', tasksButton);
                 }
                 
-                // Загружаем задачи с небольшой задержкой, чтобы не блокировать отображение
+                // Загружаем все данные с небольшой задержкой, чтобы не блокировать отображение
                 setTimeout(() => {
-                    fetchTasks();
+                    loadInitialData();
+                    
+                    // Восстанавливаем историю чата
+                    restoreChatHistory();
                 }, 500);
                 
             } else {
@@ -4761,9 +5081,12 @@
                     switchSection('tasks-content', tasksButton);
                 }
                 
-                // Загружаем задачи с небольшой задержкой, чтобы не блокировать отображение
+                // Загружаем все данные с небольшой задержкой, чтобы не блокировать отображение
                 setTimeout(() => {
-                    fetchTasks();
+                    loadInitialData();
+                    
+                    // Восстанавливаем историю чата
+                    restoreChatHistory();
                 }, 500);
             }
         });
