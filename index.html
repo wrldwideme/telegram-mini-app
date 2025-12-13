@@ -3658,7 +3658,7 @@
                 }
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
-                displayCachedStats();
+                safeDisplayCachedStats();
             }
         }
         
@@ -3730,7 +3730,7 @@
                 }
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
-                displayCachedStats();
+                safeDisplayCachedStats();
             }
         }
         
@@ -4944,7 +4944,8 @@
             return days[dayIndex] || '?';
         }
 
-        function displayCachedStats() {
+        // БЕЗОПАСНАЯ ФУНКЦИЯ: Отображение статистики с проверкой элементов
+        function safeDisplayCachedStats() {
             if (!cachedStatsData) return;
             
             const statData = cachedStatsData;
@@ -4961,65 +4962,89 @@
             
             const weeklyActivity = statData.weeklyActivity || {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
             
-            document.getElementById('stat-total').textContent = totalTasks;
-            document.getElementById('stat-active').textContent = activeTasks;
-            document.getElementById('stat-completed').textContent = completedTasks;
-            document.getElementById('stat-high-priority').textContent = highPriority;
-            document.getElementById('stat-today').textContent = todayDone;
-            document.getElementById('stat-expired').textContent = expiredCount;
+            // Безопасное обновление элементов с проверкой существования
+            const updateElement = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            };
+            
+            const updateStyle = (id, property, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style[property] = value;
+                }
+            };
+            
+            updateElement('stat-total', totalTasks);
+            updateElement('stat-active', activeTasks);
+            updateElement('stat-completed', completedTasks);
+            updateElement('stat-high-priority', highPriority);
+            updateElement('stat-today', todayDone);
+            updateElement('stat-expired', expiredCount);
             
             const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            document.getElementById('progress-percentage').textContent = `${progressPercentage}%`;
-            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
-            document.getElementById('progress-active').textContent = `${activeTasks} активных`;
-            document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
+            updateElement('progress-percentage', `${progressPercentage}%`);
+            updateStyle('progress-bar', 'width', `${progressPercentage}%`);
+            updateElement('progress-active', `${activeTasks} активных`);
+            updateElement('progress-completed', `${completedTasks} выполнено`);
             
             const totalPriority = highPriority + mediumPriority + lowPriority;
             
-            document.getElementById('priority-high').textContent = highPriority;
-            document.getElementById('priority-medium').textContent = mediumPriority;
-            document.getElementById('priority-low').textContent = lowPriority;
+            updateElement('priority-high', highPriority);
+            updateElement('priority-medium', mediumPriority);
+            updateElement('priority-low', lowPriority);
             
-            document.getElementById('percentage-high').textContent = totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%';
-            document.getElementById('percentage-medium').textContent = totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%';
-            document.getElementById('percentage-low').textContent = totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%';
+            updateElement('percentage-high', totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%');
+            updateElement('percentage-medium', totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%');
+            updateElement('percentage-low', totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%');
             
-            const weeklyGrid = document.getElementById('weekly-grid');
-            weeklyGrid.innerHTML = '';
-            
-            const today = new Date().getDay();
-            const todayInOurSystem = today === 0 ? 6 : today - 1;
-            
-            for (let i = 0; i < 7; i++) {
-                const dayIndex = i;
-                const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
+            const weeklyGridElement = document.getElementById('weekly-grid');
+            if (weeklyGridElement) {
+                weeklyGridElement.innerHTML = '';
                 
-                const dayCount = weeklyActivity[apiDayIndex] || 0;
-                const dayCell = document.createElement('div');
-                dayCell.className = 'day-cell';
+                const today = new Date().getDay();
+                const todayInOurSystem = today === 0 ? 6 : today - 1;
                 
-                if (i === todayInOurSystem) {
-                    dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
-                    dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
+                for (let i = 0; i < 7; i++) {
+                    const dayIndex = i;
+                    const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
+                    
+                    const dayCount = weeklyActivity[apiDayIndex] || 0;
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'day-cell';
+                    
+                    if (i === todayInOurSystem) {
+                        dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
+                        dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
+                    }
+                    
+                    dayCell.innerHTML = `
+                        <div class="day-name">${getDayName(i)}</div>
+                        <div class="day-count">${dayCount}</div>
+                    `;
+                    
+                    weeklyGridElement.appendChild(dayCell);
                 }
-                
-                dayCell.innerHTML = `
-                    <div class="day-name">${getDayName(i)}</div>
-                    <div class="day-count">${dayCount}</div>
-                `;
-                
-                weeklyGrid.appendChild(dayCell);
             }
+        }
+
+        // Старая функция для обратной совместимости
+        function displayCachedStats() {
+            safeDisplayCachedStats();
         }
 
         function displayStatsError(message) {
             const statsContainer = document.getElementById('stats-container');
-            statsContainer.innerHTML = `
-                <div class="error-message-container">
-                    <p class="error-message">Ошибка загрузки статистики: ${message}</p>
-                    <button class="refresh-button" onclick="fetchStats(true)">🔄 Обновить статистику</button>
-                </div>
-            `;
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="error-message-container">
+                        <p class="error-message">Ошибка загрузки статистики: ${message}</p>
+                        <button class="refresh-button" onclick="fetchStats(true)">🔄 Обновить статистику</button>
+                    </div>
+                `;
+            }
             tg.showAlert('Ошибка загрузки статистики.');
         }
 
@@ -5030,7 +5055,7 @@
             if (!forceRefresh && cachedStatsData && statsLastUpdated && 
                 (now - statsLastUpdated) < STATS_CACHE_DURATION) {
                 console.log('Using cached stats data');
-                displayCachedStats();
+                safeDisplayCachedStats();
                 return;
             }
 
@@ -5044,9 +5069,12 @@
                         return;
                     }
 
-                    // Показываем загрузку только если это не кэшированные данные
-                    if (forceRefresh || !cachedStatsData) {
-                        document.getElementById('stats-container').innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
+                    // Показываем загрузку только если раздел статистики активен
+                    if ((forceRefresh || !cachedStatsData) && currentSectionIndex === 2) {
+                        const statsContainer = document.getElementById('stats-container');
+                        if (statsContainer) {
+                            statsContainer.innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
+                        }
                     }
                     
                     // Экспоненциальная задержка между попытками: 300ms, 600ms, 1200ms
@@ -5082,8 +5110,10 @@
                     cachedStatsData = statData;
                     statsLastUpdated = Date.now();
                     
-                    // Отображаем данные
-                    displayCachedStats();
+                    // Отображаем данные только если раздел статистики активен
+                    if (currentSectionIndex === 2) {
+                        safeDisplayCachedStats();
+                    }
                     return; // Успех, выходим из цикла
 
                 } catch (error) {
@@ -5102,9 +5132,11 @@
             
             // Если есть кэшированные данные, показываем их с предупреждением
             if (cachedStatsData) {
-                displayCachedStats();
-                tg.showAlert('Не удалось обновить статистику. Показаны кэшированные данные.');
-            } else {
+                if (currentSectionIndex === 2) {
+                    safeDisplayCachedStats();
+                    tg.showAlert('Не удалось обновить статистику. Показаны кэшированные данные.');
+                }
+            } else if (currentSectionIndex === 2) {
                 displayStatsError(lastError.message);
             }
         }
