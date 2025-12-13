@@ -20,6 +20,8 @@
             --tasks-color: var(--link-color);
             --ai-color: #8a2be2;
             --stats-color: #34c759;
+            /* Цвет для инсайтов */
+            --insights-color: #ff6b6b;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -1840,6 +1842,196 @@
             }
         }
 
+        /* === НОВЫЕ СТИЛИ ДЛЯ БЛОКА AI-ИНСАЙТОВ === */
+        .insights-widget {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, background-color 0.3s;
+            animation: fadeInUp 0.6s ease-out 0.1s forwards;
+            opacity: 0;
+        }
+
+        .insights-widget:active {
+            transform: scale(0.98);
+        }
+
+        .insights-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            width: 100%;
+        }
+
+        .insights-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.3em;
+            flex-shrink: 0;
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--insights-color);
+        }
+
+        .insights-title-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .insights-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .insights-subtitle {
+            font-size: 0.85em;
+            color: var(--hint-color);
+            opacity: 0.8;
+        }
+
+        .insights-refresh-btn {
+            background: transparent;
+            border: none;
+            color: var(--hint-color);
+            font-size: 1.1em;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 10px;
+            transition: all 0.3s;
+            margin-left: 10px;
+            flex-shrink: 0;
+        }
+
+        .insights-refresh-btn:hover {
+            color: var(--insights-color);
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .insights-refresh-btn.loading {
+            animation: rotate 1s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .insights-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 80px;
+            width: 100%;
+        }
+
+        .insights-text {
+            font-size: 0.95em;
+            line-height: 1.5;
+            color: var(--text-color);
+            margin: 0;
+            max-height: 120px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .insights-text::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .insights-text::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .insights-text::-webkit-scrollbar-thumb {
+            background: rgba(255, 107, 107, 0.3);
+            border-radius: 1.5px;
+        }
+
+        .insights-text::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 107, 107, 0.5);
+        }
+
+        .insights-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--hint-color);
+            font-style: italic;
+        }
+
+        .insights-loading::after {
+            content: '...';
+            display: inline-block;
+            width: 20px;
+            animation: loadingDots 1.5s infinite steps(4);
+        }
+
+        .insights-error, .insights-no-subscription {
+            padding: 15px;
+            text-align: center;
+            color: var(--hint-color);
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+
+        .insights-no-subscription {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+            border-radius: 12px;
+            border: 1px solid rgba(255, 107, 107, 0.15);
+            margin-top: 5px;
+        }
+
+        .insights-premium-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Градиентный акцент для инсайтов */
+        .insights-widget::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--insights-color), #ff8e8e);
+            border-radius: 16px 16px 0 0;
+        }
+
+        /* Эффект при наведении */
+        .insights-widget:hover::before {
+            height: 4px;
+        }
+
         /* --- ИСПРАВЛЕННЫЕ СТИЛИ РАЗДЕЛА СТАТИСТИКИ --- */
         #stats-container {
             margin-top: 15px;
@@ -2131,6 +2323,18 @@
         .priority-section { animation-delay: 0.8s; }
         .weekly-section { animation-delay: 0.9s; }
 
+        /* Обновляем порядок анимации для инсайтов */
+        .insights-widget { animation-delay: 0.05s; }
+        .stat-widget:nth-child(1) { animation-delay: 0.15s; }
+        .stat-widget:nth-child(2) { animation-delay: 0.25s; }
+        .stat-widget:nth-child(3) { animation-delay: 0.35s; }
+        .stat-widget:nth-child(4) { animation-delay: 0.45s; }
+        .stat-widget:nth-child(5) { animation-delay: 0.55s; }
+        .stat-widget:nth-child(6) { animation-delay: 0.65s; }
+        .progress-section { animation-delay: 0.75s; }
+        .priority-section { animation-delay: 0.85s; }
+        .weekly-section { animation-delay: 0.95s; }
+
         /* Адаптивность для iPhone и маленьких экранов */
         @media (max-width: 480px) {
             body {
@@ -2226,6 +2430,33 @@
             
             .stat-content {
                 width: calc(100% - 40px);
+            }
+            
+            /* Адаптивность для инсайтов на iPhone */
+            .insights-widget {
+                padding: 16px;
+                min-height: 160px;
+                margin-bottom: 16px;
+            }
+            
+            .insights-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 1.2em;
+                margin-right: 10px;
+            }
+            
+            .insights-title {
+                font-size: 1em;
+            }
+            
+            .insights-subtitle {
+                font-size: 0.8em;
+            }
+            
+            .insights-text {
+                font-size: 0.9em;
+                max-height: 100px;
             }
             
             /* Исправление полей формы для iPhone */
@@ -2353,6 +2584,18 @@
             
             .stat-value {
                 font-size: 1.5em;
+            }
+            
+            .insights-widget {
+                min-height: 150px;
+                padding: 14px;
+            }
+            
+            .insights-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1.1em;
+                margin-right: 8px;
             }
             
             .ios-label {
@@ -2626,6 +2869,29 @@
                 </h1>
                 
                 <div id="stats-container" class="scrollable-content">
+                    <!-- НОВЫЙ БЛОК AI-ИНСАЙТОВ -->
+                    <div class="insights-widget" id="insights-widget">
+                        <div class="insights-header">
+                            <div class="insights-icon">🧠</div>
+                            <div class="insights-title-container">
+                                <div class="insights-title">
+                                    AI-аналитика
+                                    <span class="insights-premium-badge">PREMIUM</span>
+                                </div>
+                                <div class="insights-subtitle">Персональные инсайты по вашей продуктивности</div>
+                            </div>
+                            <button class="insights-refresh-btn" id="refresh-insights-btn" title="Обновить инсайты">
+                                🔄
+                            </button>
+                        </div>
+                        <div class="insights-content" id="insights-content">
+                            <div class="insights-loading" id="insights-loading">
+                                Анализирую вашу статистику...
+                            </div>
+                            <!-- Контент будет заполняться динамически -->
+                        </div>
+                    </div>
+                    
                     <div class="stats-grid">
                         <div class="stat-widget">
                             <div class="stat-widget-header">
@@ -2887,6 +3153,7 @@
         const N8N_AI_CHAT_URL = 'https://i74s52gg.rcld.app/webhook/ai-chat';
         const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task';
         const N8N_GET_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats';
+        const N8N_GET_INSIGHTS_URL = 'https://i74s52gg.rcld.app/webhook/get-insights'; // НОВЫЙ URL
         
         // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕК
         const N8N_GET_SETTINGS_URL = 'https://i74s52gg.rcld.app/webhook/get-user-settings';
@@ -2929,6 +3196,12 @@
         let currentOnboardingScreen = 1;
         const totalOnboardingScreens = 6;
         let isOnboardingShown = false;
+        
+        // --- ПЕРЕМЕННЫЕ ДЛЯ AI-ИНСАЙТОВ ---
+        const insightsWidget = document.getElementById('insights-widget');
+        const insightsContent = document.getElementById('insights-content');
+        const insightsLoading = document.getElementById('insights-loading');
+        const refreshInsightsBtn = document.getElementById('refresh-insights-btn');
         
         let currentTaskId = null; 
         let isEditing = false;
@@ -2983,6 +3256,12 @@
         const TASKS_CACHE_DURATION = 5 * 60 * 1000; // 5 минут в миллисекундах
         let tasksCacheVersion = 0; // Увеличивается при изменении задач
         
+        // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ КЭШИРОВАНИЯ ИНСАЙТОВ ---
+        let cachedInsightsData = null;
+        let insightsLastUpdated = null;
+        const INSIGHTS_CACHE_DURATION = 10 * 60 * 1000; // 10 минут в миллисекундах (инсайты меняются реже)
+        let insightsCacheVersion = 0;
+        
         // --- ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ЗАДАЧ ---
         function invalidateTasksCache() {
             tasksCacheVersion++;
@@ -3010,6 +3289,38 @@
             const cachedTasks = getTasksFromCache();
             if (cachedTasks) {
                 displayTasks(cachedTasks);
+                return true;
+            }
+            return false;
+        }
+
+        // --- ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ИНСАЙТОВ ---
+        function invalidateInsightsCache() {
+            insightsCacheVersion++;
+            cachedInsightsData = null;
+            insightsLastUpdated = null;
+            console.log('Insights cache invalidated, new version:', insightsCacheVersion);
+        }
+        
+        function getInsightsFromCache() {
+            const now = Date.now();
+            if (cachedInsightsData && insightsLastUpdated && 
+                (now - insightsLastUpdated) < INSIGHTS_CACHE_DURATION) {
+                return cachedInsightsData;
+            }
+            return null;
+        }
+        
+        function saveInsightsToCache(insights) {
+            cachedInsightsData = insights;
+            insightsLastUpdated = Date.now();
+            console.log('Insights saved to cache');
+        }
+
+        function displayInsightsFromCache() {
+            const cachedInsights = getInsightsFromCache();
+            if (cachedInsights) {
+                displayInsights(cachedInsights);
                 return true;
             }
             return false;
@@ -3659,6 +3970,10 @@
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
                 safeDisplayCachedStats();
+                // Показываем кэшированные инсайты, если они есть
+                if (!displayInsightsFromCache()) {
+                    fetchInsights(false); // Не форсируем загрузку, только если кэш пуст
+                }
             }
         }
         
@@ -3731,6 +4046,10 @@
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
                 safeDisplayCachedStats();
+                // Показываем кэшированные инсайты, если они есть
+                if (!displayInsightsFromCache()) {
+                    fetchInsights(false);
+                }
             }
         }
         
@@ -3872,6 +4191,9 @@
                     
                     // Обновляем статистику после изменения задачи
                     await fetchStats(true);
+                    
+                    // Обновляем инсайты после изменения задачи
+                    await fetchInsights(true);
 
                 } else {
                     throw new Error(result.message || 'Не удалось выполнить операцию. (Проверь n8n log)');
@@ -4322,10 +4644,6 @@
                     resetTaskSwipe();
                 }, 200);
             }
-            
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-            }
         }
         
         function handleTaskMouseCancel() {
@@ -4405,6 +4723,9 @@
                 // Обновляем статистику после выполнения задачи
                 await fetchStats(true);
                 
+                // Обновляем инсайты после выполнения задачи
+                await fetchInsights(true);
+                
                 console.log('Task marked as done via swipe:', taskId);
                 
             } catch (error) {
@@ -4454,6 +4775,9 @@
                 // Обновляем статистику после удаления задачи
                 await fetchStats(true);
                 
+                // Обновляем инсайты после удаления задачи
+                await fetchInsights(true);
+                
                 console.log('Task deleted via swipe:', taskId);
                 
             } catch (error) {
@@ -4500,6 +4824,9 @@
                     
                     // Обновляем статистику после выполнения задачи
                     await fetchStats(true);
+                    
+                    // Обновляем инсайты после выполнения задачи
+                    await fetchInsights(true);
                     
                     tg.showAlert('Задача успешно отмечена как выполненная!');
 
@@ -4549,6 +4876,9 @@
                     
                     // Обновляем статистику после удаления задачи
                     await fetchStats(true);
+                    
+                    // Обновляем инсайты после удаления задачи
+                    await fetchInsights(true);
                     
                     tg.showAlert('Задача успешно удалена!');
 
@@ -4760,6 +5090,170 @@
                 }
                 
                 displayError(error.message);
+            }
+        }
+        
+        // --- НОВАЯ ФУНКЦИЯ: ОТОБРАЖЕНИЕ ИНСАЙТОВ ---
+        function displayInsights(insightsData) {
+            if (!insightsContent) return;
+            
+            // Показываем загрузку пока данные обрабатываются
+            insightsContent.innerHTML = `
+                <div class="insights-loading">
+                    Анализирую вашу статистику...
+                </div>
+            `;
+            
+            setTimeout(() => {
+                let contentHtml = '';
+                
+                // Проверяем, есть ли текст инсайта от бэка
+                if (insightsData && insightsData.text) {
+                    // Успешный ответ с инсайтом
+                    contentHtml = `
+                        <p class="insights-text">${markdownToHtml(insightsData.text)}</p>
+                    `;
+                } else if (insightsData && insightsData.errorMessage) {
+                    // Ошибка от бэка (например, нет подписки)
+                    if (insightsData.errorMessage.toLowerCase().includes('subscription') || 
+                        insightsData.errorMessage.toLowerCase().includes('подписк')) {
+                        // Нет подписки
+                        contentHtml = `
+                            <div class="insights-no-subscription">
+                                🚀 <strong>Получите Premium-подписку!</strong><br>
+                                AI-аналитика доступна только для премиум пользователей.<br>
+                                <em>Откройте новые инсайты о вашей продуктивности!</em>
+                            </div>
+                        `;
+                    } else {
+                        // Другая ошибка
+                        contentHtml = `
+                            <div class="insights-error">
+                                ⚠️ ${insightsData.errorMessage}
+                            </div>
+                        `;
+                    }
+                } else {
+                    // Неизвестный формат ответа или пустой ответ
+                    contentHtml = `
+                        <div class="insights-error">
+                            ⚠️ Не удалось получить инсайты. Попробуйте позже.
+                        </div>
+                    `;
+                }
+                
+                insightsContent.innerHTML = contentHtml;
+                
+                // Прокручиваем текст инсайтов если нужно
+                setTimeout(() => {
+                    const insightsText = insightsContent.querySelector('.insights-text');
+                    if (insightsText && insightsText.scrollHeight > insightsText.clientHeight) {
+                        insightsText.style.maxHeight = '120px';
+                    }
+                }, 100);
+                
+            }, 300); // Небольшая задержка для лучшего UX
+        }
+        
+        // --- НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ИНСАЙТОВ ---
+        async function fetchInsights(forceRefresh = false) {
+            // Проверяем кэш, если не принудительное обновление
+            if (!forceRefresh) {
+                const cachedInsights = getInsightsFromCache();
+                if (cachedInsights) {
+                    console.log('Using cached insights data');
+                    displayInsights(cachedInsights);
+                    return;
+                }
+            }
+
+            try {
+                if (!tg.initData) {
+                    console.warn('Telegram initData is missing. Cannot fetch insights.');
+                    return;
+                }
+
+                // Показываем загрузку
+                if (insightsLoading) {
+                    insightsLoading.style.display = 'block';
+                }
+                
+                if (refreshInsightsBtn) {
+                    refreshInsightsBtn.classList.add('loading');
+                    refreshInsightsBtn.disabled = true;
+                }
+                
+                // Создаем AbortController для таймаута
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
+                
+                const response = await fetch(N8N_GET_INSIGHTS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const insightsData = await response.json();
+                
+                console.log('Insights data received:', insightsData);
+                
+                // Сохраняем в кэш
+                saveInsightsToCache(insightsData);
+                
+                // Отображаем инсайты
+                displayInsights(insightsData);
+
+            } catch (error) {
+                console.error('Fetch insights error:', error);
+                
+                // Если ошибка - таймаут или сетевая ошибка, пробуем показать кэш
+                if (error.name === 'AbortError' || error.name === 'TypeError') {
+                    const cachedInsights = getInsightsFromCache();
+                    if (cachedInsights) {
+                        displayInsights(cachedInsights);
+                        if (tg.showAlert) {
+                            tg.showAlert('Не удалось обновить инсайты. Показаны кэшированные данные.');
+                        }
+                    } else {
+                        // Показываем сообщение об ошибке
+                        if (insightsContent) {
+                            insightsContent.innerHTML = `
+                                <div class="insights-error">
+                                    ⚠️ Не удалось загрузить инсайты: ${error.message}
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    // Показываем сообщение об ошибке
+                    if (insightsContent) {
+                        insightsContent.innerHTML = `
+                            <div class="insights-error">
+                                ⚠️ Ошибка загрузки инсайтов: ${error.message}
+                            </div>
+                        `;
+                    }
+                }
+                
+            } finally {
+                // Скрываем индикатор загрузки
+                if (insightsLoading) {
+                    insightsLoading.style.display = 'none';
+                }
+                
+                if (refreshInsightsBtn) {
+                    refreshInsightsBtn.classList.remove('loading');
+                    refreshInsightsBtn.disabled = false;
+                }
             }
         }
         
@@ -5144,10 +5638,11 @@
         // --- НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ВСЕХ ДАННЫХ ПРИ ЗАПУСКЕ ---
         async function loadInitialData() {
             try {
-                // Загружаем задачи и статистику параллельно, но задачи приоритетнее
+                // Загружаем задачи, статистику и инсайты параллельно
                 await Promise.allSettled([
                     fetchTasks(false), // Не форсируем, используем кэш если есть
-                    fetchStats(false)  // Не форсируем, используем кэш если есть
+                    fetchStats(false),  // Не форсируем, используем кэш если есть
+                    fetchInsights(false) // Не форсируем, используем кэш если есть
                 ]);
                 
                 console.log('Initial data loaded successfully');
@@ -5173,6 +5668,16 @@
                 sendAiMessage();
             }
         });
+        
+        // Привязка обработчика для кнопки обновления инсайтов
+        if (refreshInsightsBtn) {
+            refreshInsightsBtn.addEventListener('click', () => {
+                fetchInsights(true); // Форсированное обновление
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+                }
+            });
+        }
 
         // Глобальные функции для доступа из HTML
         window.markTaskAsDone = markTaskAsDone;
@@ -5183,6 +5688,7 @@
         window.deleteTask = deleteTask; 
         window.fetchTasks = fetchTasks; 
         window.fetchStats = fetchStats;
+        window.fetchInsights = fetchInsights; // НОВАЯ ФУНКЦИЯ
         window.switchSection = switchSection;
         window.toggleSettingsMenu = toggleSettingsMenu;
         window.toggleSetting = toggleSetting;
@@ -5196,6 +5702,7 @@
         window.finishOnboarding = finishOnboarding;
         window.markdownToHtml = markdownToHtml;
         window.invalidateTasksCache = invalidateTasksCache;
+        window.invalidateInsightsCache = invalidateInsightsCache; // НОВАЯ ФУНКЦИЯ
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
