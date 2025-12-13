@@ -383,91 +383,91 @@
             }
         }
 
-        /* --- СТИЛИ ФОРМЫ (ОСНОВНЫЕ) --- */
-        .form-section {
-            background: transparent;
-            margin-bottom: 20px;
-            overflow: hidden; 
-            transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            max-height: 60px;
-            width: 100%;
-            box-sizing: border-box;
-            flex-shrink: 0;
-        }
-
-        .form-section.expanded {
-            max-height: 500px;
-        }
-
-        /* Улучшенный Заголовок */
-        .form-header {
-            display: flex;
-            justify-content: space-between;
+        /* --- НОВЫЕ СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ФОРМЫ --- */
+        #task-form-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: none;
             align-items: center;
-            cursor: pointer;
+            justify-content: center;
             padding: 20px;
-            height: 60px; 
-            box-sizing: border-box;
-            background: var(--secondary-bg-color); 
-            border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
-            transition: background-color 0.2s;
-            width: 100%;
-        }
-        
-        .form-section.expanded .form-header {
-             border-bottom-left-radius: 0;
-             border-bottom-right-radius: 0;
+            animation: fadeIn 0.3s ease-out;
         }
 
-        .form-header:hover {
-            background-color: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        
-        .form-header h2 {
-            margin: 0;
+
+        .modal-content {
+            background: var(--bg-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--secondary-bg-color);
             display: flex;
             align-items: center;
-            font-size: 1.1em;
-            font-weight: 600; 
+            justify-content: space-between;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.3em;
+            font-weight: 600;
             color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .form-header h2 span#form-icon {
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--hint-color);
             font-size: 1.2em;
-            margin-right: 10px;
-            color: var(--link-color); 
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
         }
 
-        .form-section-content {
-            padding: 0;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
-            height: 0;
-            overflow: hidden;
-            background: var(--input-bg-color); 
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            box-sizing: border-box;
+        .modal-close:hover {
+            background-color: var(--secondary-bg-color);
         }
 
-        .form-section.expanded .form-section-content {
-            visibility: visible;
-            opacity: 1;
-            height: auto;
-            overflow: visible;
+        .modal-body {
+            padding: 24px;
         }
 
-        /* --- ИСПРАВЛЕННЫЕ СТИЛИ ПОЛЕЙ ВВОДА (СТИЛЬ IOS) --- */
-
+        /* Стили формы внутри модального окна */
         .ios-group {
             border-radius: 12px;
             overflow: hidden;
             width: 100%;
             box-sizing: border-box;
+            margin-bottom: 20px;
         }
         
         .ios-row {
@@ -490,12 +490,12 @@
             font-size: 1.0em;
             font-weight: 400; 
             flex-shrink: 0; 
-            width: 100px; /* Фиксированная ширина для выравнивания */
+            width: 100px;
             margin-right: 15px;
             text-align: left;
         }
         
-        /* ИСПРАВЛЕНИЕ: Стили для полей ввода на iOS Safari */
+        /* Стили для полей ввода */
         .ios-row input, .ios-row select {
             flex-grow: 1;
             padding: 8px 0;
@@ -512,53 +512,47 @@
             appearance: none;
             padding-right: 5px; 
             width: 100%;
-            min-height: 28px; /* Минимальная высота для касания */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; /* Принудительный шрифт */
+            min-height: 28px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         }
         
-        /* ИСПРАВЛЕНИЕ ДЛЯ iOS: Гарантируем, что дата, время и select выравниваются справа */
         .ios-row input[type="date"], 
         .ios-row input[type="time"],
         .ios-row select {
             text-align: right !important;
             padding-right: 5px; 
-            direction: ltr !important; /* Важно: ltr вместо rtl для исправления отображения даты */
+            direction: ltr !important;
         }
         
-        /* ИСПРАВЛЕНИЕ: Специальные стили для даты на iOS */
         .ios-row input[type="date"] {
             text-align: right;
             position: relative;
         }
         
-        /* Убираем браузерные стили для даты в iOS */
         .ios-row input[type="date"]::-webkit-date-and-time-value {
             text-align: right;
             direction: ltr;
         }
         
-        /* Стили для placeholder */
         .ios-row input::placeholder {
             color: var(--hint-color);
             opacity: 0.7;
             text-align: right;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; /* Принудительный шрифт */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
         }
         
-        /* ИСПРАВЛЕНИЕ: Стили для select - исправляем проблему с артефактами в тексте */
         .ios-row select {
             background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777777'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 5px center;
             background-size: 20px;
-            padding-right: 30px; /* Место для стрелки */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; /* Принудительный шрифт для исправления артефактов */
-            text-transform: none; /* Убираем любое преобразование текста */
-            letter-spacing: normal; /* Нормальный межбуквенный интервал */
-            word-spacing: normal; /* Нормальный межсловный интервал */
+            padding-right: 30px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            text-transform: none;
+            letter-spacing: normal;
+            word-spacing: normal;
         }
         
-        /* ИСПРАВЛЕНИЕ: Стили для option внутри select */
         .ios-row select option {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             text-transform: none;
@@ -568,55 +562,48 @@
             font-size: 1.0em;
         }
 
-        /* Кнопка добавления задачи внутри формы */
-        .form-submit-button {
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--secondary-bg-color);
             display: flex;
-            justify-content: center;
-            padding: 20px 15px 15px 15px;
-            background: var(--input-bg-color);
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-            width: 100%;
-            box-sizing: border-box;
+            gap: 12px;
         }
 
-        #add-task-button {
-            background: linear-gradient(135deg, var(--link-color), #5d9cff);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            padding: 12px 30px;
-            font-size: 1.0em;
+        .modal-button {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
             font-weight: 600;
+            font-size: 1.0em;
             cursor: pointer;
             transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-            width: 100%;
-            max-width: 300px;
-            justify-content: center;
-            box-sizing: border-box;
+            border: none;
         }
 
-        #add-task-button:hover:not(:disabled) {
+        .modal-button.primary {
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+        }
+
+        .modal-button.primary:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
         }
 
-        #add-task-button:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        #add-task-button:disabled {
+        .modal-button.primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
         }
 
-        #add-task-button span {
-            font-size: 1.1em;
+        .modal-button.secondary {
+            background: var(--secondary-bg-color);
+            color: var(--text-color);
+        }
+
+        .modal-button.secondary:hover {
+            background: color-mix(in srgb, var(--secondary-bg-color) 90%, var(--hint-color) 10%);
         }
 
         /* --- СТИЛИ КАРТОЧЕК ЗАДАЧ, МЕНЮ (оставляем без изменений) --- */
@@ -748,7 +735,7 @@
             color: var(--hint-color);
             font-style: italic;
             margin-bottom: 15px;
-            margin-top: 10px; /* Добавлено отступ сверху */
+            margin-top: 10px;
             background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(147, 112, 219, 0.05));
             border-radius: 16px;
             border: 1px solid rgba(138, 43, 226, 0.15);
@@ -781,14 +768,14 @@
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 10px 5px 130px 5px; /* УВЕЛИЧЕНО СНИЗУ ДО 130px ДЛЯ ВЫСОКОЙ ПАНЕЛИ ВВОДА */
-            margin-bottom: 0; /* Убрано, чтобы не конфликтовало с паддингом */
+            padding: 10px 5px 130px 5px;
+            margin-bottom: 0;
             position: relative;
             display: flex;
             flex-direction: column;
             gap: 15px;
             min-height: 0;
-            overflow-anchor: auto; /* ВАЖНО: Автоматически прокручивает к новым сообщениям */
+            overflow-anchor: auto;
             will-change: transform;
         }
 
@@ -936,7 +923,7 @@
             75% { content: '...'; }
         }
 
-        /* Улучшенное поле ввода AI Chat - ИСПРАВЛЕНО: ТОЛЬКО ВНУТРИ AI РАЗДЕЛА */
+        /* Улучшенное поле ввода AI Chat */
         #ai-chat-input-area {
             position: fixed;
             bottom: calc(75px + env(safe-area-inset-bottom));
@@ -952,11 +939,10 @@
             gap: 12px;
             z-index: 990;
             border-top: 1px solid var(--secondary-bg-color);
-            display: none; /* По умолчанию скрыто */
-            min-height: 80px; /* УВЕЛИЧЕНА ВЫСОТА ДЛЯ БОЛЬШЕГО ОТСТУПА */
+            display: none;
+            min-height: 80px;
         }
 
-        /* Показываем только в AI разделе - ИСПРАВЛЕНО */
         .content-section.ai-active #ai-chat-input-area {
             display: flex;
         }
@@ -1066,7 +1052,6 @@
         }
 
         /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
-        /* Уменьшенная навигация */
         #bottom-nav {
             position: fixed;
             bottom: calc(8px + env(safe-area-inset-bottom));
@@ -1140,12 +1125,65 @@
             100% { transform: scale(1); }
         }
 
+        /* --- НОВЫЕ СТИЛИ ДЛЯ ПЛАВАЮЩЕЙ КНОПКИ "+" --- */
+        #fab-button {
+            position: fixed;
+            bottom: calc(85px + env(safe-area-inset-bottom));
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.9), rgba(93, 156, 255, 0.9));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: none;
+            color: white;
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 122, 255, 0.3);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            user-select: none;
+        }
+
+        #fab-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+        }
+
+        #fab-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        #fab-button span {
+            display: block;
+            line-height: 1;
+            margin-top: -2px;
+        }
+
+        /* Темная тема для FAB */
+        @media (prefers-color-scheme: dark) {
+            #fab-button {
+                background: linear-gradient(135deg, rgba(0, 122, 255, 0.85), rgba(93, 156, 255, 0.85));
+                box-shadow: 0 6px 20px rgba(0, 122, 255, 0.25);
+            }
+            
+            #fab-button:hover {
+                box-shadow: 0 8px 25px rgba(0, 122, 255, 0.35);
+            }
+        }
+
         /* --- ИСПРАВЛЕННЫЕ СТИЛИ РАЗДЕЛА СТАТИСТИКИ --- */
         #stats-container {
             margin-top: 15px;
             width: 100%;
             box-sizing: border-box;
-            padding-right: 0; /* Убираем лишние отступы */
+            padding-right: 0;
             flex: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -1165,7 +1203,7 @@
         .stat-widget {
             background: var(--secondary-bg-color);
             border-radius: 16px;
-            padding: 15px; /* Уменьшили отступы для iPhone */
+            padding: 15px;
             display: flex;
             flex-direction: column;
             transition: transform 0.2s, background-color 0.3s;
@@ -1173,11 +1211,11 @@
             box-shadow: 
                 0 4px 12px rgba(0, 0, 0, 0.08),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            height: 130px; /* Уменьшили высоту для iPhone */
+            height: 130px;
             justify-content: space-between;
             box-sizing: border-box;
             width: 100%;
-            overflow: hidden; /* Предотвращаем переполнение */
+            overflow: hidden;
         }
 
         .stat-widget:active {
@@ -1188,18 +1226,18 @@
             display: flex;
             align-items: flex-start;
             width: 100%;
-            margin-bottom: 8px; /* Уменьшили отступ */
+            margin-bottom: 8px;
         }
 
         .stat-icon {
-            width: 36px; /* Уменьшили для iPhone */
+            width: 36px;
             height: 36px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 10px; /* Уменьшили отступ */
-            font-size: 1.2em; /* Уменьшили размер иконки */
+            margin-right: 10px;
+            font-size: 1.2em;
             flex-shrink: 0;
         }
 
@@ -1214,12 +1252,12 @@
             flex-grow: 1;
             display: flex;
             flex-direction: column;
-            width: calc(100% - 46px); /* Учитываем ширину иконки и отступ */
-            min-width: 0; /* Для правильной работы text-overflow */
+            width: calc(100% - 46px);
+            min-width: 0;
         }
 
         .stat-title {
-            font-size: 0.85em; /* Уменьшили для iPhone */
+            font-size: 0.85em;
             color: var(--hint-color);
             font-weight: 500;
             margin-bottom: 6px;
@@ -1229,7 +1267,7 @@
         }
 
         .stat-value {
-            font-size: 1.7em; /* Уменьшили для iPhone */
+            font-size: 1.7em;
             font-weight: 700;
             color: var(--text-color);
             line-height: 1.2;
@@ -1237,7 +1275,7 @@
         }
 
         .stat-subtitle {
-            font-size: 0.75em; /* Уменьшили для iPhone */
+            font-size: 0.75em;
             color: var(--hint-color);
             opacity: 0.8;
             margin-top: auto;
@@ -1486,7 +1524,7 @@
             
             /* ИСПРАВЛЕНИЕ ДЛЯ AI ЧАТА НА iPhone */
             #ai-chat-messages {
-                padding: 5px 2px 120px 2px; /* УВЕЛИЧЕНО ДЛЯ ВЫСОКОЙ ПАНЕЛИ ВВОДА */
+                padding: 5px 2px 120px 2px;
             }
             
             /* Уменьшаем высоту панели ввода на очень маленьких экранах */
@@ -1580,6 +1618,27 @@
             .settings-item {
                 padding: 14px 16px;
             }
+            
+            /* Адаптивность для модального окна */
+            .modal-content {
+                margin: 10px;
+                max-height: 85vh;
+            }
+            
+            .modal-header,
+            .modal-body,
+            .modal-footer {
+                padding: 16px;
+            }
+            
+            /* Адаптивность для FAB */
+            #fab-button {
+                width: 52px;
+                height: 52px;
+                font-size: 26px;
+                bottom: calc(80px + env(safe-area-inset-bottom));
+                right: 16px;
+            }
         }
         
         /* Дополнительные исправления для очень маленьких экранов */
@@ -1610,6 +1669,14 @@
             #ai-chat-input-area {
                 min-height: 65px;
                 padding: 10px;
+            }
+            
+            #fab-button {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+                bottom: calc(75px + env(safe-area-inset-bottom));
+                right: 12px;
             }
         }
 
@@ -1644,53 +1711,6 @@
                         <!-- Иконка теперь через CSS -->
                     </button>
                 </h1>
-                
-                <div class="form-section" id="form-section">
-                    <div class="form-header" onclick="toggleForm()">
-                        <h2 id="form-title">
-                            <span id="form-icon">💡</span> Новая задача
-                        </h2>
-                        <span id="form-arrow">▼</span>
-                    </div>
-                    <div class="form-section-content">
-                        <form id="task-form">
-                            
-                            <div class="ios-group">
-                                
-                                <div class="ios-row">
-                                    <label for="taskInput" class="ios-label">Текст задачи</label>
-                                    <input type="text" id="taskInput" placeholder="Введите задачу" required>
-                                </div>
-                                
-                                <div class="ios-row">
-                                    <label for="dateInput" class="ios-label">Дата</label>
-                                    <input type="date" id="dateInput" required>
-                                </div>
-                                
-                                <div class="ios-row">
-                                    <label for="timeInput" class="ios-label">Время</label>
-                                    <input type="time" id="timeInput" required>
-                                </div>
-
-                                <div class="ios-row">
-                                    <label for="importanceInput" class="ios-label">Важность</label>
-                                    <select id="importanceInput" required>
-                                        <option value="medium">Средняя</option>
-                                        <option value="high">Высокая</option>
-                                        <option value="low">Низкая</option>
-                                    </select>
-                                </div>
-
-                            </div>
-                            
-                            <div class="form-submit-button">
-                                <button type="button" id="add-task-button">
-                                    <span>➕</span> Добавить задачу
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
                 <h2>📝 Активные задачи</h2>
                 <div id="tasks-list" class="scrollable-content">
@@ -1890,18 +1910,72 @@
         </div>
     </div>
 
-    <!-- ПАНЕЛЬ ВВОДА AI ЧАТА - ВЫНЕСЕНА ОТДЕЛЬНО И БУДЕТ ПОКАЗЫВАТЬСЯ ТОЛЬКО В AI РАЗДЕЛЕ -->
+    <!-- МОДАЛЬНОЕ ОКНО ДЛЯ ФОРМЫ ЗАДАЧИ -->
+    <div id="task-form-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">
+                    <span id="modal-icon">💡</span> Новая задача
+                </h2>
+                <button class="modal-close" onclick="closeTaskFormModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="task-form">
+                    <div class="ios-group">
+                        <div class="ios-row">
+                            <label for="taskInput" class="ios-label">Текст задачи</label>
+                            <input type="text" id="taskInput" placeholder="Введите задачу" required>
+                        </div>
+                        
+                        <div class="ios-row">
+                            <label for="dateInput" class="ios-label">Дата</label>
+                            <input type="date" id="dateInput" required>
+                        </div>
+                        
+                        <div class="ios-row">
+                            <label for="timeInput" class="ios-label">Время</label>
+                            <input type="time" id="timeInput" required>
+                        </div>
+
+                        <div class="ios-row">
+                            <label for="importanceInput" class="ios-label">Важность</label>
+                            <select id="importanceInput" required>
+                                <option value="medium">Средняя</option>
+                                <option value="high">Высокая</option>
+                                <option value="low">Низкая</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-button secondary" onclick="closeTaskFormModal()">Отмена</button>
+                <button type="button" class="modal-button primary" id="save-task-button">
+                    <span>➕</span> Добавить задачу
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ПАНЕЛЬ ВВОДА AI ЧАТА -->
     <div id="ai-chat-input-area">
         <input type="text" id="aiChatInput" placeholder="Введите ваш вопрос или задачу">
         <button id="sendAiChat">🚀</button>
     </div>
 
+    <!-- КОНТЕКСТНОЕ МЕНЮ ДЛЯ ЗАДАЧ -->
     <div id="context-menu">
         <div class="menu-item" id="menu-done">✅ Отметить как выполненную</div>
         <div class="menu-item" id="menu-edit">✍️ Редактировать</div>
         <div class="menu-item" id="menu-delete">🗑️ Удалить</div>
     </div>
     
+    <!-- ПЛАВАЮЩАЯ КНОПКА "+" -->
+    <button id="fab-button" onclick="openTaskFormModal()">
+        <span>+</span>
+    </button>
+    
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
     <div id="bottom-nav">
         <button class="nav-button active" data-section="tasks-content">
             <div class="nav-button-icon"><span>📋</span></div>
@@ -1941,11 +2015,13 @@
         
         const tasksList = document.getElementById('tasks-list');
         const taskForm = document.getElementById('task-form');
-        const formSection = document.getElementById('form-section');
         const contextMenu = document.getElementById('context-menu');
-        const formTitle = document.getElementById('form-title');
-        const bottomNav = document.getElementById('bottom-nav'); 
-        const addTaskButton = document.getElementById('add-task-button');
+        const bottomNav = document.getElementById('bottom-nav');
+        const fabButton = document.getElementById('fab-button');
+        const taskFormModal = document.getElementById('task-form-modal');
+        const saveTaskButton = document.getElementById('save-task-button');
+        const modalTitle = document.getElementById('modal-title');
+        const modalIcon = document.getElementById('modal-icon');
         
         // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПОВ ---
         const swipeContainer = document.getElementById('swipeContainer');
@@ -1954,7 +2030,7 @@
         // --- ПЕРЕМЕННЫЕ AI CHAT ---
         const aiChatInput = document.getElementById('aiChatInput');
         const sendAiChatButton = document.getElementById('sendAiChat');
-        const aiChatMessages = document.getElementById('ai-chat-messages'); // ИСПРАВЛЕННЫЙ ЭЛЕМЕНТ
+        const aiChatMessages = document.getElementById('ai-chat-messages');
         const clearChatButton = document.getElementById('clear-chat-btn');
         const aiChatInputArea = document.getElementById('ai-chat-input-area');
         
@@ -1984,7 +2060,7 @@
         // --- УЛУЧШЕННЫЕ ПЕРЕМЕННЫЕ ДЛЯ DEBOUNCE НАСТРОЕК ---
         let pendingSettingsChanges = {};
         let settingsDebounceTimer = null;
-        const SETTINGS_DEBOUNCE_DELAY = 800; // УВЕЛИЧЕНО ДО 800 МС
+        const SETTINGS_DEBOUNCE_DELAY = 800;
         
         // Храним текущее состояние тумблеров для отката при ошибке
         let currentSettingsState = {
@@ -2076,35 +2152,28 @@
                 currentSettingsState.notify_one_hour = true;
                 currentSettingsState.notify_at_start = false;
                 
-                settingsLoaded = true; // Все равно помечаем как загруженные, чтобы не пытаться снова
+                settingsLoaded = true;
             }
         }
         
         // Функция для обновления настройки с использованием улучшенного debounce
         function toggleSetting(settingName, isEnabled) {
-            // НЕМЕДЛЕННО обновляем состояние тумблера для отображения пользователю
             const settingValue = isEnabled ? 'yes' : 'no';
             
-            // Добавляем изменение в объект ожидающих изменений
             pendingSettingsChanges[settingName] = settingValue;
             
-            // Обновляем локальное состояние
             if (settingName === 'notify_morning') currentSettingsState.notify_morning = isEnabled;
             if (settingName === 'notify_one_hour') currentSettingsState.notify_one_hour = isEnabled;
             if (settingName === 'notify_at_start') currentSettingsState.notify_at_start = isEnabled;
             
-            // Сбрасываем предыдущий таймер
             if (settingsDebounceTimer) {
                 clearTimeout(settingsDebounceTimer);
             }
             
-            // Устанавливаем новый таймер
             settingsDebounceTimer = setTimeout(() => {
-                // Отправляем все накопленные изменения одним запросом
                 sendPendingSettings();
             }, SETTINGS_DEBOUNCE_DELAY);
             
-            // Легкая виброотдача для подтверждения действия (немедленно)
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
@@ -2119,16 +2188,11 @@
             try {
                 if (!tg.initData) {
                     console.warn('Telegram initData is missing. Cannot update settings.');
-                    // Восстанавливаем состояние тумблеров при ошибке
                     restoreToggleStates();
                     return;
                 }
                 
-                // Сохраняем копию текущих изменений перед отправкой
                 const changesToSend = {...pendingSettingsChanges};
-                
-                // КОПИРУЕМ все изменения и очищаем объект ПЕРЕД отправкой
-                // Это предотвращает потерю изменений, если пользователь продолжает нажимать во время отправки
                 pendingSettingsChanges = {};
                 
                 console.log('Sending settings changes:', changesToSend);
@@ -2150,27 +2214,21 @@
                 const result = await response.json();
                 console.log('Settings update response:', result);
                 
-                // Успешно отправлено
-                
             } catch (error) {
                 console.error('Error updating settings:', error);
                 
-                // Для iOS: используем более надежный метод показа сообщения
                 if (window.Telegram && window.Telegram.WebApp && tg.showAlert) {
                     tg.showAlert('Ошибка обновления настроек. Настройки восстановлены.');
                 } else {
-                    // Fallback для браузера
                     alert('Ошибка обновления настроек. Настройки восстановлены.');
                 }
                 
-                // Восстанавливаем состояние тумблеров при ошибке
                 restoreToggleStates();
             }
         }
         
         // Функция для восстановления состояния тумблеров при ошибке
         function restoreToggleStates() {
-            // Восстанавливаем тумблеры из сохраненного состояния
             notifyMorningCheckbox.checked = currentSettingsState.notify_morning;
             notifyOneHourCheckbox.checked = currentSettingsState.notify_one_hour;
             notifyAtStartCheckbox.checked = currentSettingsState.notify_at_start;
@@ -2180,16 +2238,13 @@
         
         // Инициализация свайпов
         function initSwipe() {
-            // Устанавливаем начальную позицию
             updateSwipePosition();
             
-            // ИСПРАВЛЕНИЕ ДЛЯ IOS: Используем passive: false только для touchmove
             swipeContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
-            swipeContainer.addEventListener('touchmove', handleTouchMove, { passive: false }); // passive: false для предотвращения скролла
+            swipeContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
             swipeContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
             swipeContainer.addEventListener('touchcancel', handleTouchCancel, { passive: true });
             
-            // Также добавляем обработчики для мыши (для десктоп тестирования)
             swipeContainer.addEventListener('mousedown', handleMouseStart);
             swipeContainer.addEventListener('mousemove', handleMouseMove);
             swipeContainer.addEventListener('mouseup', handleMouseEnd);
@@ -2197,7 +2252,6 @@
         }
         
         function handleTouchStart(e) {
-            // ИСПРАВЛЕНИЕ ДЛЯ IOS: preventDefault только если это не начало вертикального скролла
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             isSwiping = false;
@@ -2209,41 +2263,32 @@
             touchEndX = e.touches[0].clientX;
             const touchEndY = e.touches[0].clientY;
             
-            // Проверяем, что это горизонтальный свайп, а не вертикальный скролл
             const diffX = touchStartX - touchEndX;
             const diffY = Math.abs(touchStartY - touchEndY);
             
-            // Если движение по вертикали больше, чем по горизонтали, это скролл
             if (Math.abs(diffY) > Math.abs(diffX) * 1.5) {
-                return; // Это вертикальный скролл, игнорируем
+                return;
             }
             
-            // Предотвращаем скролл страницы при горизонтальном свайпе
-            // ИСПРАВЛЕНИЕ ДЛЯ IOS: preventDefault только при значительном горизонтальном движении
             if (Math.abs(diffX) > 10) {
                 e.preventDefault();
                 isSwiping = true;
                 
-                // Добавляем класс для анимации при свайпе
                 swipeWrapper.classList.add('swiping');
                 
-                // Рассчитываем смещение с эффектом резинки - уменьшили резинку
-                const resistance = 0.3; // Было 0.5
+                const resistance = 0.3;
                 const swipeDistance = diffX * resistance;
                 
-                // Устанавливаем CSS переменную для параллакс эффекта
                 document.documentElement.style.setProperty('--swipe-distance', `${swipeDistance}px`);
                 
-                // Вычисляем новую позицию с учетом границ
                 const wrapperWidth = swipeWrapper.offsetWidth;
                 const containerWidth = swipeContainer.offsetWidth;
                 
-                // Ограничиваем свайп на границах
                 let newTranslate = -currentSectionIndex * (containerWidth) + swipeDistance;
                 if (currentSectionIndex === 0 && swipeDistance > 0) {
-                    newTranslate = 0; // Нельзя свайпать левее первой вкладки
+                    newTranslate = 0;
                 } else if (currentSectionIndex === 2 && swipeDistance < 0) {
-                    newTranslate = -2 * (containerWidth); // Нельзя свайпать правее последней вкладки
+                    newTranslate = -2 * (containerWidth);
                 }
                 
                 swipeWrapper.style.transform = `translateX(${newTranslate}px)`;
@@ -2258,24 +2303,20 @@
             
             const diffX = touchStartX - touchEndX;
             const containerWidth = swipeContainer.offsetWidth;
-            const threshold = containerWidth * 0.15; // Уменьшили порог для более плавного переключения
+            const threshold = containerWidth * 0.15;
             
             let newIndex = currentSectionIndex;
             
             if (Math.abs(diffX) > threshold) {
                 if (diffX > 0 && currentSectionIndex < 2) {
-                    // Свайп влево -> переходим к следующему разделу
                     newIndex = currentSectionIndex + 1;
                 } else if (diffX < 0 && currentSectionIndex > 0) {
-                    // Свайп вправо -> переходим к предыдущему разделу
                     newIndex = currentSectionIndex - 1;
                 }
             }
             
-            // Анимируем переход
             animateSwipeTo(newIndex);
             
-            // Сбрасываем состояние
             touchStartX = 0;
             isSwiping = false;
             swipeWrapper.classList.remove('swiping');
@@ -2283,7 +2324,6 @@
         }
         
         function handleTouchCancel() {
-            // Если свайп отменен, возвращаемся к текущей позиции
             if (isSwiping) {
                 animateSwipeTo(currentSectionIndex);
                 isSwiping = false;
@@ -2293,7 +2333,7 @@
             touchStartX = 0;
         }
         
-        // Аналогичные функции для мыши (для десктоп тестирования)
+        // Аналогичные функции для мыши
         function handleMouseStart(e) {
             touchStartX = e.clientX;
             touchStartY = e.clientY;
@@ -2381,20 +2421,16 @@
             currentSectionIndex = index;
             updateSwipePosition();
             
-            // Обновляем навигацию с анимацией
             updateNavigationWithAnimation();
             
-            // Показываем анимацию перехода
             const sections = document.querySelectorAll('.content-section');
             sections[index].classList.add('swipe-active');
             
-            // Убираем анимацию через 400мс
             clearTimeout(swipeTimeout);
             swipeTimeout = setTimeout(() => {
                 sections[index].classList.remove('swipe-active');
             }, 400);
             
-            // Виброотдача для мобильных устройств (легкая)
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
@@ -2409,7 +2445,6 @@
         
         // Обновление навигации с анимацией кнопок
         function updateNavigationWithAnimation() {
-            // Находим соответствующую кнопку навигации
             let sectionId = '';
             if (currentSectionIndex === 0) sectionId = 'tasks-content';
             else if (currentSectionIndex === 1) sectionId = 'ai-chat-content';
@@ -2417,7 +2452,6 @@
             
             const buttonElement = document.querySelector(`.nav-button[data-section="${sectionId}"]`);
             if (buttonElement) {
-                // Сначала убираем активный класс у всех кнопок
                 document.querySelectorAll('.nav-button').forEach(button => {
                     button.classList.remove('active');
                     button.classList.remove('transitioning');
@@ -2425,22 +2459,18 @@
                     button.querySelector('.nav-button-icon').style.backgroundColor = 'transparent';
                 });
                 
-                // Добавляем активный класс к текущей кнопке
                 buttonElement.classList.add('active');
                 const activeColor = tg.themeParams.link_color || '#007aff';
                 buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
                 
-                // Добавляем анимацию к текущей кнопке
                 buttonElement.classList.add('transitioning');
                 setTimeout(() => {
                     buttonElement.classList.remove('transitioning');
                 }, 400);
             }
             
-            // ОБНОВЛЯЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА - ИСПРАВЛЕНИЕ
             updateAIChatVisibility();
             
-            // Выполняем действия для раздела
             if (sectionId === 'tasks-content') {
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
@@ -2450,47 +2480,37 @@
             }
         }
         
-        // ИСПРАВЛЕНИЕ: Функция для обновления видимости панели AI чата
+        // Функция для обновления видимости панели AI чата
         function updateAIChatVisibility() {
-            // Определяем текущий раздел
             let currentSectionId = '';
             if (currentSectionIndex === 0) currentSectionId = 'tasks-content';
             else if (currentSectionIndex === 1) currentSectionId = 'ai-chat-content';
             else if (currentSectionIndex === 2) currentSectionId = 'stats-content';
             
-            // Убираем класс ai-active у всех разделов
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('ai-active');
             });
             
-            // Добавляем класс ai-active только к AI разделу И ОДНОВРЕМЕННО
-            // показываем/скрываем панель ввода напрямую
             if (currentSectionId === 'ai-chat-content') {
                 document.getElementById('ai-chat-content').classList.add('ai-active');
-                // Также показываем панель ввода напрямую для надежности
                 aiChatInputArea.style.display = 'flex';
-                // Устанавливаем фокус на поле ввода AI чата при переходе в этот раздел
                 setTimeout(() => {
                     aiChatInput.focus();
                 }, 100);
             } else {
-                // Скрываем панель ввода при переходе в другие разделы
                 aiChatInputArea.style.display = 'none';
             }
         }
         
         // --- ИСПРАВЛЕННАЯ ЛОГИКА ПЕРЕКЛЮЧЕНИЯ РАЗДЕЛОВ ---
         function switchSection(sectionId, buttonElement) {
-            // Определяем индекс раздела по ID
             let index = 0;
             if (sectionId === 'tasks-content') index = 0;
             else if (sectionId === 'ai-chat-content') index = 1;
             else if (sectionId === 'stats-content') index = 2;
             
-            // Анимируем переход к выбранному разделу
             animateSwipeTo(index);
             
-            // Обновляем нижнюю навигацию с анимацией
             if (buttonElement) {
                 document.querySelectorAll('.nav-button').forEach(button => {
                     button.classList.remove('active');
@@ -2503,25 +2523,15 @@
                 const activeColor = tg.themeParams.link_color || '#007aff';
                 buttonElement.querySelector('.nav-button-icon').style.backgroundColor = `color-mix(in srgb, ${activeColor} 20%, transparent)`;
                 
-                // Добавляем анимацию к текущей кнопке
                 buttonElement.classList.add('transitioning');
                 setTimeout(() => {
                     buttonElement.classList.remove('transitioning');
                 }, 400);
             }
             
-            // ОБНОВЛЯЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА - ИСПРАВЛЕНИЕ
             updateAIChatVisibility();
             
-            // Выполняем действия для конкретного раздела
             if (sectionId === 'tasks-content') {
-                if (formSection.classList.contains('expanded')) {
-                    if (isEditing) {
-                        addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
-                    } else {
-                        addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
-                    }
-                }
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
@@ -2530,15 +2540,34 @@
             }
         }
         
-        // --- Установка значений по умолчанию для формы ---
+        // --- ФУНКЦИИ ДЛЯ МОДАЛЬНОГО ОКНА ФОРМЫ ---
+        
+        // Открытие модального окна для добавления задачи
+        function openTaskFormModal() {
+            exitEditMode();
+            setDefaultFormValues();
+            modalTitle.innerHTML = '<span id="modal-icon">💡</span> Новая задача';
+            saveTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
+            taskFormModal.style.display = 'flex';
+            
+            setTimeout(() => {
+                document.getElementById('taskInput').focus();
+            }, 100);
+        }
+        
+        // Закрытие модального окна
+        function closeTaskFormModal() {
+            taskFormModal.style.display = 'none';
+            exitEditMode();
+        }
+        
+        // Установка значений по умолчанию для формы
         function setDefaultFormValues() {
             const now = new Date();
             
-            // 1. Установка даты (Сегодня)
             const today = now.toISOString().split('T')[0];
             document.getElementById('dateInput').value = today;
             
-            // 2. Установка времени (Ближайший час)
             const nextHour = new Date(now.getTime());
             nextHour.setHours(now.getHours() + 1);
             nextHour.setMinutes(0);
@@ -2551,34 +2580,10 @@
             });
             document.getElementById('timeInput').value = timeString;
 
-            // 3. Установка важности (Средняя)
             document.getElementById('importanceInput').value = 'medium';
         }
         
-        // --- 1. ЛОГИКА СВОРАЧИВАНИЯ/РАЗВОРАЧИВАНИЯ (UI) ---
-        function toggleForm() {
-            if (formSection.classList.contains('expanded') && isEditing) {
-                exitEditMode(); 
-            }
-            
-            const isExpanding = !formSection.classList.contains('expanded');
-            
-            formSection.classList.toggle('expanded');
-            document.getElementById('form-arrow').textContent = formSection.classList.contains('expanded') ? '▲' : '▼';
-            
-            if (isExpanding) {
-                setDefaultFormValues();
-            }
-
-            // Обновляем кнопку внутри формы
-            if (isEditing) {
-                addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
-            } else {
-                addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
-            }
-        }
-        
-        // --- 2. ЛОГИКА РЕЖИМА РЕДАКТИРОВАНИЯ ---
+        // --- РЕЖИМ РЕДАКТИРОВАНИЯ ---
         function enterEditMode(task) {
             if (!task) return;
             isEditing = true;
@@ -2589,11 +2594,10 @@
             document.getElementById('timeInput').value = task.time;
             document.getElementById('importanceInput').value = (task.importance || 'medium').toLowerCase();
             
-            formSection.classList.add('expanded');
-            document.getElementById('form-arrow').textContent = '▲';
-            formTitle.innerHTML = '<span id="form-icon">📝</span> Редактирование задачи';
+            modalTitle.innerHTML = '<span id="modal-icon">📝</span> Редактирование задачи';
+            saveTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
             
-            addTaskButton.innerHTML = '<span>✍️</span> Сохранить изменения';
+            taskFormModal.style.display = 'flex';
             tg.HapticFeedback.notificationOccurred('success');
         }
         
@@ -2601,14 +2605,13 @@
             isEditing = false;
             currentEditingId = null;
             taskForm.reset(); 
-            formTitle.innerHTML = '<span id="form-icon">💡</span> Новая задача';
-            addTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
+            modalTitle.innerHTML = '<span id="modal-icon">💡</span> Новая задача';
+            saveTaskButton.innerHTML = '<span>➕</span> Добавить задачу';
             setDefaultFormValues(); 
         }
         
-        // --- 3. ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
+        // --- ФУНКЦИИ ОТПРАВКИ И ОБНОВЛЕНИЯ ЗАДАЧИ ---
         async function sendTask() {
-            
             const taskName = document.getElementById('taskInput').value.trim();
             const date = document.getElementById('dateInput').value;
             const time = document.getElementById('timeInput').value;
@@ -2640,8 +2643,8 @@
             }
 
             try {
-                addTaskButton.disabled = true;
-                addTaskButton.innerHTML = isEditing ? '<span>⏳</span> Сохранение...' : '<span>⏳</span> Добавление...';
+                saveTaskButton.disabled = true;
+                saveTaskButton.innerHTML = isEditing ? '<span>⏳</span> Сохранение...' : '<span>⏳</span> Добавление...';
                 
                 const response = await fetch(url, {
                     method: method,
@@ -2667,16 +2670,8 @@
                 if (result.success || response.ok) {
                     tg.showAlert(isUpdate ? 'Задача успешно обновлена!' : 'Задача успешно добавлена!');
                     
-                    if (isEditing) {
-                        exitEditMode(); 
-                    } else {
-                        taskForm.reset(); 
-                        setDefaultFormValues(); 
-                    }
+                    closeTaskFormModal();
                     
-                    formSection.classList.remove('expanded'); 
-                    document.getElementById('form-arrow').textContent = '▼';
-
                     await fetchTasks(); 
 
                 } else {
@@ -2687,21 +2682,27 @@
                 console.error('Operation error:', error);
                 tg.showAlert(`Ошибка: ${error.message}`);
             } finally {
-                addTaskButton.disabled = false;
-                addTaskButton.innerHTML = isEditing ? '<span>✍️</span> Сохранить изменения' : '<span>➕</span> Добавить задачу';
+                saveTaskButton.disabled = false;
+                saveTaskButton.innerHTML = isEditing ? '<span>✍️</span> Сохранить изменения' : '<span>➕</span> Добавить задачу';
             }
         }
         
-        // Убираем старую кнопку Telegram и добавляем обработчик для новой кнопки
-        tg.MainButton.hide();
-        addTaskButton.addEventListener('click', sendTask);
-
-        // --- ИСПРАВЛЕНИЕ: Предотвращение зависания при выборе важности ---
+        // Привязка обработчика для кнопки сохранения
+        saveTaskButton.addEventListener('click', sendTask);
+        
+        // Закрытие модального окна при клике вне его
+        taskFormModal.addEventListener('click', function(event) {
+            if (event.target === taskFormModal) {
+                closeTaskFormModal();
+            }
+        });
+        
+        // ИСПРАВЛЕНИЕ: Предотвращение зависания при выборе важности
         document.getElementById('importanceInput').addEventListener('change', function(e) {
             e.stopPropagation();
         });
 
-        // --- 4. ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
+        // --- ЛОГИКА КОНТЕКСТНОГО МЕНЮ ---
         
         function showMenu(taskId, buttonElement) {
             contextMenu.style.display = 'none';
@@ -2795,7 +2796,7 @@
             }
         });
 
-        // НОВАЯ ФУНКЦИЯ ДЛЯ УДАЛЕНИЯ ЗАДАЧИ
+        // Функция для удаления задачи
         async function deleteTask(taskId) {
             const performDelete = async () => {
                 try {
@@ -2838,7 +2839,7 @@
             }
         });
         
-        // --- 5. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
+        // --- ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ ЗАДАЧ ---
 
         function parseDate(dateStr) {
             if (!dateStr) return null;
@@ -2926,7 +2927,6 @@
 
                 const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
 
-                // ПРАВКА #2: Проверка на пустой массив и вывод сообщения "Задач нет."
                 if (activeTasks.length === 0) {
                     tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
                     return;
@@ -2984,9 +2984,8 @@
             }
         }
         
-        // --- 7. ЛОГИКА AI CHAT (ИСПРАВЛЕННАЯ) ---
+        // --- ЛОГИКА AI CHAT ---
         
-        // 7.1. ФУНКЦИИ ЧАТА UI
         function appendMessage(text, sender) {
             const welcome = document.querySelector('.ai-welcome');
             if (welcome) welcome.remove();
@@ -2997,38 +2996,30 @@
             const bubbleElement = document.createElement('div');
             bubbleElement.className = 'chat-bubble';
             
-            // Замена \n на <br> для корректного отображения многострочного текста
             bubbleElement.innerHTML = text.replace(/\n/g, '<br>'); 
             
             messageElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(messageElement);
             
-            // УЛУЧШЕННАЯ ПРОКРУТКА С ГАРАНТИЕЙ ВИДИМОСТИ ПОСЛЕДНЕГО СООБЩЕНИЯ
             setTimeout(() => {
-                // Используем requestAnimationFrame для плавной прокрутки
                 requestAnimationFrame(() => {
-                    // Получаем высоту контейнера сообщений
                     const containerHeight = aiChatMessages.clientHeight;
                     const scrollHeight = aiChatMessages.scrollHeight;
                     
-                    // Вычисляем позицию последнего сообщения
                     const lastMessage = aiChatMessages.lastElementChild;
                     if (lastMessage) {
                         const lastMessageRect = lastMessage.getBoundingClientRect();
                         const containerRect = aiChatMessages.getBoundingClientRect();
                         
-                        // Проверяем, видно ли последнее сообщение
                         const isVisible = (
                             lastMessageRect.top >= containerRect.top &&
-                            lastMessageRect.bottom <= containerRect.bottom + 100 // Добавляем небольшой запас
+                            lastMessageRect.bottom <= containerRect.bottom + 100
                         );
                         
-                        // Если сообщение не видно или близко к границе, прокручиваем
                         if (!isVisible || lastMessageRect.bottom > containerRect.bottom - 50) {
                             aiChatMessages.scrollTop = scrollHeight - containerHeight;
                         }
                     } else {
-                        // Если нет сообщений, прокручиваем вниз
                         aiChatMessages.scrollTop = scrollHeight;
                     }
                 });
@@ -3047,7 +3038,6 @@
             loadingElement.appendChild(bubbleElement);
             aiChatMessages.appendChild(loadingElement);
             
-            // УЛУЧШЕННАЯ ПРОКРУТКА ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
             setTimeout(() => {
                 requestAnimationFrame(() => {
                     const containerHeight = aiChatMessages.clientHeight;
@@ -3064,20 +3054,17 @@
             }
         }
 
-        // 7.2. ЛОГИКА ОТПРАВКИ СООБЩЕНИЯ
+        // Логика отправки сообщения
         async function sendAiMessage() {
             const messageText = aiChatInput.value.trim();
             
             if (messageText) {
-                // 1. Отображаем сообщение пользователя
                 appendMessage(messageText, 'user');
                 
-                // 2. Очистка поля и блокировка ввода
                 aiChatInput.value = '';
                 aiChatInput.disabled = true;
                 sendAiChatButton.disabled = true;
                 
-                // 3. Показываем индикатор загрузки AI
                 showAILoading();
                 
                 try {
@@ -3101,14 +3088,12 @@
                     
                     let aiResponseText = "Произошла ошибка при получении ответа от AI. (Неверный формат ответа)";
 
-                    // Проверка на ожидаемые поля в ответе
                     if (result && result.aiResponse) {
                         aiResponseText = result.aiResponse;
                     } else if (result && result.response) { 
                         aiResponseText = result.response;
                     }
                     
-                    // 4. Убираем индикатор загрузки и показываем ответ AI
                     hideAILoading();
                     appendMessage(aiResponseText, 'ai');
 
@@ -3117,7 +3102,6 @@
                     hideAILoading();
                     appendMessage(`❌ Ошибка: Не удалось подключиться к AI ассистенту. ${error.message}`, 'ai');
                 } finally {
-                    // 5. Разблокировка ввода
                     aiChatInput.disabled = false;
                     sendAiChatButton.disabled = false;
                     aiChatInput.focus();
@@ -3125,12 +3109,11 @@
             }
         }
 
-        // 7.3. ЛОГИКА ОЧИСТКИ ЧАТА
+        // Логика очистки чата
         if (clearChatButton) {
             clearChatButton.addEventListener('click', () => {
                 tg.showConfirm('Очистить всю историю чата?', (confirmed) => {
                     if (confirmed) {
-                        // Сохраняем только контейнер сообщений
                         const messagesContainer = document.getElementById('ai-chat-messages');
                         messagesContainer.innerHTML = `
                             <div class="ai-welcome">
@@ -3149,11 +3132,9 @@
             });
         }
         
-        // --- 8. ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ (ИСПРАВЛЕННАЯ) ---
+        // --- ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ ---
 
-        // Функция для получения названия дня недели - исправлено: начинается с понедельника
         function getDayName(dayIndex) {
-            // dayIndex: 0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ, 5=СБ, 6=ВС
             const days = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
             return days[dayIndex] || '?';
         }
@@ -3177,27 +3158,22 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
-                // Получаем объект напрямую (API возвращает объект, а не массив)
                 const statData = await response.json();
                 
                 console.log('Stats data received:', statData);
 
-                // Извлекаем данные из API (используем правильные имена полей)
                 const activeTasks = statData.activeTotal || 0;
                 const completedTasks = statData.totalCompleted || 0;
                 const totalTasks = activeTasks + completedTasks;
                 const todayDone = statData.todayDone || 0;
                 const expiredCount = statData.expiredCount || 0;
                 
-                // Данные о распределении по приоритетам
                 const highPriority = statData.importanceDistribution?.high || 0;
                 const mediumPriority = statData.importanceDistribution?.medium || 0;
                 const lowPriority = statData.importanceDistribution?.low || 0;
                 
-                // Данные о еженедельной активности
                 const weeklyActivity = statData.weeklyActivity || {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
                 
-                // Обновляем виджеты
                 document.getElementById('stat-total').textContent = totalTasks;
                 document.getElementById('stat-active').textContent = activeTasks;
                 document.getElementById('stat-completed').textContent = completedTasks;
@@ -3205,47 +3181,36 @@
                 document.getElementById('stat-today').textContent = todayDone;
                 document.getElementById('stat-expired').textContent = expiredCount;
                 
-                // Обновляем прогресс-бар
                 const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
                 document.getElementById('progress-percentage').textContent = `${progressPercentage}%`;
                 document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
                 document.getElementById('progress-active').textContent = `${activeTasks} активных`;
                 document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
                 
-                // Обновляем распределение по приоритетам
                 const totalPriority = highPriority + mediumPriority + lowPriority;
                 
                 document.getElementById('priority-high').textContent = highPriority;
                 document.getElementById('priority-medium').textContent = mediumPriority;
                 document.getElementById('priority-low').textContent = lowPriority;
                 
-                // Рассчитываем проценты
                 document.getElementById('percentage-high').textContent = totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%';
                 document.getElementById('percentage-medium').textContent = totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%';
                 document.getElementById('percentage-low').textContent = totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%';
                 
-                // Обновляем еженедельную активность - исправлено: начинается с понедельника
                 const weeklyGrid = document.getElementById('weekly-grid');
                 weeklyGrid.innerHTML = '';
                 
-                // Получаем текущий день недели (0=ВС, 1=ПН, ..., 6=СБ)
-                const today = new Date().getDay(); // 0=ВС, 1=ПН, 2=ВТ, 3=СР, 4=ЧТ, 5=ПТ, 6=СБ
-                // Конвертируем в нашу систему (0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ, 5=СБ, 6=ВС)
+                const today = new Date().getDay();
                 const todayInOurSystem = today === 0 ? 6 : today - 1;
                 
-                // Создаем ячейки для каждого дня недели, начиная с понедельника
                 for (let i = 0; i < 7; i++) {
-                    // Преобразуем индекс: 0=ПН, 1=ВТ, 2=СР, 3=ЧТ, 4=ПТ, 5=СБ, 6=ВС
-                    const dayIndex = i; // i=0 -> ПН, i=1 -> ВТ, ..., i=6 -> ВС
-                    
-                    // Преобразуем в формат API (0=ВС, 1=ПН, 2=ВТ, 3=СР, 4=ЧТ, 5=ПТ, 6=СБ)
+                    const dayIndex = i;
                     const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
                     
                     const dayCount = weeklyActivity[apiDayIndex] || 0;
                     const dayCell = document.createElement('div');
                     dayCell.className = 'day-cell';
                     
-                    // Подсвечиваем текущий день
                     if (i === todayInOurSystem) {
                         dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
                         dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
@@ -3287,7 +3252,6 @@
         // Глобальные функции для доступа из HTML
         window.markTaskAsDone = markTaskAsDone;
         window.showMenu = showMenu;
-        window.toggleForm = toggleForm;
         window.enterEditMode = enterEditMode; 
         window.exitEditMode = exitEditMode; 
         window.setDefaultFormValues = setDefaultFormValues; 
@@ -3296,42 +3260,29 @@
         window.switchSection = switchSection;
         window.toggleSettingsMenu = toggleSettingsMenu;
         window.toggleSetting = toggleSetting;
+        window.openTaskFormModal = openTaskFormModal;
+        window.closeTaskFormModal = closeTaskFormModal;
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            // Убедимся, что Telegram WebApp инициализирован
             if (tg.initData) {
-                // Инициализируем свайпы
                 initSwipe();
                 
-                // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
                 updateAIChatVisibility();
                 
-                // Активируем вкладку задач по умолчанию
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
                     switchSection('tasks-content', tasksButton);
                 }
                 
-                // Загружаем задачи
                 fetchTasks();
                 
-                // НЕ загружаем настройки при старте приложения - только при первом открытии меню
-                // fetchUserSettings(); // Убрано
-                
-                // Устанавливаем значения по умолчанию для формы, если она развернута
-                if (formSection.classList.contains('expanded')) {
-                    setDefaultFormValues();
-                }
             } else {
                 console.warn('Telegram WebApp not fully initialized');
-                // Инициализируем свайпы в любом случае
                 initSwipe();
                 
-                // ИНИЦИАЛИЗИРУЕМ ВИДИМОСТЬ ПАНЕЛИ AI ЧАТА
                 updateAIChatVisibility();
                 
-                // Активируем вкладку задач в любом случае
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
                     switchSection('tasks-content', tasksButton);
@@ -3339,7 +3290,6 @@
             }
         });
 
-        // Также инициализируем при полной загрузке окна
         window.addEventListener('load', function() {
             console.log('Page fully loaded');
         });
