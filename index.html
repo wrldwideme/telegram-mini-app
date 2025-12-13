@@ -64,7 +64,7 @@
             display: flex;
             width: 300%;
             height: 100%;
-            transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1); /* Менее агрессивная анимация */
+            transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); /* Улучшенная плавность */
             will-change: transform;
         }
         
@@ -81,24 +81,15 @@
             overflow: hidden;
         }
         
-        /* Анимация для текущего раздела - менее агрессивная */
-        .content-section.swipe-active {
-            animation: swipePulse 0.4s ease-out;
-        }
-        
-        @keyframes swipePulse {
-            0% { transform: scale(0.99); opacity: 0.95; }
-            50% { transform: scale(1.005); }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        /* УДАЛЕНО: Анимация для текущего раздела - убрано отдаление */
         
         /* Эффект параллакса для следующего/предыдущего раздела - уменьшенный */
         .swipe-wrapper.swiping .content-section:nth-child(2) {
-            transform: translateX(calc(var(--swipe-distance) * 0.05));
+            transform: translateX(calc(var(--swipe-distance) * 0.03));
         }
         
         .swipe-wrapper.swiping .content-section:nth-child(3) {
-            transform: translateX(calc(var(--swipe-distance) * 0.02));
+            transform: translateX(calc(var(--swipe-distance) * 0.01));
         }
         
         /* --- СТИЛИ ДЛЯ SPA КОНТЕНТА И НАВИГАЦИИ --- */
@@ -702,7 +693,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.25s;
             width: 100%;
             box-sizing: border-box;
             flex-shrink: 0;
@@ -713,7 +704,7 @@
         }
         
         .task-card.swiping {
-            transition: transform 0.15s ease-out;
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 100;
         }
         
@@ -859,9 +850,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             opacity: 0;
-            transform: scale(0.9);
+            transform: scale(0.95);
         }
         
         .swipe-side.show {
@@ -870,40 +861,54 @@
         }
         
         .swipe-right {
-            background: linear-gradient(90deg, rgba(52, 199, 89, 0), rgba(52, 199, 89, 0.9));
+            background: linear-gradient(90deg, rgba(52, 199, 89, 0), rgba(52, 199, 89, 0.95));
             justify-content: flex-start;
-            padding-left: 20px;
+            padding-left: 25px;
         }
         
         .swipe-left {
-            background: linear-gradient(90deg, rgba(255, 59, 48, 0.9), rgba(255, 59, 48, 0));
+            background: linear-gradient(90deg, rgba(255, 59, 48, 0.95), rgba(255, 59, 48, 0));
             justify-content: flex-end;
-            padding-right: 20px;
+            padding-right: 25px;
         }
         
         .swipe-content {
             display: flex;
             align-items: center;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.15em;
             color: white;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            animation: swipePulse 1.5s infinite alternate;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            padding: 10px 18px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         
-        @keyframes swipePulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.05); }
+        /* Улучшенные стили для свайпа удаления */
+        .swipe-left .swipe-content {
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);
+        }
+        
+        .swipe-right .swipe-content {
+            background: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);
         }
         
         .swipe-icon {
-            margin-right: 8px;
-            font-size: 1.3em;
+            margin-right: 10px;
+            font-size: 1.4em;
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .swipe-side.show .swipe-icon {
+            transform: scale(1.1);
         }
         
         .fill-indicator {
@@ -912,19 +917,19 @@
             bottom: 0;
             width: 0;
             z-index: 2;
-            transition: width 0.2s ease;
+            transition: width 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             pointer-events: none;
         }
         
         .fill-right {
             left: 0;
-            background: linear-gradient(90deg, rgba(52, 199, 89, 0.7), rgba(52, 199, 89, 0.9));
+            background: linear-gradient(90deg, rgba(52, 199, 89, 0.8), rgba(52, 199, 89, 0.95));
             border-radius: 12px 0 0 12px;
         }
         
         .fill-left {
             right: 0;
-            background: linear-gradient(90deg, rgba(255, 59, 48, 0.9), rgba(255, 59, 48, 0.7));
+            background: linear-gradient(90deg, rgba(255, 59, 48, 0.95), rgba(255, 59, 48, 0.8));
             border-radius: 0 12px 12px 0;
         }
 
@@ -2711,12 +2716,9 @@
             updateNavigationWithAnimation();
             
             const sections = document.querySelectorAll('.content-section');
-            sections[index].classList.add('swipe-active');
+            // УДАЛЕНО: Анимация отдаления (swipe-active)
             
             clearTimeout(swipeTimeout);
-            swipeTimeout = setTimeout(() => {
-                sections[index].classList.remove('swipe-active');
-            }, 400);
             
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -3495,10 +3497,10 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                // Ждем 1.5 секунды перед обновлением
+                // ИСПРАВЛЕНИЕ: Уменьшено время ожидания до 0.9 секунд
                 setTimeout(() => {
                     fetchTasks();
-                }, 1500);
+                }, 900);
                 
                 console.log('Task marked as done via swipe:', taskId);
                 
@@ -3538,10 +3540,10 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
-                // Ждем 1.5 секунды перед обновлением
+                // ИСПРАВЛЕНИЕ: Уменьшено время ожидания до 0.9 секунд
                 setTimeout(() => {
                     fetchTasks();
-                }, 1500);
+                }, 900);
                 
                 console.log('Task deleted via swipe:', taskId);
                 
@@ -4113,4 +4115,3 @@
     </script>
 </body>
 </html>
-
