@@ -33,14 +33,14 @@
             }
         }
 
-        /* --- ЭКРАН ЗАГРУЗКИ (SPLASH SCREEN) --- */
+        /* --- ОБНОВЛЕННЫЙ ЭКРАН ЗАГРУЗКИ (SPLASH SCREEN) --- */
         #splash-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            background: var(--bg-color);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -54,49 +54,71 @@
             visibility: hidden;
         }
 
-        .splash-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            animation: logoPulse 2s ease-in-out infinite;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        .splash-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
         }
 
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 25px;
+            margin-bottom: 20px;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Стиль Liquid Glass для заголовка */
         .splash-title {
-            color: white;
-            font-size: 1.8em;
+            color: var(--text-color);
+            font-size: 2em;
             font-weight: 700;
             text-align: center;
-            margin: 0;
-            opacity: 0;
-            animation: titleFadeIn 1.5s ease-out forwards;
-            animation-delay: 0.3s;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            margin: 0 0 15px 0;
+            width: 100%;
+            padding: 15px 30px;
+            border-radius: 20px;
+            background: color-mix(in srgb, var(--secondary-bg-color) 85%, transparent);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .splash-subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1em;
-            margin-top: 10px;
-            opacity: 0;
-            animation: subtitleFadeIn 1.5s ease-out forwards;
-            animation-delay: 0.8s;
+            color: var(--hint-color);
+            font-size: 1.2em;
+            text-align: center;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
-        @keyframes logoPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .loading-dots {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 45px;
         }
 
-        @keyframes titleFadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .loading-dots::after {
+            content: '...';
+            animation: loadingDots 1.5s infinite steps(4);
+            display: inline-block;
         }
 
-        @keyframes subtitleFadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes loadingDots {
+            0%, 100% { content: ''; }
+            25% { content: '.'; }
+            50% { content: '..'; }
+            75% { content: '...'; }
         }
 
         /* Скрываем основное содержимое до окончания загрузки */
@@ -106,6 +128,7 @@
             display: none !important;
         }
 
+        /* Остальные стили остаются без изменений... */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -1977,6 +2000,23 @@
                 bottom: calc(100px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px (было 95px) */
                 right: 16px;
             }
+            
+            /* Адаптивность для сплешскрина */
+            .splash-logo {
+                width: 100px;
+                height: 100px;
+                border-radius: 20px;
+            }
+            
+            .splash-title {
+                font-size: 1.6em;
+                padding: 12px 20px;
+                margin: 0 0 10px 0;
+            }
+            
+            .splash-subtitle {
+                font-size: 1em;
+            }
         }
         
         /* Дополнительные исправления для очень маленьких экранов */
@@ -2017,6 +2057,23 @@
                 bottom: calc(95px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px (было 90px) */
                 right: 12px;
             }
+            
+            /* Адаптивность для сплешскрина */
+            .splash-logo {
+                width: 90px;
+                height: 90px;
+                border-radius: 18px;
+            }
+            
+            .splash-title {
+                font-size: 1.4em;
+                padding: 10px 16px;
+                margin: 0 0 8px 0;
+            }
+            
+            .splash-subtitle {
+                font-size: 0.9em;
+            }
         }
 
         /* Специальные стили для мобильного скролла */
@@ -2037,12 +2094,14 @@
     </style>
 </head>
 <body class="loading">
-    <!-- ЭКРАН ЗАГРУЗКИ -->
+    <!-- ОБНОВЛЕННЫЙ ЭКРАН ЗАГРУЗКИ -->
     <div id="splash-screen">
         <div class="splash-content">
             <img src="https://raw.githubusercontent.com/wrldwideme/telegram-mini-app/main/logo.png" alt="To Do Bot Logo" class="splash-logo">
-            <h1 class="splash-title">To Do Bot</h1>
-            <div class="splash-subtitle">Загрузка...</div>
+            <div class="splash-title">To Do Bot</div>
+            <div class="splash-subtitle">
+                Загрузка<span class="loading-dots"></span>
+            </div>
         </div>
     </div>
     
@@ -4228,3 +4287,4 @@
     </script>
 </body>
 </html>
+
