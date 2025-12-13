@@ -33,6 +33,79 @@
             }
         }
 
+        /* --- ЭКРАН ЗАГРУЗКИ (SPLASH SCREEN) --- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            animation: logoPulse 2s ease-in-out infinite;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .splash-title {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-align: center;
+            margin: 0;
+            opacity: 0;
+            animation: titleFadeIn 1.5s ease-out forwards;
+            animation-delay: 0.3s;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .splash-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            margin-top: 10px;
+            opacity: 0;
+            animation: subtitleFadeIn 1.5s ease-out forwards;
+            animation-delay: 0.8s;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes titleFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes subtitleFadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Скрываем основное содержимое до окончания загрузки */
+        body.loading .swipe-container,
+        body.loading #bottom-nav,
+        body.loading #fab-button {
+            display: none !important;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -40,9 +113,9 @@
             padding: 0; 
             margin: 0;
             transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden; /* Предотвращаем горизонтальный скролл */
+            overflow-x: hidden;
             width: 100%;
-            max-width: 100vw; /* Ограничиваем максимальную ширину */
+            max-width: 100vw;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -64,7 +137,7 @@
             display: flex;
             width: 300%;
             height: 100%;
-            transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1); /* Улучшенная плавность */
+            transition: transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
             will-change: transform;
         }
         
@@ -80,8 +153,6 @@
             flex-direction: column;
             overflow: hidden;
         }
-        
-        /* УДАЛЕНО: Анимация для текущего раздела - убрано отдаление */
         
         /* Эффект параллакса для следующего/предыдущего раздела - уменьшенный */
         .swipe-wrapper.swiping .content-section:nth-child(2) {
@@ -133,15 +204,15 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 1em; /* Равен размеру заглавной буквы */
-            height: 1em; /* Равен размеру заглавной буквы */
+            width: 1em;
+            height: 1em;
             border-radius: 4px;
             background: linear-gradient(135deg, var(--link-color), #5d9cff);
             padding: 4px;
             box-shadow: 0 2px 6px rgba(0, 122, 255, 0.2);
             position: relative;
             overflow: hidden;
-            font-size: inherit; /* Наследует размер шрифта родителя */
+            font-size: inherit;
         }
 
         /* Иконки для разделов - подогнаны под уменьшенный размер */
@@ -152,7 +223,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-size: 70% 70%; /* Увеличили для лучшей видимости в маленьком размере */
+            background-size: 70% 70%;
             background-repeat: no-repeat;
             background-position: center;
             filter: brightness(0) invert(1);
@@ -1164,7 +1235,7 @@
         /* Улучшенное поле ввода AI Chat */
         #ai-chat-input-area {
             position: fixed;
-            bottom: calc(75px + env(safe-area-inset-bottom));
+            bottom: calc(80px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px */
             left: 0;
             right: 0;
             padding: 15px;
@@ -1292,7 +1363,7 @@
         /* --- СТИЛИ НИЖНЕЙ НАВИГАЦИИ (FIXED - Liquid Glass, плавающий стиль) --- */
         #bottom-nav {
             position: fixed;
-            bottom: calc(8px + env(safe-area-inset-bottom));
+            bottom: calc(13px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px (было 8px) */
             left: 50%; 
             transform: translateX(-50%); 
             width: calc(100% - 30px); 
@@ -1366,7 +1437,7 @@
         /* --- ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ПЛАВАЮЩЕЙ КНОПКИ "+" (только на экране задач) --- */
         #fab-button {
             position: fixed;
-            bottom: calc(100px + env(safe-area-inset-bottom));
+            bottom: calc(105px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px (было 100px) */
             right: 20px;
             width: 60px;
             height: 60px;
@@ -1898,12 +1969,12 @@
                 padding: 16px;
             }
             
-            /* Адаптивность для FAB */
+            /* ИСПРАВЛЕНИЕ: Адаптивность для FAB с учетом +5px */
             #fab-button {
                 width: 56px;
                 height: 56px;
                 font-size: 30px;
-                bottom: calc(95px + env(safe-area-inset-bottom));
+                bottom: calc(100px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px (было 95px) */
                 right: 16px;
             }
         }
@@ -1938,11 +2009,12 @@
                 padding: 10px;
             }
             
+            /* ИСПРАВЛЕНИЕ: Адаптивность для FAB с учетом +5px */
             #fab-button {
                 width: 52px;
                 height: 52px;
                 font-size: 28px;
-                bottom: calc(90px + env(safe-area-inset-bottom));
+                bottom: calc(95px + env(safe-area-inset-bottom)); /* ИСПРАВЛЕНО: +5px (было 90px) */
                 right: 12px;
             }
         }
@@ -1964,7 +2036,15 @@
         }
     </style>
 </head>
-<body>
+<body class="loading">
+    <!-- ЭКРАН ЗАГРУЗКИ -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <img src="https://raw.githubusercontent.com/wrldwideme/telegram-mini-app/main/logo.png" alt="To Do Bot Logo" class="splash-logo">
+            <h1 class="splash-title">To Do Bot</h1>
+            <div class="splash-subtitle">Загрузка...</div>
+        </div>
+    </div>
     
     <!-- Обертка для свайпов -->
     <div class="swipe-container" id="swipeContainer">
@@ -2307,6 +2387,9 @@
         const notifyOneHourCheckbox = document.getElementById('notify-one-hour');
         const notifyAtStartCheckbox = document.getElementById('notify-at-start');
         
+        // --- ПЕРЕМЕННЫЕ ДЛЯ ЭКРАНА ЗАГРУЗКИ ---
+        const splashScreen = document.getElementById('splash-screen');
+        
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
@@ -2344,6 +2427,26 @@
             notify_one_hour: false,
             notify_at_start: false
         };
+        
+        // --- НОВАЯ ФУНКЦИЯ: УПРАВЛЕНИЕ ЭКРАНОМ ЗАГРУЗКИ ---
+        function hideSplashScreen() {
+            // Показываем экран загрузки минимум 1.5 секунды
+            setTimeout(() => {
+                splashScreen.classList.add('fade-out');
+                document.body.classList.remove('loading');
+                
+                // Удаляем экран загрузки после завершения анимации
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    // Показываем основной интерфейс
+                    swipeContainer.style.display = 'block';
+                    bottomNav.style.display = 'flex';
+                    if (currentSectionIndex === 0) {
+                        fabButton.classList.add('show');
+                    }
+                }, 500);
+            }, 1500); // Минимальное время показа 1.5 секунды
+        }
         
         // --- ФУНКЦИИ ДЛЯ НАСТРОЕК С УЛУЧШЕННЫМ DEBOUNCE ---
         
@@ -2716,7 +2819,6 @@
             updateNavigationWithAnimation();
             
             const sections = document.querySelectorAll('.content-section');
-            // УДАЛЕНО: Анимация отдаления (swipe-active)
             
             clearTimeout(swipeTimeout);
             
@@ -4082,6 +4184,9 @@
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
+            // Сначала показываем экран загрузки
+            hideSplashScreen();
+            
             if (tg.initData) {
                 initSwipe();
                 
@@ -4093,7 +4198,10 @@
                     switchSection('tasks-content', tasksButton);
                 }
                 
-                fetchTasks();
+                // Загружаем задачи с небольшой задержкой, чтобы не блокировать отображение
+                setTimeout(() => {
+                    fetchTasks();
+                }, 500);
                 
             } else {
                 console.warn('Telegram WebApp not fully initialized');
@@ -4106,6 +4214,11 @@
                 if (tasksButton) {
                     switchSection('tasks-content', tasksButton);
                 }
+                
+                // Загружаем задачи с небольшой задержкой, чтобы не блокировать отображение
+                setTimeout(() => {
+                    fetchTasks();
+                }, 500);
             }
         });
 
