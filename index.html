@@ -2977,6 +2977,44 @@
         const CHAT_HISTORY_KEY = 'aiChatHistory';
         const MAX_CHAT_HISTORY = 5; // Максимальное количество сохранённых сообщений
         
+        // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ КЭШИРОВАНИЯ ЗАДАЧ ---
+        let cachedTasksData = null;
+        let tasksLastUpdated = null;
+        const TASKS_CACHE_DURATION = 5 * 60 * 1000; // 5 минут в миллисекундах
+        let tasksCacheVersion = 0; // Увеличивается при изменении задач
+        
+        // --- ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ЗАДАЧ ---
+        function invalidateTasksCache() {
+            tasksCacheVersion++;
+            cachedTasksData = null;
+            tasksLastUpdated = null;
+            console.log('Tasks cache invalidated, new version:', tasksCacheVersion);
+        }
+        
+        function getTasksFromCache() {
+            const now = Date.now();
+            if (cachedTasksData && tasksLastUpdated && 
+                (now - tasksLastUpdated) < TASKS_CACHE_DURATION) {
+                return cachedTasksData;
+            }
+            return null;
+        }
+        
+        function saveTasksToCache(tasks) {
+            cachedTasksData = tasks;
+            tasksLastUpdated = Date.now();
+            console.log('Tasks saved to cache, count:', tasks.length);
+        }
+
+        function displayTasksFromCache() {
+            const cachedTasks = getTasksFromCache();
+            if (cachedTasks) {
+                displayTasks(cachedTasks);
+                return true;
+            }
+            return false;
+        }
+
         // --- ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ЧАТА ---
         function saveChatHistory(messages) {
             try {
@@ -3614,8 +3652,9 @@
             updateFabVisibility();
             
             if (sectionId === 'tasks-content') {
-                if (document.getElementById('tasks-list').children.length < 2) {
-                    fetchTasks(); 
+                // Показываем кэшированные задачи, если они есть
+                if (!displayTasksFromCache()) {
+                    fetchTasks(false); // Не форсируем загрузку, только если кэш пуст
                 }
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
@@ -3685,8 +3724,9 @@
             updateFabVisibility();
             
             if (sectionId === 'tasks-content') {
-                if (document.getElementById('tasks-list').children.length < 2) {
-                    fetchTasks(); 
+                // Показываем кэшированные задачи, если они есть
+                if (!displayTasksFromCache()) {
+                    fetchTasks(false);
                 }
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
@@ -3826,7 +3866,9 @@
                     
                     closeTaskFormModal();
                     
-                    await fetchTasks(); 
+                    // Инвалидируем кэш задач и загружаем свежие данные
+                    invalidateTasksCache();
+                    await fetchTasks(true); // Форсированная загрузка
                     
                     // Обновляем статистику после изменения задачи
                     await fetchStats(true);
@@ -4352,9 +4394,12 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                // ИСПРАВЛЕНИЕ: Уменьшено время ожидания до 0.9 секунд
+                // Инвалидируем кэш задач
+                invalidateTasksCache();
+                
+                // Загружаем обновленные задачи через 0.9 секунд
                 setTimeout(() => {
-                    fetchTasks();
+                    fetchTasks(true);
                 }, 900);
                 
                 // Обновляем статистику после выполнения задачи
@@ -4398,9 +4443,12 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
-                // ИСПРАВЛЕНИЕ: Уменьшено время ожидания до 0.9 секунд
+                // Инвалидируем кэш задач
+                invalidateTasksCache();
+                
+                // Загружаем обновленные задачи через 0.9 секунд
                 setTimeout(() => {
-                    fetchTasks();
+                    fetchTasks(true);
                 }, 900);
                 
                 // Обновляем статистику после удаления задачи
@@ -4446,7 +4494,9 @@
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
 
-                    await fetchTasks(); 
+                    // Инвалидируем кэш задач
+                    invalidateTasksCache();
+                    await fetchTasks(true);
                     
                     // Обновляем статистику после выполнения задачи
                     await fetchStats(true);
@@ -4493,7 +4543,9 @@
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     
-                    await fetchTasks(); 
+                    // Инвалидируем кэш задач
+                    invalidateTasksCache();
+                    await fetchTasks(true);
                     
                     // Обновляем статистику после удаления задачи
                     await fetchStats(true);
@@ -4576,13 +4628,85 @@
             tasksList.innerHTML = `
                 <div class="error-message-container">
                     <p class="error-message">Ошибка загрузки задач: ${message}</p>
-                    ${showRefreshButton ? '<button class="refresh-button" onclick="fetchTasks()">🔄 Обновить</button>' : ''}
+                    ${showRefreshButton ? '<button class="refresh-button" onclick="fetchTasks(true)">🔄 Обновить</button>' : ''}
                 </div>
             `;
             tg.showAlert('Ошибка загрузки задач.');
         }
 
-        async function fetchTasks() {
+        // НОВАЯ ФУНКЦИЯ: Отображение задач из массива
+        function displayTasks(tasks) {
+            allTasksData = tasks; // Обновляем глобальную переменную
+
+            const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
+
+            if (activeTasks.length === 0) {
+                tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
+                return;
+            }
+            
+            activeTasks.sort((a, b) => {
+                const aTimeStr = a.date + ' ' + (a.time || '00:00');
+                const bTimeStr = b.date + ' ' + (b.time || '00:00');
+
+                const aDate = new Date(aTimeStr);
+                const bDate = new Date(bTimeStr);
+                
+                if (isNaN(aDate.getTime())) return 1; 
+                if (isNaN(bDate.getTime())) return -1;
+                
+                return aDate.getTime() - bDate.getTime();
+            });
+
+            tasksList.innerHTML = ''; 
+
+            activeTasks.forEach(taskData => {
+                const importance = (taskData.importance || 'low').toLowerCase();
+                const taskCard = document.createElement('div');
+                
+                const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
+                const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
+                const taskId = taskData.id; 
+
+                let cardClasses = `task-card ${importance}`;
+                if (dateTimeInfo.isExpired) {
+                    cardClasses += ' expired';
+                }
+                taskCard.className = cardClasses;
+                taskCard.setAttribute('data-task-id', taskId);
+
+                taskCard.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-header">
+                            <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
+                            <span class="task-text">${taskText}</span>
+                        </div>
+                        
+                        <p>${dateTimeInfo.formattedText}</p>
+                    </div>
+                    <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
+                        ⋮
+                    </button>
+                `;
+                tasksList.appendChild(taskCard);
+                
+                // Инициализируем свайп для новой карточки
+                initTaskSwipe(taskCard);
+            });
+        }
+
+        // УЛУЧШЕННАЯ ФУНКЦИЯ: Загрузка задач с кэшированием
+        async function fetchTasks(forceRefresh = false) {
+            // Проверяем кэш, если не принудительное обновление
+            if (!forceRefresh) {
+                const cachedTasks = getTasksFromCache();
+                if (cachedTasks) {
+                    console.log('Using cached tasks data');
+                    displayTasks(cachedTasks);
+                    return;
+                }
+            }
+
             try {
                 if (!tg.initData) {
                     displayError('Telegram initData is missing. Cannot authorize.');
@@ -4591,13 +4715,20 @@
 
                 tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
                 
+                // Создаем AbortController для таймаута
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+                
                 const response = await fetch(N8N_GET_URL, {
                     method: 'GET',
                     headers: {
                         'Authorization': N8N_AUTH_HEADER,
                         'X-Init-Data': tg.initData,
                     },
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
@@ -4609,66 +4740,25 @@
                     throw new Error('Некорректный формат данных от API.');
                 }
                 
-                allTasksData = tasks; 
-
-                const activeTasks = tasks.filter(task => (task.done || 'no').toLowerCase() !== 'yes');
-
-                if (activeTasks.length === 0) {
-                    tasksList.innerHTML = '<p class="empty-message">🎉 Нет активных задач. Список пуст!</p>';
-                    return;
-                }
+                // Сохраняем в кэш
+                saveTasksToCache(tasks);
                 
-                activeTasks.sort((a, b) => {
-                    const aTimeStr = a.date + ' ' + (a.time || '00:00');
-                    const bTimeStr = b.date + ' ' + (b.time || '00:00');
-
-                    const aDate = new Date(aTimeStr);
-                    const bDate = new Date(bTimeStr);
-                    
-                    if (isNaN(aDate.getTime())) return 1; 
-                    if (isNaN(bDate.getTime())) return -1;
-                    
-                    return aDate.getTime() - bDate.getTime();
-                });
-
-                tasksList.innerHTML = ''; 
-
-                activeTasks.forEach(taskData => {
-                    const importance = (taskData.importance || 'low').toLowerCase();
-                    const taskCard = document.createElement('div');
-                    
-                    const taskText = taskData.task_text || taskData.task || 'Нет текста задачи'; 
-                    const dateTimeInfo = formatTaskDateTime(taskData.date, taskData.time);
-                    const taskId = taskData.id; 
-
-                    let cardClasses = `task-card ${importance}`;
-                    if (dateTimeInfo.isExpired) {
-                        cardClasses += ' expired';
-                    }
-                    taskCard.className = cardClasses;
-                    taskCard.setAttribute('data-task-id', taskId);
-
-                    taskCard.innerHTML = `
-                        <div class="task-info">
-                            <div class="task-header">
-                                <span class="importance-tag ${importance}">${importance.toUpperCase()}</span> 
-                                <span class="task-text">${taskText}</span>
-                            </div>
-                            
-                            <p>${dateTimeInfo.formattedText}</p>
-                        </div>
-                        <button class="menu-button" onclick="event.stopPropagation(); showMenu('${taskId}', this)" title="Опции">
-                            ⋮
-                        </button>
-                    `;
-                    tasksList.appendChild(taskCard);
-                    
-                    // Инициализируем свайп для новой карточки
-                    initTaskSwipe(taskCard);
-                });
+                // Отображаем задачи
+                displayTasks(tasks);
 
             } catch (error) {
                 console.error('Fetch error:', error);
+                
+                // Если ошибка - таймаут или сетевая ошибка, пробуем показать кэш
+                if (error.name === 'AbortError' || error.name === 'TypeError') {
+                    const cachedTasks = getTasksFromCache();
+                    if (cachedTasks) {
+                        displayTasks(cachedTasks);
+                        tg.showAlert('Не удалось обновить задачи. Показаны кэшированные данные.');
+                        return;
+                    }
+                }
+                
                 displayError(error.message);
             }
         }
@@ -4933,6 +5023,7 @@
             tg.showAlert('Ошибка загрузки статистики.');
         }
 
+        // УЛУЧШЕННАЯ ФУНКЦИЯ: Загрузка статистики с повторными попытками
         async function fetchStats(forceRefresh = false) {
             // Проверяем кэш, если не принудительное обновление
             const now = Date.now();
@@ -4943,60 +5034,88 @@
                 return;
             }
 
-            try {
-                if (!tg.initData) {
-                    displayStatsError('Telegram initData is missing. Cannot authorize.');
-                    return;
-                }
+            const maxRetries = 3;
+            let lastError = null;
+            
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    if (!tg.initData) {
+                        displayStatsError('Telegram initData is missing. Cannot authorize.');
+                        return;
+                    }
 
-                // Показываем загрузку только если это не кэшированные данные
-                if (forceRefresh || !cachedStatsData) {
-                    document.getElementById('stats-container').innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
-                }
-                
-                const response = await fetch(N8N_GET_STATS_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': N8N_AUTH_HEADER,
-                        'X-Init-Data': tg.initData,
-                    },
-                });
+                    // Показываем загрузку только если это не кэшированные данные
+                    if (forceRefresh || !cachedStatsData) {
+                        document.getElementById('stats-container').innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
+                    }
+                    
+                    // Экспоненциальная задержка между попытками: 300ms, 600ms, 1200ms
+                    if (attempt > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 300 * Math.pow(2, attempt - 1)));
+                        console.log(`Retry attempt ${attempt + 1}/${maxRetries}`);
+                    }
+                    
+                    // Создаем AbortController для таймаута
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
+                    
+                    const response = await fetch(N8N_GET_STATS_URL, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': N8N_AUTH_HEADER,
+                            'X-Init-Data': tg.initData,
+                        },
+                        signal: controller.signal
+                    });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                const statData = await response.json();
-                
-                console.log('Stats data received:', statData);
+                    clearTimeout(timeoutId);
 
-                // Кэшируем данные
-                cachedStatsData = statData;
-                statsLastUpdated = Date.now();
-                
-                // Отображаем данные
-                displayCachedStats();
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    const statData = await response.json();
+                    
+                    console.log('Stats data received:', statData);
 
-            } catch (error) {
-                console.error('Fetch Stats error:', error);
-                
-                // Если есть кэшированные данные, показываем их с предупреждением
-                if (cachedStatsData) {
+                    // Кэшируем данные
+                    cachedStatsData = statData;
+                    statsLastUpdated = Date.now();
+                    
+                    // Отображаем данные
                     displayCachedStats();
-                    tg.showAlert('Не удалось обновить статистику. Показаны кэшированные данные.');
-                } else {
-                    displayStatsError(error.message);
+                    return; // Успех, выходим из цикла
+
+                } catch (error) {
+                    console.error(`Fetch Stats attempt ${attempt + 1} error:`, error);
+                    lastError = error;
+                    
+                    // Если это последняя попытка или ошибка не связана с сетью, выходим
+                    if (attempt === maxRetries - 1 || (error.name !== 'TypeError' && error.name !== 'AbortError')) {
+                        break;
+                    }
                 }
+            }
+            
+            // Все попытки не удались
+            console.error('All stats fetch attempts failed:', lastError);
+            
+            // Если есть кэшированные данные, показываем их с предупреждением
+            if (cachedStatsData) {
+                displayCachedStats();
+                tg.showAlert('Не удалось обновить статистику. Показаны кэшированные данные.');
+            } else {
+                displayStatsError(lastError.message);
             }
         }
 
         // --- НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ВСЕХ ДАННЫХ ПРИ ЗАПУСКЕ ---
         async function loadInitialData() {
             try {
-                // Загружаем задачи и статистику параллельно
+                // Загружаем задачи и статистику параллельно, но задачи приоритетнее
                 await Promise.allSettled([
-                    fetchTasks(),
-                    fetchStats()
+                    fetchTasks(false), // Не форсируем, используем кэш если есть
+                    fetchStats(false)  // Не форсируем, используем кэш если есть
                 ]);
                 
                 console.log('Initial data loaded successfully');
@@ -5044,6 +5163,7 @@
         window.skipOnboarding = skipOnboarding;
         window.finishOnboarding = finishOnboarding;
         window.markdownToHtml = markdownToHtml;
+        window.invalidateTasksCache = invalidateTasksCache;
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
