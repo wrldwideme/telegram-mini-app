@@ -1236,7 +1236,8 @@
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        #tasks-content #fab-button {
+        /* ИСПРАВЛЕНИЕ: Показываем FAB только в первом разделе (Задачи) */
+        .swipe-wrapper > .content-section:nth-child(1) #fab-button {
             opacity: 1;
             visibility: visible;
             transform: scale(1);
@@ -1960,21 +1961,20 @@
                             <div class="priority-percentage" id="percentage-medium">0%</div>
                         </div>
                         
-                        <div class="priority-item {
-                                <div class="priority-color low"></div>
-                                <div class="priority-info">
-                                    <span class="priority-name">Низкий</span>
-                                    <span class="priority-count" id="priority-low">0</span>
-                                </div>
-                                <div class="priority-percentage" id="percentage-low">0%</div>
+                        <div class="priority-item">
+                            <div class="priority-color low"></div>
+                            <div class="priority-info">
+                                <span class="priority-name">Низкий</span>
+                                <span class="priority-count" id="priority-low">0</span>
                             </div>
+                            <div class="priority-percentage" id="percentage-low">0%</div>
                         </div>
-                        
-                        <div class="weekly-section">
-                            <div class="weekly-title">Еженедельная активность</div>
-                            <div class="weekly-grid" id="weekly-grid">
-                                <!-- Заполняется динамически -->
-                            </div>
+                    </div>
+                    
+                    <div class="weekly-section">
+                        <div class="weekly-title">Еженедельная активность</div>
+                        <div class="weekly-grid" id="weekly-grid">
+                            <!-- Заполняется динамически -->
                         </div>
                     </div>
                 </div>
