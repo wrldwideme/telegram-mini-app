@@ -207,35 +207,62 @@
             color: var(--hint-color);
         }
 
-        .swipe-hint-right, .swipe-hint-left {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9em;
-            opacity: 0;
-            animation: fadeInOut 2s infinite;
+        /* ОБНОВЛЕННЫЙ СТИЛЬ ДЛЯ ПОДСКАЗОК СВАЙПА НА ОНБОРДИНГЕ */
+        .swipe-hint-container {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            margin: 20px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: linear-gradient(90deg, 
+                rgba(255, 59, 48, 0.8) 0%, 
+                rgba(255, 59, 48, 0.4) 30%, 
+                transparent 40%, 
+                transparent 60%, 
+                rgba(52, 199, 89, 0.4) 70%, 
+                rgba(52, 199, 89, 0.8) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
         }
 
-        .swipe-hint-right {
-            right: 20px;
-            background: rgba(52, 199, 89, 0.2);
-            color: #34c759;
-            border: 2px solid rgba(52, 199, 89, 0.3);
+        .swipe-hint-left, .swipe-hint-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            font-weight: 600;
+            font-size: 0.9em;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            animation: hintPulse 2s infinite;
         }
 
         .swipe-hint-left {
-            left: 20px;
-            background: rgba(255, 59, 48, 0.2);
             color: #ff3b30;
-            border: 2px solid rgba(255, 59, 48, 0.3);
+            border: 1px solid rgba(255, 59, 48, 0.3);
         }
 
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0; transform: translateY(-50%) scale(0.9); }
-            50% { opacity: 1; transform: translateY(-50%) scale(1); }
+        .swipe-hint-right {
+            color: #34c759;
+            border: 1px solid rgba(52, 199, 89, 0.3);
+        }
+
+        @keyframes hintPulse {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: translateY(-3px) scale(1.05);
+                opacity: 0.9;
+            }
         }
 
         .fab-demo {
@@ -479,7 +506,7 @@
         }
 
         #ai-chat-content .logo-header::before {
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.411.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
         }
 
         #stats-content .logo-header::before {
@@ -713,8 +740,9 @@
             to { opacity: 1; }
         }
 
+        /* ИСПРАВЛЕНИЕ: Адаптация модального окна для светлой темы */
         .modal-content {
-            background: rgba(var(--tg-theme-bg-color, 255, 255, 255), 0.92);
+            background: var(--bg-color);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border-radius: 20px;
@@ -729,6 +757,38 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
             transform: translateY(0);
             will-change: transform;
+        }
+
+        @media (prefers-color-scheme: light) {
+            .modal-content {
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                box-shadow: 
+                    0 20px 60px rgba(0, 0, 0, 0.1),
+                    0 0 0 1px rgba(0, 0, 0, 0.05) inset;
+            }
+            
+            .ios-group {
+                background: rgba(0, 0, 0, 0.03);
+                border: 1px solid rgba(0, 0, 0, 0.08);
+            }
+            
+            .ios-row {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            }
+            
+            .ios-row:hover {
+                background: rgba(0, 0, 0, 0.02);
+            }
+            
+            .modal-button.secondary {
+                background: rgba(0, 0, 0, 0.05);
+                border: 1px solid rgba(0, 0, 0, 0.1);
+            }
+            
+            .modal-button.secondary:hover {
+                background: rgba(0, 0, 0, 0.1);
+            }
         }
 
         @keyframes slideUp {
@@ -2476,8 +2536,16 @@
                 <div class="demo-task-card">
                     <span class="demo-task-text">Пример задачи</span>
                     <div class="demo-task-time">📅 Завтра в ⏰ 10:00</div>
-                    <div class="swipe-hint-right">✅ Выполнить</div>
-                    <div class="swipe-hint-left">🗑️ Удалить</div>
+                </div>
+                <div class="swipe-hint-container">
+                    <div class="swipe-hint-left">
+                        <span>🗑️</span>
+                        <span>Удалить</span>
+                    </div>
+                    <div class="swipe-hint-right">
+                        <span>✅</span>
+                        <span>Выполнить</span>
+                    </div>
                 </div>
             </div>
             <div class="onboarding-buttons">
@@ -2729,7 +2797,7 @@
                             <div class="priority-percentage" id="percentage-medium">0%</div>
                         </div>
                         
-                        <div class="priority-item">
+                        <div class="priority-item {
                             <div class="priority-color low"></div>
                             <div class="priority-info">
                                 <span class="priority-name">Низкий</span>
@@ -3050,6 +3118,7 @@
             }
         }
 
+        // ИСПРАВЛЕНИЕ: Функция восстановления истории с автоматической прокруткой вниз
         function restoreChatHistory() {
             const welcome = document.querySelector('.ai-welcome');
             if (welcome) welcome.remove();
@@ -3102,9 +3171,11 @@
                 }
             });
             
-            // Прокручиваем к последнему сообщению
+            // ИСПРАВЛЕНИЕ: Прокручиваем к последнему сообщению сразу после загрузки
             setTimeout(() => {
-                aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                if (aiChatMessages.scrollHeight > aiChatMessages.clientHeight) {
+                    aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+                }
             }, 100);
         }
 
@@ -3469,7 +3540,8 @@
             }
         }
         
-        function handleTouchEnd() {
+        // ИСПРАВЛЕНИЕ: Добавлена обработка события для предотвращения блокировки скролла
+        function handleTouchEnd(e) {
             if (!isSwiping || isSwipingTask || isOnboardingShown) {
                 touchStartX = 0;
                 return;
@@ -3557,7 +3629,7 @@
             }
         }
         
-        function handleMouseEnd() {
+        function handleMouseEnd(e) {
             if (!isSwiping || isSwipingTask || isOnboardingShown) {
                 touchStartX = 0;
                 return;
@@ -4092,7 +4164,8 @@
             }
         }
         
-        function handleTaskTouchEnd() {
+        // ИСПРАВЛЕНИЕ: Добавлен параметр события для предотвращения блокировки скролла
+        function handleTaskTouchEnd(e) {
             if (!taskSwipeTarget || !isTaskSwiping) {
                 resetTaskSwipe();
                 return;
@@ -4129,6 +4202,12 @@
                     fillLeft.style.width = '100%';
                 }
                 
+                // ИСПРАВЛЕНИЕ: Предотвращаем дальнейшую обработку события
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
             } else {
                 // Возвращаем карточку в исходное положение
                 taskSwipeTarget.style.transform = 'translateX(0)';
@@ -4144,6 +4223,9 @@
                     resetTaskSwipe();
                 }, 200);
             }
+            
+            // Сбрасываем флаг свайпа задачи
+            isSwipingTask = false;
             
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -4165,6 +4247,8 @@
                     resetTaskSwipe();
                 }, 200);
             }
+            // Сбрасываем флаг свайпа задачи
+            isSwipingTask = false;
         }
         
         // Функции для обработки событий мыши (для тестирования на компьютере)
@@ -4278,7 +4362,8 @@
             }
         }
         
-        function handleTaskMouseEnd() {
+        // ИСПРАВЛЕНИЕ: Добавлен параметр события для предотвращения блокировки скролла
+        function handleTaskMouseEnd(e) {
             if (!taskSwipeTarget || !isTaskSwiping) {
                 resetTaskSwipe();
                 return;
@@ -4309,6 +4394,12 @@
                     fillLeft.style.width = '100%';
                 }
                 
+                // ИСПРАВЛЕНИЕ: Предотвращаем дальнейшую обработку события
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
             } else {
                 taskSwipeTarget.style.transform = 'translateX(0)';
                 
@@ -4322,6 +4413,9 @@
                     resetTaskSwipe();
                 }, 200);
             }
+            
+            // Сбрасываем флаг свайпа задачи
+            isSwipingTask = false;
             
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
@@ -4342,6 +4436,8 @@
                     resetTaskSwipe();
                 }, 200);
             }
+            // Сбрасываем флаг свайпа задачи
+            isSwipingTask = false;
         }
         
         function resetTaskSwipe() {
@@ -5217,7 +5313,7 @@
                 setTimeout(() => {
                     loadInitialData();
                     
-                    // Восстанавливаем историю чата
+                    // Восстанавливаем историю чата с автоматической прокруткой вниз
                     restoreChatHistory();
                 }, 500);
                 
@@ -5237,7 +5333,7 @@
                 setTimeout(() => {
                     loadInitialData();
                     
-                    // Восстанавливаем историю чата
+                    // Восстанавливаем историю чата с автоматической прокруткой вниз
                     restoreChatHistory();
                 }, 500);
             }
