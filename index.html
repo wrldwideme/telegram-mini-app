@@ -65,34 +65,33 @@
         }
 
         .splash-logo {
-            width: 120px;
-            height: 120px;
+            width: 180px; /* Увеличен размер логотипа */
+            height: 180px; /* Увеличен размер логотипа */
             border-radius: 25px;
-            margin-bottom: 20px;
+            margin-bottom: 30px; /* Увеличено расстояние */
             object-fit: contain;
             display: block;
         }
 
-        /* Стиль Liquid Glass для заголовка */
+        /* Улучшенный стиль заголовка без фона */
         .splash-title {
             color: var(--text-color);
-            font-size: 2em;
+            font-size: 3em; /* Увеличен размер шрифта */
             font-weight: 700;
             text-align: center;
-            margin: 0 0 15px 0;
+            margin: 0 0 20px 0; /* Увеличено расстояние */
             width: 100%;
-            padding: 15px 30px;
-            border-radius: 20px;
-            background: color-mix(in srgb, var(--secondary-bg-color) 85%, transparent);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 0; /* Убраны отступы */
+            background: transparent; /* Убран фон */
+            backdrop-filter: none; /* Убран блюр */
+            -webkit-backdrop-filter: none; /* Убран блюр */
+            border: none; /* Убрана граница */
+            box-shadow: none; /* Убрана тень */
         }
 
         .splash-subtitle {
             color: var(--hint-color);
-            font-size: 1.2em;
+            font-size: 1.5em; /* Увеличен размер шрифта */
             text-align: center;
             width: 100%;
             display: flex;
@@ -126,6 +125,229 @@
         body.loading #bottom-nav,
         body.loading #fab-button {
             display: none !important;
+        }
+
+        /* --- ОНБОРДИНГ --- */
+        #onboarding-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-color);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .onboarding-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .onboarding-screen.active {
+            display: flex;
+        }
+
+        .onboarding-title {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .onboarding-description {
+            font-size: 1.3em;
+            color: var(--hint-color);
+            margin-bottom: 40px;
+            line-height: 1.5;
+            max-width: 90%;
+        }
+
+        .onboarding-demo {
+            margin: 30px 0;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .demo-task-card {
+            background: var(--secondary-bg-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px auto;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 6px solid var(--link-color);
+        }
+
+        .demo-task-text {
+            font-size: 1.2em;
+            font-weight: 500;
+            color: var(--text-color);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .demo-task-time {
+            font-size: 0.9em;
+            color: var(--hint-color);
+        }
+
+        .swipe-hint-right, .swipe-hint-left {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            opacity: 0;
+            animation: fadeInOut 2s infinite;
+        }
+
+        .swipe-hint-right {
+            right: 20px;
+            background: rgba(52, 199, 89, 0.2);
+            color: #34c759;
+            border: 2px solid rgba(52, 199, 89, 0.3);
+        }
+
+        .swipe-hint-left {
+            left: 20px;
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
+            border: 2px solid rgba(255, 59, 48, 0.3);
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(-50%) scale(0.9); }
+            50% { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
+        .fab-demo {
+            position: fixed;
+            bottom: 105px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: var(--link-color);
+            color: white;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(0, 122, 255, 0.35);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .onboarding-progress {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--secondary-bg-color);
+            margin: 0 5px;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: var(--link-color);
+            transform: scale(1.2);
+        }
+
+        .onboarding-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .onboarding-btn {
+            padding: 15px 25px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .onboarding-btn.next {
+            background: var(--link-color);
+            color: white;
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .onboarding-btn.back {
+            background: var(--secondary-bg-color);
+            color: var(--text-color);
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .onboarding-btn.skip {
+            background: transparent;
+            color: var(--hint-color);
+            font-size: 1em;
+        }
+
+        .onboarding-btn.start {
+            background: linear-gradient(135deg, var(--link-color), #5d9cff);
+            color: white;
+            padding: 18px 30px;
+            font-size: 1.2em;
+            width: 100%;
+        }
+
+        .onboarding-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .onboarding-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Анимация появления экрана */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .onboarding-screen {
+            animation: slideUp 0.5s ease-out;
         }
 
         /* Остальные стили остаются без изменений... */
@@ -2003,19 +2225,40 @@
             
             /* Адаптивность для сплешскрина */
             .splash-logo {
-                width: 100px;
-                height: 100px;
+                width: 140px;
+                height: 140px;
                 border-radius: 20px;
             }
             
             .splash-title {
-                font-size: 1.6em;
-                padding: 12px 20px;
-                margin: 0 0 10px 0;
+                font-size: 2.2em;
+                margin: 0 0 15px 0;
             }
             
             .splash-subtitle {
+                font-size: 1.2em;
+            }
+            
+            /* Адаптивность для онбординга */
+            .onboarding-title {
+                font-size: 1.8em;
+            }
+            
+            .onboarding-description {
+                font-size: 1.1em;
+            }
+            
+            .onboarding-btn {
+                padding: 12px 20px;
                 font-size: 1em;
+            }
+            
+            .fab-demo {
+                width: 52px;
+                height: 52px;
+                font-size: 28px;
+                bottom: 95px;
+                right: 16px;
             }
         }
         
@@ -2060,19 +2303,40 @@
             
             /* Адаптивность для сплешскрина */
             .splash-logo {
-                width: 90px;
-                height: 90px;
+                width: 120px;
+                height: 120px;
                 border-radius: 18px;
             }
             
             .splash-title {
-                font-size: 1.4em;
-                padding: 10px 16px;
-                margin: 0 0 8px 0;
+                font-size: 1.8em;
+                margin: 0 0 10px 0;
             }
             
             .splash-subtitle {
+                font-size: 1em;
+            }
+            
+            /* Адаптивность для онбординга */
+            .onboarding-title {
+                font-size: 1.6em;
+            }
+            
+            .onboarding-description {
+                font-size: 1em;
+            }
+            
+            .onboarding-btn {
+                padding: 10px 15px;
                 font-size: 0.9em;
+            }
+            
+            .fab-demo {
+                width: 48px;
+                height: 48px;
+                font-size: 26px;
+                bottom: 90px;
+                right: 12px;
             }
         }
 
@@ -2101,6 +2365,138 @@
             <div class="splash-title">To Do Bot</div>
             <div class="splash-subtitle">
                 Загрузка<span class="loading-dots"></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ОНБОРДИНГ -->
+    <div id="onboarding-overlay">
+        <!-- Экран 1 - Приветствие -->
+        <div class="onboarding-screen active" id="onboarding-screen-1">
+            <h2 class="onboarding-title">Умный To-Do бот в Telegram</h2>
+            <p class="onboarding-description">Управляй задачами, общайся с AI-ассистентом и следи за аналитикой в одном месте.</p>
+            <div class="onboarding-buttons">
+                <button class="onboarding-btn skip" onclick="skipOnboarding()">Пропустить</button>
+                <button class="onboarding-btn next" onclick="nextOnboardingScreen()">Далее</button>
+            </div>
+            <div class="onboarding-progress">
+                <span class="progress-dot active"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
+        
+        <!-- Экран 2 - Закрытие задач свайпами -->
+        <div class="onboarding-screen" id="onboarding-screen-2">
+            <h2 class="onboarding-title">Закрытие задач свайпами</h2>
+            <p class="onboarding-description">Свайп вправо → задача выполнена<br>Свайп влево → отложить / изменить</p>
+            <div class="onboarding-demo">
+                <div class="demo-task-card">
+                    <span class="demo-task-text">Пример задачи</span>
+                    <div class="demo-task-time">📅 Завтра в ⏰ 10:00</div>
+                    <div class="swipe-hint-right">✅ Выполнить</div>
+                    <div class="swipe-hint-left">🗑️ Удалить</div>
+                </div>
+            </div>
+            <div class="onboarding-buttons">
+                <button class="onboarding-btn back" onclick="prevOnboardingScreen()">Назад</button>
+                <button class="onboarding-btn next" onclick="nextOnboardingScreen()">Далее</button>
+            </div>
+            <div class="onboarding-progress">
+                <span class="progress-dot"></span>
+                <span class="progress-dot active"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
+        
+        <!-- Экран 3 - Добавление задач -->
+        <div class="onboarding-screen" id="onboarding-screen-3">
+            <h2 class="onboarding-title">Добавление задач</h2>
+            <p class="onboarding-description">Нажми на кнопку + снизу, чтобы быстро создать новую задачу</p>
+            <div class="fab-demo">+</div>
+            <div class="onboarding-buttons">
+                <button class="onboarding-btn back" onclick="prevOnboardingScreen()">Назад</button>
+                <button class="onboarding-btn next" onclick="nextOnboardingScreen()">Далее</button>
+            </div>
+            <div class="onboarding-progress">
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot active"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
+        
+        <!-- Экран 4 - AI-чат -->
+        <div class="onboarding-screen" id="onboarding-screen-4">
+            <h2 class="onboarding-title">AI-помощник</h2>
+            <p class="onboarding-description">AI-чат умеет ставить задачи из текста и отвечать на вопросы</p>
+            <div class="onboarding-demo">
+                <div class="demo-task-card">
+                    <span class="demo-task-text">«Напомни купить продукты завтра»</span>
+                    <div class="demo-task-text" style="font-size: 0.9em; color: var(--hint-color); margin-top: 10px;">→ AI создаст задачу автоматически</div>
+                </div>
+            </div>
+            <div class="onboarding-buttons">
+                <button class="onboarding-btn back" onclick="prevOnboardingScreen()">Назад</button>
+                <button class="onboarding-btn next" onclick="nextOnboardingScreen()">Далее</button>
+            </div>
+            <div class="onboarding-progress">
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot active"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
+        
+        <!-- Экран 5 - Аналитика -->
+        <div class="onboarding-screen" id="onboarding-screen-5">
+            <h2 class="onboarding-title">Аналитика</h2>
+            <p class="onboarding-description">Следи за прогрессом выполнения задач и своей продуктивностью</p>
+            <div class="onboarding-demo">
+                <div class="demo-task-card">
+                    <span class="demo-task-text">📊 Прогресс выполнения</span>
+                    <div class="demo-task-text" style="font-size: 0.9em; color: var(--hint-color); margin-top: 10px;">📈 Статистика по приоритетам</div>
+                    <div class="demo-task-text" style="font-size: 0.9em; color: var(--hint-color); margin-top: 5px;">📅 Еженедельная активность</div>
+                </div>
+            </div>
+            <div class="onboarding-buttons">
+                <button class="onboarding-btn back" onclick="prevOnboardingScreen()">Назад</button>
+                <button class="onboarding-btn next" onclick="nextOnboardingScreen()">Далее</button>
+            </div>
+            <div class="onboarding-progress">
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot active"></span>
+                <span class="progress-dot"></span>
+            </div>
+        </div>
+        
+        <!-- Экран 6 - Завершение -->
+        <div class="onboarding-screen" id="onboarding-screen-6">
+            <h2 class="onboarding-title">Всё готово!</h2>
+            <p class="onboarding-description">Теперь ты знаешь все ключевые функции приложения. Создай свою первую задачу!</p>
+            <div class="onboarding-buttons">
+                <button class="onboarding-btn start" onclick="finishOnboarding()">Начать пользоваться</button>
+            </div>
+            <div class="onboarding-progress">
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot"></span>
+                <span class="progress-dot active"></span>
             </div>
         </div>
     </div>
@@ -2449,6 +2845,12 @@
         // --- ПЕРЕМЕННЫЕ ДЛЯ ЭКРАНА ЗАГРУЗКИ ---
         const splashScreen = document.getElementById('splash-screen');
         
+        // --- ПЕРЕМЕННЫЕ ДЛЯ ОНБОРДИНГА ---
+        const onboardingOverlay = document.getElementById('onboarding-overlay');
+        let currentOnboardingScreen = 1;
+        const totalOnboardingScreens = 6;
+        let isOnboardingShown = false;
+        
         let currentTaskId = null; 
         let isEditing = false;
         let currentEditingId = null; 
@@ -2497,14 +2899,93 @@
                 // Удаляем экран загрузки после завершения анимации
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
-                    // Показываем основной интерфейс
-                    swipeContainer.style.display = 'block';
-                    bottomNav.style.display = 'flex';
-                    if (currentSectionIndex === 0) {
-                        fabButton.classList.add('show');
+                    
+                    // Проверяем, нужно ли показать онбординг
+                    const onboardingShown = localStorage.getItem('onboardingShown');
+                    if (!onboardingShown) {
+                        showOnboarding();
+                    } else {
+                        // Показываем основной интерфейс
+                        swipeContainer.style.display = 'block';
+                        bottomNav.style.display = 'flex';
+                        if (currentSectionIndex === 0) {
+                            fabButton.classList.add('show');
+                        }
                     }
                 }, 500);
             }, 1500); // Минимальное время показа 1.5 секунды
+        }
+        
+        // --- ФУНКЦИИ ДЛЯ ОНБОРДИНГА ---
+        
+        function showOnboarding() {
+            isOnboardingShown = true;
+            onboardingOverlay.style.display = 'flex';
+            currentOnboardingScreen = 1;
+            updateOnboardingScreen();
+        }
+        
+        function nextOnboardingScreen() {
+            currentOnboardingScreen++;
+            if (currentOnboardingScreen > totalOnboardingScreens) {
+                finishOnboarding();
+                return;
+            }
+            updateOnboardingScreen();
+        }
+        
+        function prevOnboardingScreen() {
+            currentOnboardingScreen--;
+            if (currentOnboardingScreen < 1) {
+                currentOnboardingScreen = 1;
+            }
+            updateOnboardingScreen();
+        }
+        
+        function updateOnboardingScreen() {
+            // Скрываем все экраны онбординга
+            for (let i = 1; i <= totalOnboardingScreens; i++) {
+                const screen = document.getElementById(`onboarding-screen-${i}`);
+                if (screen) {
+                    screen.classList.remove('active');
+                }
+            }
+            
+            // Показываем текущий экран
+            const currentScreen = document.getElementById(`onboarding-screen-${currentOnboardingScreen}`);
+            if (currentScreen) {
+                currentScreen.classList.add('active');
+            }
+            
+            // Обновляем индикатор прогресса
+            const progressDots = document.querySelectorAll('.progress-dot');
+            progressDots.forEach((dot, index) => {
+                if (index < currentOnboardingScreen) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+        }
+        
+        function skipOnboarding() {
+            finishOnboarding();
+        }
+        
+        function finishOnboarding() {
+            localStorage.setItem('onboardingShown', 'true');
+            onboardingOverlay.style.display = 'none';
+            isOnboardingShown = false;
+            
+            // Показываем основной интерфейс
+            swipeContainer.style.display = 'block';
+            bottomNav.style.display = 'flex';
+            if (currentSectionIndex === 0) {
+                fabButton.classList.add('show');
+            }
+            
+            // Переключаемся на экран задач
+            switchSection('tasks-content', document.querySelector('.nav-button[data-section="tasks-content"]'));
         }
         
         // --- ФУНКЦИИ ДЛЯ НАСТРОЕК С УЛУЧШЕННЫМ DEBOUNCE ---
@@ -2691,7 +3172,7 @@
         
         function handleTouchStart(e) {
             // Если идет свайп задачи, игнорируем основной свайп
-            if (isSwipingTask) return;
+            if (isSwipingTask || isOnboardingShown) return;
             
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
@@ -2700,7 +3181,7 @@
         
         function handleTouchMove(e) {
             // Если идет свайп задачи, игнорируем основной свайп
-            if (isSwipingTask) {
+            if (isSwipingTask || isOnboardingShown) {
                 e.preventDefault();
                 return;
             }
@@ -2743,7 +3224,7 @@
         }
         
         function handleTouchEnd() {
-            if (!isSwiping || isSwipingTask) {
+            if (!isSwiping || isSwipingTask || isOnboardingShown) {
                 touchStartX = 0;
                 return;
             }
@@ -2771,7 +3252,7 @@
         }
         
         function handleTouchCancel() {
-            if (isSwiping && !isSwipingTask) {
+            if (isSwiping && !isSwipingTask && !isOnboardingShown) {
                 animateSwipeTo(currentSectionIndex);
                 isSwiping = false;
                 swipeWrapper.classList.remove('swiping');
@@ -2782,7 +3263,7 @@
         
         // Аналогичные функции для мыши
         function handleMouseStart(e) {
-            if (isSwipingTask) return;
+            if (isSwipingTask || isOnboardingShown) return;
             
             touchStartX = e.clientX;
             touchStartY = e.clientY;
@@ -2790,7 +3271,7 @@
         }
         
         function handleMouseMove(e) {
-            if (isSwipingTask) {
+            if (isSwipingTask || isOnboardingShown) {
                 e.preventDefault();
                 return;
             }
@@ -2831,7 +3312,7 @@
         }
         
         function handleMouseEnd() {
-            if (!isSwiping || isSwipingTask) {
+            if (!isSwiping || isSwipingTask || isOnboardingShown) {
                 touchStartX = 0;
                 return;
             }
@@ -2859,7 +3340,7 @@
         }
         
         function handleMouseCancel() {
-            if (isSwiping && !isSwipingTask) {
+            if (isSwiping && !isSwipingTask && !isOnboardingShown) {
                 animateSwipeTo(currentSectionIndex);
                 isSwiping = false;
                 swipeWrapper.classList.remove('swiping');
@@ -4212,7 +4693,9 @@
         // Event Listeners
         bottomNav.querySelectorAll('.nav-button').forEach(button => {
             button.addEventListener('click', () => {
-                switchSection(button.getAttribute('data-section'), button);
+                if (!isOnboardingShown) {
+                    switchSection(button.getAttribute('data-section'), button);
+                }
             });
         });
         
@@ -4240,6 +4723,10 @@
         window.closeTaskFormModal = closeTaskFormModal;
         window.performSwipeMarkAsDone = performSwipeMarkAsDone;
         window.performSwipeDelete = performSwipeDelete;
+        window.nextOnboardingScreen = nextOnboardingScreen;
+        window.prevOnboardingScreen = prevOnboardingScreen;
+        window.skipOnboarding = skipOnboarding;
+        window.finishOnboarding = finishOnboarding;
 
         // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', function() {
@@ -4287,4 +4774,3 @@
     </script>
 </body>
 </html>
-
