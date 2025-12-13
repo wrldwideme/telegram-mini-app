@@ -1236,8 +1236,8 @@
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* ИСПРАВЛЕНИЕ: Показываем FAB только в первом разделе (Задачи) */
-        .swipe-wrapper > .content-section:nth-child(1) #fab-button {
+        /* ИСПРАВЛЕНИЕ: Простой селектор для видимости */
+        #fab-button.show {
             opacity: 1;
             visibility: visible;
             transform: scale(1);
@@ -2584,12 +2584,24 @@
             
             updateAIChatVisibility();
             
+            // ИСПРАВЛЕНИЕ: Управление видимостью кнопки FAB
+            updateFabVisibility();
+            
             if (sectionId === 'tasks-content') {
                 if (document.getElementById('tasks-list').children.length < 2) {
                     fetchTasks(); 
                 }
             } else if (sectionId === 'stats-content') {
                 fetchStats(); 
+            }
+        }
+        
+        // НОВАЯ ФУНКЦИЯ: Обновление видимости кнопки FAB
+        function updateFabVisibility() {
+            if (currentSectionIndex === 0) {
+                fabButton.classList.add('show');
+            } else {
+                fabButton.classList.remove('show');
             }
         }
         
@@ -2612,12 +2624,6 @@
                 }, 100);
             } else {
                 aiChatInputArea.style.display = 'none';
-            }
-            
-            // Управление видимостью кнопки FAB (только на экране задач)
-            if (currentSectionId === 'tasks-content') {
-                // FAB уже имеет CSS стили для отображения только на tasks-content
-                // Не нужно добавлять дополнительную логику
             }
         }
         
@@ -2649,6 +2655,7 @@
             }
             
             updateAIChatVisibility();
+            updateFabVisibility();
             
             if (sectionId === 'tasks-content') {
                 if (document.getElementById('tasks-list').children.length < 2) {
@@ -3388,6 +3395,7 @@
                 initSwipe();
                 
                 updateAIChatVisibility();
+                updateFabVisibility();
                 
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
@@ -3401,6 +3409,7 @@
                 initSwipe();
                 
                 updateAIChatVisibility();
+                updateFabVisibility();
                 
                 const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
                 if (tasksButton) {
