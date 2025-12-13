@@ -352,6 +352,94 @@
             animation: slideUp 0.5s ease-out;
         }
 
+        /* СТИЛИ ДЛЯ БЛОКА ВЫПОЛНЕННЫХ ЗАДАЧ */
+        #completed-tasks-section {
+            margin-top: 30px;
+            width: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        #completed-tasks-section h2 {
+            color: var(--text-color);
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(52, 199, 89, 0.3);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .completed-task-item {
+            background: var(--secondary-bg-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border-left: 4px solid rgba(52, 199, 89, 0.5);
+            opacity: 0.85;
+        }
+
+        .completed-task-item:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .completed-task-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(52, 199, 89, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #34c759;
+            font-size: 0.9em;
+        }
+
+        .completed-task-text {
+            flex-grow: 1;
+            color: var(--text-color);
+            font-size: 0.95em;
+            text-decoration: line-through;
+            opacity: 0.7;
+            word-break: break-word;
+        }
+
+        .completed-tasks-empty {
+            text-align: center;
+            padding: 25px 20px;
+            color: var(--hint-color);
+            font-style: italic;
+            background: rgba(var(--link-color-rgb, 0, 122, 255), 0.05);
+            border-radius: 12px;
+            margin-top: 10px;
+            border: 1px dashed rgba(var(--link-color-rgb, 0, 122, 255), 0.2);
+        }
+
+        .completed-tasks-loading {
+            text-align: center;
+            padding: 15px;
+            color: var(--hint-color);
+        }
+
+        .completed-tasks-error {
+            text-align: center;
+            padding: 15px;
+            color: #ff3b30;
+            background: rgba(255, 59, 48, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 59, 48, 0.1);
+            margin-top: 10px;
+        }
+
         /* Остальные стили остаются без изменений... */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -2459,6 +2547,25 @@
                 max-height: 100px;
             }
             
+            /* Адаптивность для блока выполненных задач */
+            .completed-task-item {
+                padding: 10px 12px;
+            }
+            
+            .completed-task-icon {
+                width: 20px;
+                height: 20px;
+                font-size: 0.8em;
+            }
+            
+            .completed-task-text {
+                font-size: 0.9em;
+            }
+            
+            #completed-tasks-section h2 {
+                font-size: 1.1em;
+            }
+            
             /* Исправление полей формы для iPhone */
             .ios-row {
                 padding: 10px 12px;
@@ -2598,6 +2705,25 @@
                 margin-right: 8px;
             }
             
+            /* Адаптивность для блока выполненных задач */
+            .completed-task-item {
+                padding: 8px 10px;
+            }
+            
+            .completed-task-icon {
+                width: 18px;
+                height: 18px;
+                font-size: 0.75em;
+            }
+            
+            .completed-task-text {
+                font-size: 0.85em;
+            }
+            
+            #completed-tasks-section h2 {
+                font-size: 1em;
+            }
+            
             .ios-label {
                 width: 80px;
                 font-size: 0.9em;
@@ -2676,6 +2802,30 @@
             -webkit-overflow-scrolling: touch;
             min-height: 0;
             padding-bottom: 20px;
+        }
+        
+        #completed-tasks-list {
+            max-height: 300px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 10px;
+        }
+        
+        #completed-tasks-list::-webkit-scrollbar {
+            width: 3px;
+        }
+        
+        #completed-tasks-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        #completed-tasks-list::-webkit-scrollbar-thumb {
+            background: rgba(52, 199, 89, 0.3);
+            border-radius: 1.5px;
+        }
+        
+        #completed-tasks-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(52, 199, 89, 0.5);
         }
     </style>
 </head>
@@ -2839,6 +2989,14 @@
                 <h2>📝 Активные задачи</h2>
                 <div id="tasks-list" class="scrollable-content">
                     <p class="loading-message">Загрузка задач...</p>
+                </div>
+                
+                <!-- НОВЫЙ БЛОК: Выполненные задачи -->
+                <div id="completed-tasks-section">
+                    <h2>✅ Выполненные задачи</h2>
+                    <div id="completed-tasks-list" class="scrollable-content">
+                        <p class="completed-tasks-loading">Загрузка выполненных задач...</p>
+                    </div>
                 </div>
             </div>
 
@@ -3154,6 +3312,7 @@
         const N8N_DELETE_URL = 'https://i74s52gg.rcld.app/webhook/delete-task';
         const N8N_GET_STATS_URL = 'https://i74s52gg.rcld.app/webhook/get-stats';
         const N8N_GET_INSIGHTS_URL = 'https://i74s52gg.rcld.app/webhook/get-insights'; // НОВЫЙ URL
+        const N8N_GET_COMPLETED_TASKS_URL = 'https://i74s52gg.rcld.app/webhook/get-completed-tasks'; // НОВЫЙ URL
         
         // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЕК
         const N8N_GET_SETTINGS_URL = 'https://i74s52gg.rcld.app/webhook/get-user-settings';
@@ -3162,6 +3321,7 @@
         const N8N_AUTH_HEADER = 'Basic YWRtaW46MzIx'; 
         
         const tasksList = document.getElementById('tasks-list');
+        const completedTasksList = document.getElementById('completed-tasks-list'); // НОВЫЙ ЭЛЕМЕНТ
         const taskForm = document.getElementById('task-form');
         const contextMenu = document.getElementById('context-menu');
         const bottomNav = document.getElementById('bottom-nav');
@@ -3207,6 +3367,7 @@
         let isEditing = false;
         let currentEditingId = null; 
         let allTasksData = []; 
+        let allCompletedTasksData = []; // НОВАЯ ПЕРЕМЕННАЯ
         
         // --- ПЕРЕМЕННЫЕ ДЛЯ СВАЙПОВ ---
         let currentSectionIndex = 0; // 0 = задачи, 1 = AI, 2 = аналитика
@@ -3256,6 +3417,12 @@
         const TASKS_CACHE_DURATION = 5 * 60 * 1000; // 5 минут в миллисекундах
         let tasksCacheVersion = 0; // Увеличивается при изменении задач
         
+        // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ КЭШИРОВАНИЯ ВЫПОЛНЕННЫХ ЗАДАЧ ---
+        let cachedCompletedTasksData = null;
+        let completedTasksLastUpdated = null;
+        const COMPLETED_TASKS_CACHE_DURATION = 5 * 60 * 1000; // 5 минут в миллисекундах
+        let completedTasksCacheVersion = 0; // Увеличивается при изменении выполненных задач
+        
         // --- НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ КЭШИРОВАНИЯ ИНСАЙТОВ ---
         let cachedInsightsData = null;
         let insightsLastUpdated = null;
@@ -3289,6 +3456,38 @@
             const cachedTasks = getTasksFromCache();
             if (cachedTasks) {
                 displayTasks(cachedTasks);
+                return true;
+            }
+            return false;
+        }
+
+        // --- НОВЫЕ ФУНКЦИИ ДЛЯ РАБОТЫ С КЭШЕМ ВЫПОЛНЕННЫХ ЗАДАЧ ---
+        function invalidateCompletedTasksCache() {
+            completedTasksCacheVersion++;
+            cachedCompletedTasksData = null;
+            completedTasksLastUpdated = null;
+            console.log('Completed tasks cache invalidated, new version:', completedTasksCacheVersion);
+        }
+        
+        function getCompletedTasksFromCache() {
+            const now = Date.now();
+            if (cachedCompletedTasksData && completedTasksLastUpdated && 
+                (now - completedTasksLastUpdated) < COMPLETED_TASKS_CACHE_DURATION) {
+                return cachedCompletedTasksData;
+            }
+            return null;
+        }
+        
+        function saveCompletedTasksToCache(tasks) {
+            cachedCompletedTasksData = tasks;
+            completedTasksLastUpdated = Date.now();
+            console.log('Completed tasks saved to cache, count:', tasks.length);
+        }
+
+        function displayCompletedTasksFromCache() {
+            const cachedCompletedTasks = getCompletedTasksFromCache();
+            if (cachedCompletedTasks) {
+                displayCompletedTasks(cachedCompletedTasks);
                 return true;
             }
             return false;
@@ -3967,6 +4166,10 @@
                 if (!displayTasksFromCache()) {
                     fetchTasks(false); // Не форсируем загрузку, только если кэш пуст
                 }
+                // Показываем кэшированные выполненные задачи, если они есть
+                if (!displayCompletedTasksFromCache()) {
+                    fetchCompletedTasks(false); // Не форсируем загрузку, только если кэш пуст
+                }
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
                 safeDisplayCachedStats();
@@ -4042,6 +4245,10 @@
                 // Показываем кэшированные задачи, если они есть
                 if (!displayTasksFromCache()) {
                     fetchTasks(false);
+                }
+                // Показываем кэшированные выполненные задачи, если они есть
+                if (!displayCompletedTasksFromCache()) {
+                    fetchCompletedTasks(false);
                 }
             } else if (sectionId === 'stats-content') {
                 // Показываем кэшированные данные статистики, если они есть
@@ -4185,9 +4392,11 @@
                     
                     closeTaskFormModal();
                     
-                    // Инвалидируем кэш задач и загружаем свежие данные
+                    // Инвалидируем кэш задач и выполненных задач, загружаем свежие данные
                     invalidateTasksCache();
+                    invalidateCompletedTasksCache();
                     await fetchTasks(true); // Форсированная загрузка
+                    await fetchCompletedTasks(true); // Форсированная загрузка выполненных задач
                     
                     // Обновляем статистику после изменения задачи
                     await fetchStats(true);
@@ -4712,12 +4921,14 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
-                // Инвалидируем кэш задач
+                // Инвалидируем кэш задач и выполненных задач
                 invalidateTasksCache();
+                invalidateCompletedTasksCache();
                 
                 // Загружаем обновленные задачи через 0.9 секунд
                 setTimeout(() => {
                     fetchTasks(true);
+                    fetchCompletedTasks(true);
                 }, 900);
                 
                 // Обновляем статистику после выполнения задачи
@@ -4764,12 +4975,14 @@
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 
-                // Инвалидируем кэш задач
+                // Инвалидируем кэш задач и выполненных задач
                 invalidateTasksCache();
+                invalidateCompletedTasksCache();
                 
                 // Загружаем обновленные задачи через 0.9 секунд
                 setTimeout(() => {
                     fetchTasks(true);
+                    fetchCompletedTasks(true);
                 }, 900);
                 
                 // Обновляем статистику после удаления задачи
@@ -4818,9 +5031,11 @@
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
 
-                    // Инвалидируем кэш задач
+                    // Инвалидируем кэш задач и выполненных задач
                     invalidateTasksCache();
+                    invalidateCompletedTasksCache();
                     await fetchTasks(true);
+                    await fetchCompletedTasks(true);
                     
                     // Обновляем статистику после выполнения задачи
                     await fetchStats(true);
@@ -4870,9 +5085,11 @@
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     
-                    // Инвалидируем кэш задач
+                    // Инвалидируем кэш задач и выполненных задач
                     invalidateTasksCache();
+                    invalidateCompletedTasksCache();
                     await fetchTasks(true);
+                    await fetchCompletedTasks(true);
                     
                     // Обновляем статистику после удаления задачи
                     await fetchStats(true);
@@ -4962,6 +5179,126 @@
                 </div>
             `;
             tg.showAlert('Ошибка загрузки задач.');
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Отображение выполненных задач
+        function displayCompletedTasks(tasks) {
+            allCompletedTasksData = tasks; // Обновляем глобальную переменную
+
+            // Фильтруем только выполненные задачи
+            const completedTasks = tasks.filter(task => (task.done || 'no').toLowerCase() === 'yes');
+
+            if (completedTasks.length === 0) {
+                completedTasksList.innerHTML = '<p class="completed-tasks-empty">🎉 Пока нет выполненных задач</p>';
+                return;
+            }
+            
+            // Сортируем по дате выполнения (новые первыми)
+            completedTasks.sort((a, b) => {
+                const aTimeStr = a.date + ' ' + (a.time || '00:00');
+                const bTimeStr = b.date + ' ' + (b.time || '00:00');
+
+                const aDate = new Date(aTimeStr);
+                const bDate = new Date(bTimeStr);
+                
+                if (isNaN(aDate.getTime())) return 1; 
+                if (isNaN(bDate.getTime())) return -1;
+                
+                return bDate.getTime() - aDate.getTime(); // Обратный порядок
+            });
+
+            completedTasksList.innerHTML = ''; 
+
+            completedTasks.forEach(taskData => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'completed-task-item';
+                
+                const taskText = taskData.task_text || taskData.task || 'Нет текста задачи';
+                const taskId = taskData.id;
+
+                taskItem.innerHTML = `
+                    <div class="completed-task-icon">✅</div>
+                    <div class="completed-task-text">${taskText}</div>
+                `;
+                completedTasksList.appendChild(taskItem);
+            });
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Отображение ошибки для выполненных задач
+        function displayCompletedTasksError(message) {
+            completedTasksList.innerHTML = `
+                <div class="completed-tasks-error">
+                    <p>Ошибка загрузки выполненных задач: ${message}</p>
+                </div>
+            `;
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Загрузка выполненных задач с кэшированием
+        async function fetchCompletedTasks(forceRefresh = false) {
+            // Проверяем кэш, если не принудительное обновление
+            if (!forceRefresh) {
+                const cachedCompletedTasks = getCompletedTasksFromCache();
+                if (cachedCompletedTasks) {
+                    console.log('Using cached completed tasks data');
+                    displayCompletedTasks(cachedCompletedTasks);
+                    return;
+                }
+            }
+
+            try {
+                if (!tg.initData) {
+                    displayCompletedTasksError('Telegram initData is missing. Cannot authorize.');
+                    return;
+                }
+
+                completedTasksList.innerHTML = '<p class="completed-tasks-loading">Загрузка выполненных задач...</p>';
+                
+                // Создаем AbortController для таймаута
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 секунд таймаут
+                
+                const response = await fetch(N8N_GET_COMPLETED_TASKS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const tasks = await response.json();
+
+                if (!Array.isArray(tasks)) {
+                    throw new Error('Некорректный формат данных от API.');
+                }
+                
+                // Сохраняем в кэш
+                saveCompletedTasksToCache(tasks);
+                
+                // Отображаем задачи
+                displayCompletedTasks(tasks);
+
+            } catch (error) {
+                console.error('Fetch completed tasks error:', error);
+                
+                // Если ошибка - таймаут или сетевая ошибка, пробуем показать кэш
+                if (error.name === 'AbortError' || error.name === 'TypeError') {
+                    const cachedCompletedTasks = getCompletedTasksFromCache();
+                    if (cachedCompletedTasks) {
+                        displayCompletedTasks(cachedCompletedTasks);
+                        tg.showAlert('Не удалось обновить выполненные задачи. Показаны кэшированные данные.');
+                        return;
+                    }
+                }
+                
+                displayCompletedTasksError(error.message);
+            }
         }
 
         // НОВАЯ ФУНКЦИЯ: Отображение задач из массива
@@ -5638,9 +5975,10 @@
         // --- НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ВСЕХ ДАННЫХ ПРИ ЗАПУСКЕ ---
         async function loadInitialData() {
             try {
-                // Загружаем задачи, статистику и инсайты параллельно
+                // Загружаем задачи, выполненные задачи, статистику и инсайты параллельно
                 await Promise.allSettled([
                     fetchTasks(false), // Не форсируем, используем кэш если есть
+                    fetchCompletedTasks(false), // Не форсируем, используем кэш если есть
                     fetchStats(false),  // Не форсируем, используем кэш если есть
                     fetchInsights(false) // Не форсируем, используем кэш если есть
                 ]);
@@ -5687,6 +6025,7 @@
         window.setDefaultFormValues = setDefaultFormValues; 
         window.deleteTask = deleteTask; 
         window.fetchTasks = fetchTasks; 
+        window.fetchCompletedTasks = fetchCompletedTasks; // НОВАЯ ФУНКЦИЯ
         window.fetchStats = fetchStats;
         window.fetchInsights = fetchInsights; // НОВАЯ ФУНКЦИЯ
         window.switchSection = switchSection;
@@ -5702,6 +6041,7 @@
         window.finishOnboarding = finishOnboarding;
         window.markdownToHtml = markdownToHtml;
         window.invalidateTasksCache = invalidateTasksCache;
+        window.invalidateCompletedTasksCache = invalidateCompletedTasksCache; // НОВАЯ ФУНКЦИЯ
         window.invalidateInsightsCache = invalidateInsightsCache; // НОВАЯ ФУНКЦИЯ
 
         // Инициализация при загрузке
@@ -5748,10 +6088,6 @@
                     restoreChatHistory();
                 }, 500);
             }
-        });
-
-        window.addEventListener('load', function() {
-            console.log('Page fully loaded');
         });
     </script>
 </body>
