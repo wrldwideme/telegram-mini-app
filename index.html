@@ -209,35 +209,98 @@
             color: var(--hint-color);
         }
 
+        /* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ПОДСКАЗОК СВАЙПА - БОЛЕЕ КРАСИВЫЕ */
         .swipe-hint-right, .swipe-hint-left {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9em;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 1.1em;
             opacity: 0;
             animation: fadeInOut 2s infinite;
+            border: none;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10;
+            min-width: 140px;
+            text-align: center;
         }
 
         .swipe-hint-right {
             right: 20px;
-            background: rgba(52, 199, 89, 0.2);
-            color: #34c759;
-            border: 2px solid rgba(52, 199, 89, 0.3);
+            background: linear-gradient(135deg, rgba(52, 199, 89, 0.9), rgba(46, 204, 113, 0.9));
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .swipe-hint-left {
             left: 20px;
-            background: rgba(255, 59, 48, 0.2);
-            color: #ff3b30;
-            border: 2px solid rgba(255, 59, 48, 0.3);
+            background: linear-gradient(135deg, rgba(255, 59, 48, 0.9), rgba(255, 69, 58, 0.9));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Подписи под задачей */
+        .swipe-hint-label {
+            position: absolute;
+            bottom: -30px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--hint-color);
+            opacity: 0;
+            animation: fadeInOut 2s infinite 0.5s;
+            white-space: nowrap;
+        }
+
+        .swipe-hint-label.right {
+            right: 20px;
+        }
+
+        .swipe-hint-label.left {
+            left: 20px;
         }
 
         @keyframes fadeInOut {
             0%, 100% { opacity: 0; transform: translateY(-50%) scale(0.9); }
             50% { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
+        /* Анимация градиента на самой задаче */
+        .demo-task-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                rgba(255, 59, 48, 0.1) 0%, 
+                rgba(255, 59, 48, 0.2) 30%, 
+                rgba(52, 199, 89, 0.2) 70%, 
+                rgba(52, 199, 89, 0.1) 100%);
+            border-radius: 16px;
+            animation: gradientShift 3s ease-in-out infinite alternate;
+            z-index: 1;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background: linear-gradient(90deg, 
+                    rgba(255, 59, 48, 0.15) 0%, 
+                    rgba(255, 59, 48, 0.25) 30%, 
+                    rgba(52, 199, 89, 0.15) 70%, 
+                    rgba(52, 199, 89, 0.05) 100%);
+            }
+            100% {
+                background: linear-gradient(90deg, 
+                    rgba(255, 59, 48, 0.05) 0%, 
+                    rgba(255, 59, 48, 0.15) 30%, 
+                    rgba(52, 199, 89, 0.25) 70%, 
+                    rgba(52, 199, 89, 0.15) 100%);
+            }
         }
 
         .fab-demo {
@@ -780,7 +843,7 @@
             }
         }
 
-        /* --- ОБНОВЛЕННЫЕ СТИЛИ МОДАЛЬНОГО ОКНА ФОРМЫ (iOS/Telegram стиль) --- */
+        /* --- ОБНОВЛЕННЫЕ СТИЛИ МОДАЛЬНОГО ОКНА ФОРМЫ (АДАПТИРОВАНЫ ДЛЯ СВЕТЛОЙ ТЕМЫ) --- */
         #task-form-modal {
             position: fixed;
             top: 0;
@@ -804,7 +867,7 @@
         }
 
         .modal-content {
-            background: rgba(var(--tg-theme-bg-color, 255, 255, 255), 0.92);
+            background: rgba(255, 255, 255, 0.95); /* Изменено для светлой темы */
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border-radius: 20px;
@@ -816,7 +879,7 @@
                 0 20px 60px rgba(0, 0, 0, 0.15),
                 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
             animation: slideUp 0.35s cubic-bezier(0.23, 1, 0.32, 1);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(0, 0, 0, 0.08); /* Изменено для светлой темы */
             transform: translateY(0);
             will-change: transform;
         }
@@ -834,11 +897,11 @@
 
         .modal-header {
             padding: 22px 24px 18px;
-            border-bottom: 1px solid rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Изменено для светлой темы */
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(var(--tg-theme-bg-color, 255, 255, 255), 0.9);
+            background: rgba(255, 255, 255, 0.9); /* Изменено для светлой темы */
             border-radius: 20px 20px 0 0;
             backdrop-filter: blur(20px);
         }
@@ -866,11 +929,11 @@
             justify-content: center;
             border-radius: 50%;
             transition: all 0.2s;
-            background: rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.1);
+            background: rgba(0, 0, 0, 0.05); /* Изменено для светлой темы */
         }
 
         .modal-close:hover {
-            background-color: rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.2);
+            background-color: rgba(0, 0, 0, 0.1); /* Изменено для светлой темы */
             color: var(--text-color);
         }
 
@@ -886,8 +949,8 @@
             width: 100%;
             box-sizing: border-box;
             margin-bottom: 20px;
-            background: rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.05);
-            border: 1px solid rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.1);
+            background: rgba(0, 0, 0, 0.03); /* Изменено для светлой темы */
+            border: 1px solid rgba(0, 0, 0, 0.08); /* Изменено для светлой темы */
             backdrop-filter: blur(10px);
         }
         
@@ -895,7 +958,7 @@
             display: flex;
             align-items: center;
             padding: 14px 18px; 
-            border-bottom: 1px solid rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.08); 
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* Изменено для светлой темы */ 
             background: transparent; 
             min-height: 48px; 
             box-sizing: border-box;
@@ -908,7 +971,7 @@
         }
 
         .ios-row:hover {
-            background: rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.04);
+            background: rgba(0, 0, 0, 0.02); /* Изменено для светлой темы */
         }
 
         .ios-label {
@@ -992,10 +1055,10 @@
 
         .modal-footer {
             padding: 20px 24px;
-            border-top: 1px solid rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.1);
+            border-top: 1px solid rgba(0, 0, 0, 0.1); /* Изменено для светлой темы */
             display: flex;
             gap: 12px;
-            background: rgba(var(--tg-theme-bg-color, 255, 255, 255), 0.9);
+            background: rgba(255, 255, 255, 0.9); /* Изменено для светлой темы */
             border-radius: 0 0 20px 20px;
             backdrop-filter: blur(20px);
         }
@@ -1044,28 +1107,34 @@
         }
 
         .modal-button.secondary {
-            background: rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.08);
+            background: rgba(0, 0, 0, 0.05); /* Изменено для светлой темы */
             color: var(--text-color);
-            border: 1px solid rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.15);
+            border: 1px solid rgba(0, 0, 0, 0.1); /* Изменено для светлой темы */
         }
 
         .modal-button.secondary:hover {
-            background: rgba(var(--tg-theme-secondary-bg-color, 0, 0, 0), 0.15);
+            background: rgba(0, 0, 0, 0.1); /* Изменено для светлой темы */
             transform: translateY(-1px);
         }
 
-        /* Темная тема для модального окна */
+        /* Для темной темы - оставляем оригинальные стили */
         @media (prefers-color-scheme: dark) {
-            #task-form-modal {
-                background-color: rgba(0, 0, 0, 0.75);
+            .modal-content {
+                background: rgba(26, 26, 26, 0.92);
+                border: 1px solid rgba(255, 255, 255, 0.08);
             }
             
-            .modal-content {
-                background: rgba(var(--tg-theme-bg-color, 26, 26, 26), 0.88);
-                box-shadow: 
-                    0 20px 60px rgba(0, 0, 0, 0.35),
-                    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-                border: 1px solid rgba(255, 255, 255, 0.08);
+            .modal-header {
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(26, 26, 26, 0.9);
+            }
+            
+            .modal-close {
+                background: rgba(255, 255, 255, 0.05);
+            }
+            
+            .modal-close:hover {
+                background-color: rgba(255, 255, 255, 0.1);
             }
             
             .ios-group {
@@ -1075,6 +1144,15 @@
             
             .ios-row {
                 border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .ios-row:hover {
+                background: rgba(255, 255, 255, 0.04);
+            }
+            
+            .modal-footer {
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(26, 26, 26, 0.9);
             }
             
             .modal-button.secondary {
@@ -3612,10 +3690,10 @@
                 }
             });
             
-            // Прокручиваем к последнему сообщению
+            // ИСПРАВЛЕНИЕ БАГА 4: Прокручиваем к самому последнему сообщению сразу
             setTimeout(() => {
                 aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
-            }, 100);
+            }, 50);
         }
 
         // --- ФУНКЦИЯ ПРЕОБРАЗОВАНИЯ MARKDOWN В HTML ---
@@ -4035,7 +4113,7 @@
             if (!touchStartX) return;
             
             touchEndX = e.clientX;
-            const touchEndY = e.clientY;
+            const touchEndY = e.touches ? e.touches[0].clientY : e.clientY;
             
             const diffX = touchStartX - touchEndX;
             const diffY = Math.abs(touchStartY - touchEndY);
@@ -4993,6 +5071,9 @@
                 
                 console.log('Task deleted via swipe:', taskId);
                 
+                // ИСПРАВЛЕНИЕ БАГА 1: Сбрасываем состояние свайпа после удаления
+                resetTaskSwipe();
+                
             } catch (error) {
                 console.error('Swipe DELETE error:', error);
                 // Возвращаем карточку в исходное состояние при ошибке
@@ -5733,6 +5814,10 @@
                     hideAILoading();
                     appendMessage(aiResponseText, 'ai');
 
+                    // ИСПРАВЛЕНИЕ БАГА 6: Обновляем задачи после ответа AI, так как AI мог создать задачу
+                    fetchTasks(true);
+                    fetchCompletedTasks(true);
+
                 } catch (error) {
                     console.error('AI Chat Error:', error);
                     hideAILoading();
@@ -5771,324 +5856,196 @@
         // --- ЛОГИКА ЗАГРУЗКИ И ОТОБРАЖЕНИЯ СТАТИСТИКИ ---
 
         function getDayName(dayIndex) {
-            const days = ['ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ', 'ВС'];
-            return days[dayIndex] || '?';
+            const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            return days[dayIndex];
         }
 
-        // БЕЗОПАСНАЯ ФУНКЦИЯ: Отображение статистики с проверкой элементов
         function safeDisplayCachedStats() {
-            if (!cachedStatsData) return;
-            
-            const statData = cachedStatsData;
-            
-            const activeTasks = statData.activeTotal || 0;
-            const completedTasks = statData.totalCompleted || 0;
-            const totalTasks = activeTasks + completedTasks;
-            const todayDone = statData.todayDone || 0;
-            const expiredCount = statData.expiredCount || 0;
-            
-            const highPriority = statData.importanceDistribution?.high || 0;
-            const mediumPriority = statData.importanceDistribution?.medium || 0;
-            const lowPriority = statData.importanceDistribution?.low || 0;
-            
-            const weeklyActivity = statData.weeklyActivity || {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
-            
-            // Безопасное обновление элементов с проверкой существования
-            const updateElement = (id, value) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.textContent = value;
+            // Показываем кэшированную статистику, если она есть
+            if (cachedStatsData && statsLastUpdated && 
+                (Date.now() - statsLastUpdated) < STATS_CACHE_DURATION) {
+                displayStats(cachedStatsData);
+                return true;
+            }
+            return false;
+        }
+
+        async function fetchStats(forceRefresh = false) {
+            // Проверяем кэш, если не принудительное обновление
+            if (!forceRefresh) {
+                if (safeDisplayCachedStats()) {
+                    return;
                 }
-            };
-            
-            const updateStyle = (id, property, value) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.style[property] = value;
+            }
+
+            try {
+                if (!tg.initData) {
+                    console.warn('Telegram initData is missing. Cannot fetch stats.');
+                    return;
                 }
-            };
-            
-            updateElement('stat-total', totalTasks);
-            updateElement('stat-active', activeTasks);
-            updateElement('stat-completed', completedTasks);
-            updateElement('stat-high-priority', highPriority);
-            updateElement('stat-today', todayDone);
-            updateElement('stat-expired', expiredCount);
-            
-            const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            updateElement('progress-percentage', `${progressPercentage}%`);
-            updateStyle('progress-bar', 'width', `${progressPercentage}%`);
-            updateElement('progress-active', `${activeTasks} активных`);
-            updateElement('progress-completed', `${completedTasks} выполнено`);
-            
-            const totalPriority = highPriority + mediumPriority + lowPriority;
-            
-            updateElement('priority-high', highPriority);
-            updateElement('priority-medium', mediumPriority);
-            updateElement('priority-low', lowPriority);
-            
-            updateElement('percentage-high', totalPriority > 0 ? `${Math.round((highPriority / totalPriority) * 100)}%` : '0%');
-            updateElement('percentage-medium', totalPriority > 0 ? `${Math.round((mediumPriority / totalPriority) * 100)}%` : '0%');
-            updateElement('percentage-low', totalPriority > 0 ? `${Math.round((lowPriority / totalPriority) * 100)}%` : '0%');
-            
-            const weeklyGridElement = document.getElementById('weekly-grid');
-            if (weeklyGridElement) {
-                weeklyGridElement.innerHTML = '';
+
+                const response = await fetch(N8N_GET_STATS_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': N8N_AUTH_HEADER,
+                        'X-Init-Data': tg.initData,
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const statsData = await response.json();
                 
-                const today = new Date().getDay();
-                const todayInOurSystem = today === 0 ? 6 : today - 1;
+                // Сохраняем в кэш
+                cachedStatsData = statsData;
+                statsLastUpdated = Date.now();
                 
+                // Отображаем статистику
+                displayStats(statsData);
+
+            } catch (error) {
+                console.error('Fetch stats error:', error);
+                
+                // Пробуем показать кэшированные данные при ошибке
+                if (!safeDisplayCachedStats()) {
+                    // Показываем сообщение об ошибке
+                    const statsContainer = document.getElementById('stats-container');
+                    if (statsContainer) {
+                        statsContainer.innerHTML = `
+                            <div class="error-message-container">
+                                <p class="error-message">Ошибка загрузки статистики: ${error.message}</p>
+                                <button class="refresh-button" onclick="fetchStats(true)">🔄 Обновить</button>
+                            </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        function displayStats(statsData) {
+            // Обновляем основные метрики
+            document.getElementById('stat-total').textContent = statsData.total_tasks || 0;
+            document.getElementById('stat-active').textContent = statsData.active_tasks || 0;
+            document.getElementById('stat-completed').textContent = statsData.completed_tasks || 0;
+            document.getElementById('stat-high-priority').textContent = statsData.high_priority_tasks || 0;
+            document.getElementById('stat-today').textContent = statsData.today_completed || 0;
+            document.getElementById('stat-expired').textContent = statsData.expired_tasks || 0;
+
+            // Обновляем прогресс выполнения
+            const totalTasks = statsData.total_tasks || 1;
+            const completedTasks = statsData.completed_tasks || 0;
+            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            document.getElementById('progress-percentage').textContent = `${percentage}%`;
+            document.getElementById('progress-bar').style.width = `${percentage}%`;
+            document.getElementById('progress-active').textContent = `${statsData.active_tasks || 0} активных`;
+            document.getElementById('progress-completed').textContent = `${completedTasks} выполнено`;
+
+            // Обновляем распределение по приоритетам
+            document.getElementById('priority-high').textContent = statsData.high_priority_tasks || 0;
+            document.getElementById('priority-medium').textContent = statsData.medium_priority_tasks || 0;
+            document.getElementById('priority-low').textContent = statsData.low_priority_tasks || 0;
+
+            const highPercentage = totalTasks > 0 ? Math.round((statsData.high_priority_tasks / totalTasks) * 100) : 0;
+            const mediumPercentage = totalTasks > 0 ? Math.round((statsData.medium_priority_tasks / totalTasks) * 100) : 0;
+            const lowPercentage = totalTasks > 0 ? Math.round((statsData.low_priority_tasks / totalTasks) * 100) : 0;
+
+            document.getElementById('percentage-high').textContent = `${highPercentage}%`;
+            document.getElementById('percentage-medium').textContent = `${mediumPercentage}%`;
+            document.getElementById('percentage-low').textContent = `${lowPercentage}%`;
+
+            // Обновляем еженедельную активность
+            const weeklyGrid = document.getElementById('weekly-grid');
+            if (weeklyGrid && statsData.weekly_activity) {
+                weeklyGrid.innerHTML = '';
+                
+                // Начинаем с понедельника
                 for (let i = 0; i < 7; i++) {
-                    const dayIndex = i;
-                    const apiDayIndex = dayIndex === 6 ? 0 : dayIndex + 1;
-                    
-                    const dayCount = weeklyActivity[apiDayIndex] || 0;
                     const dayCell = document.createElement('div');
                     dayCell.className = 'day-cell';
                     
-                    if (i === todayInOurSystem) {
-                        dayCell.style.background = 'rgba(52, 199, 89, 0.15)';
-                        dayCell.style.border = '1px solid rgba(52, 199, 89, 0.3)';
-                    }
+                    const dayName = document.createElement('div');
+                    dayName.className = 'day-name';
+                    dayName.textContent = getDayName(i);
                     
-                    dayCell.innerHTML = `
-                        <div class="day-name">${getDayName(i)}</div>
-                        <div class="day-count">${dayCount}</div>
-                    `;
+                    const dayCount = document.createElement('div');
+                    dayCount.className = 'day-count';
+                    dayCount.textContent = statsData.weekly_activity[i] || 0;
                     
-                    weeklyGridElement.appendChild(dayCell);
+                    dayCell.appendChild(dayName);
+                    dayCell.appendChild(dayCount);
+                    weeklyGrid.appendChild(dayCell);
                 }
             }
         }
 
-        // Старая функция для обратной совместимости
-        function displayCachedStats() {
-            safeDisplayCachedStats();
-        }
-
-        function displayStatsError(message) {
-            const statsContainer = document.getElementById('stats-container');
-            if (statsContainer) {
-                statsContainer.innerHTML = `
-                    <div class="error-message-container">
-                        <p class="error-message">Ошибка загрузки статистики: ${message}</p>
-                        <button class="refresh-button" onclick="fetchStats(true)">🔄 Обновить статистику</button>
-                    </div>
-                `;
-            }
-            tg.showAlert('Ошибка загрузки статистики.');
-        }
-
-        // УЛУЧШЕННАЯ ФУНКЦИЯ: Загрузка статистики с повторными попытками
-        async function fetchStats(forceRefresh = false) {
-            // Проверяем кэш, если не принудительное обновление
-            const now = Date.now();
-            if (!forceRefresh && cachedStatsData && statsLastUpdated && 
-                (now - statsLastUpdated) < STATS_CACHE_DURATION) {
-                console.log('Using cached stats data');
-                safeDisplayCachedStats();
-                return;
-            }
-
-            const maxRetries = 3;
-            let lastError = null;
+        // --- ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ---
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Инициализируем свайпы
+            initSwipe();
             
-            for (let attempt = 0; attempt < maxRetries; attempt++) {
-                try {
-                    if (!tg.initData) {
-                        displayStatsError('Telegram initData is missing. Cannot authorize.');
-                        return;
-                    }
-
-                    // Показываем загрузку только если раздел статистики активен
-                    if ((forceRefresh || !cachedStatsData) && currentSectionIndex === 2) {
-                        const statsContainer = document.getElementById('stats-container');
-                        if (statsContainer) {
-                            statsContainer.innerHTML = '<p class="loading-message">Загрузка статистики...</p>';
-                        }
-                    }
-                    
-                    // Экспоненциальная задержка между попытками: 300ms, 600ms, 1200ms
-                    if (attempt > 0) {
-                        await new Promise(resolve => setTimeout(resolve, 300 * Math.pow(2, attempt - 1)));
-                        console.log(`Retry attempt ${attempt + 1}/${maxRetries}`);
-                    }
-                    
-                    // Создаем AbortController для таймаута
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 секунд таймаут
-                    
-                    const response = await fetch(N8N_GET_STATS_URL, {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': N8N_AUTH_HEADER,
-                            'X-Init-Data': tg.initData,
-                        },
-                        signal: controller.signal
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    
-                    const statData = await response.json();
-                    
-                    console.log('Stats data received:', statData);
-
-                    // Кэшируем данные
-                    cachedStatsData = statData;
-                    statsLastUpdated = Date.now();
-                    
-                    // Отображаем данные только если раздел статистики активен
-                    if (currentSectionIndex === 2) {
-                        safeDisplayCachedStats();
-                    }
-                    return; // Успех, выходим из цикла
-
-                } catch (error) {
-                    console.error(`Fetch Stats attempt ${attempt + 1} error:`, error);
-                    lastError = error;
-                    
-                    // Если это последняя попытка или ошибка не связана с сетью, выходим
-                    if (attempt === maxRetries - 1 || (error.name !== 'TypeError' && error.name !== 'AbortError')) {
-                        break;
-                    }
-                }
-            }
+            // Загружаем историю чата
+            restoreChatHistory();
             
-            // Все попытки не удались
-            console.error('All stats fetch attempts failed:', lastError);
+            // Инициализируем кнопки навигации
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    switchSection(this.getAttribute('data-section'), this);
+                });
+            });
             
-            // Если есть кэшированные данные, показываем их с предупреждением
-            if (cachedStatsData) {
-                if (currentSectionIndex === 2) {
-                    safeDisplayCachedStats();
-                    tg.showAlert('Не удалось обновить статистику. Показаны кэшированные данные.');
-                }
-            } else if (currentSectionIndex === 2) {
-                displayStatsError(lastError.message);
-            }
-        }
-
-        // --- НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ВСЕХ ДАННЫХ ПРИ ЗАПУСКЕ ---
-        async function loadInitialData() {
-            try {
-                // Загружаем задачи, выполненные задачи, статистику и инсайты параллельно
-                await Promise.allSettled([
-                    fetchTasks(false), // Не форсируем, используем кэш если есть
-                    fetchCompletedTasks(false), // Не форсируем, используем кэш если есть
-                    fetchStats(false),  // Не форсируем, используем кэш если есть
-                    fetchInsights(false) // Не форсируем, используем кэш если есть
-                ]);
-                
-                console.log('Initial data loaded successfully');
-            } catch (error) {
-                console.error('Error loading initial data:', error);
-            }
-        }
-        
-        // Event Listeners
-        bottomNav.querySelectorAll('.nav-button').forEach(button => {
-            button.addEventListener('click', () => {
-                if (!isOnboardingShown) {
-                    switchSection(button.getAttribute('data-section'), button);
+            // Инициализируем AI чат
+            aiChatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAiMessage();
                 }
             });
-        });
-        
-        // Привязка обработчиков для AI Chat
-        sendAiChatButton.addEventListener('click', sendAiMessage);
-        aiChatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); 
-                sendAiMessage();
-            }
-        });
-        
-        // Привязка обработчика для кнопки обновления инсайтов
-        if (refreshInsightsBtn) {
-            refreshInsightsBtn.addEventListener('click', () => {
-                fetchInsights(true); // Форсированное обновление
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-                }
-            });
-        }
-
-        // Глобальные функции для доступа из HTML
-        window.markTaskAsDone = markTaskAsDone;
-        window.showMenu = showMenu;
-        window.enterEditMode = enterEditMode; 
-        window.exitEditMode = exitEditMode; 
-        window.setDefaultFormValues = setDefaultFormValues; 
-        window.deleteTask = deleteTask; 
-        window.fetchTasks = fetchTasks; 
-        window.fetchCompletedTasks = fetchCompletedTasks; // НОВАЯ ФУНКЦИЯ
-        window.fetchStats = fetchStats;
-        window.fetchInsights = fetchInsights; // НОВАЯ ФУНКЦИЯ
-        window.switchSection = switchSection;
-        window.toggleSettingsMenu = toggleSettingsMenu;
-        window.toggleSetting = toggleSetting;
-        window.openTaskFormModal = openTaskFormModal;
-        window.closeTaskFormModal = closeTaskFormModal;
-        window.performSwipeMarkAsDone = performSwipeMarkAsDone;
-        window.performSwipeDelete = performSwipeDelete;
-        window.nextOnboardingScreen = nextOnboardingScreen;
-        window.prevOnboardingScreen = prevOnboardingScreen;
-        window.skipOnboarding = skipOnboarding;
-        window.finishOnboarding = finishOnboarding;
-        window.markdownToHtml = markdownToHtml;
-        window.invalidateTasksCache = invalidateTasksCache;
-        window.invalidateCompletedTasksCache = invalidateCompletedTasksCache; // НОВАЯ ФУНКЦИЯ
-        window.invalidateInsightsCache = invalidateInsightsCache; // НОВАЯ ФУНКЦИЯ
-
-        // Инициализация при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            // Сначала показываем экран загрузки
+            
+            sendAiChatButton.addEventListener('click', sendAiMessage);
+            
+            // Загружаем начальные данные
+            await fetchTasks(false);
+            await fetchCompletedTasks(false);
+            await fetchStats(false);
+            await fetchInsights(false);
+            
+            // Загружаем настройки
+            await fetchUserSettings();
+            
+            // Загружаем историю чата
+            restoreChatHistory();
+            
+            // Скрываем экран загрузки
             hideSplashScreen();
             
-            if (tg.initData) {
-                initSwipe();
-                
-                updateAIChatVisibility();
-                updateFabVisibility();
-                
-                const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
-                if (tasksButton) {
-                    switchSection('tasks-content', tasksButton);
-                }
-                
-                // Загружаем все данные с небольшой задержкой, чтобы не блокировать отображение
-                setTimeout(() => {
-                    loadInitialData();
-                    
-                    // Восстанавливаем историю чата
-                    restoreChatHistory();
-                }, 500);
-                
-            } else {
-                console.warn('Telegram WebApp not fully initialized');
-                initSwipe();
-                
-                updateAIChatVisibility();
-                updateFabVisibility();
-                
-                const tasksButton = document.querySelector('.nav-button[data-section="tasks-content"]');
-                if (tasksButton) {
-                    switchSection('tasks-content', tasksButton);
-                }
-                
-                // Загружаем все данные с небольшой задержкой, чтобы не блокировать отображение
-                setTimeout(() => {
-                    loadInitialData();
-                    
-                    // Восстанавливаем историю чата
-                    restoreChatHistory();
-                }, 500);
+            // Обновляем видимость FAB
+            updateFabVisibility();
+        });
+
+        // Функция для обновления статистики при открытии вкладки аналитики
+        function updateStatsOnOpen() {
+            if (currentSectionIndex === 2) {
+                fetchStats(false);
+                fetchInsights(false);
+            }
+        }
+
+        // Добавляем обработчик для обновления статистики при открытии вкладки
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && currentSectionIndex === 2) {
+                updateStatsOnOpen();
             }
         });
+
+        // Инициализируем кнопку обновления инсайтов
+        if (refreshInsightsBtn) {
+            refreshInsightsBtn.addEventListener('click', function() {
+                fetchInsights(true);
+            });
+        }
     </script>
 </body>
 </html>
