@@ -624,6 +624,7 @@
         /* iOS стиль для иконки настроек */
         .settings-icon::before {
             content: "";
+;
             display: block;
             width: 22px;
             height: 22px;
@@ -644,7 +645,7 @@
             }
             
             .settings-icon::before {
-                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cccccc'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org2000/svg' viewBox='0 0 24 24' fill='%23cccccc'%3E%3Cpath d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/%3E%3C/svg%3E");
             }
             
             .settings-icon:hover::before,
@@ -2917,8 +2918,8 @@
                 <span class="progress-dot"></span>
                 <span class="progress-dot"></span>
                 <span class="progress-dot"></span>
-                <span class="progress-dot"></span>
                 <span class="progress-dot active"></span>
+                <span class="progress-dot"></span>
                 <span class="progress-dot"></span>
             </div>
         </div>
@@ -4395,6 +4396,12 @@
         }
         
         function handleTaskTouchStart(e) {
+            // ИСПРАВЛЕНИЕ: Добавляем проверку и останавливаем всплытие
+            if (isOnboardingShown) return;
+            
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
             isSwipingTask = true;
             taskReachedThreshold = false;
             
@@ -4418,12 +4425,14 @@
                 `;
                 taskCard.appendChild(swipeBackground);
             }
-            
-            e.stopPropagation();
         }
         
         function handleTaskTouchMove(e) {
-            if (!taskSwipeTarget || !taskSwipeStartX) return;
+            if (!taskSwipeTarget || !taskSwipeStartX || isOnboardingShown) return;
+            
+            // ИСПРАВЛЕНИЕ: Останавливаем всплытие
+            e.stopPropagation();
+            e.preventDefault();
             
             const currentX = e.touches[0].clientX;
             const diffX = currentX - taskSwipeStartX;
@@ -4434,7 +4443,6 @@
             }
             
             if (Math.abs(diffX) > 10) {
-                e.preventDefault();
                 isTaskSwiping = true;
                 taskSwipeCurrentX = currentX;
                 
@@ -4485,15 +4493,18 @@
                     taskReachedThreshold = false;
                     taskSwipeTarget.classList.remove('at-threshold');
                 }
-                
-                e.stopPropagation();
             }
         }
         
         function handleTaskTouchEnd() {
-            if (!taskSwipeTarget || !isTaskSwiping) {
+            if (!taskSwipeTarget || !isTaskSwiping || isOnboardingShown) {
                 resetTaskSwipe();
                 return;
+            }
+            
+            // ИСПРАВЛЕНИЕ: Останавливаем всплытие
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
             }
             
             const taskWidth = taskSwipeTarget.offsetWidth;
@@ -4534,10 +4545,12 @@
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
             }
+            
+            isSwipingTask = false;
         }
         
         function handleTaskTouchCancel() {
-            if (isTaskSwiping) {
+            if (isTaskSwiping && !isOnboardingShown) {
                 taskSwipeTarget.style.transform = 'translateX(0)';
                 taskSwipeTarget.style.opacity = '1';
                 
@@ -4545,9 +4558,16 @@
                     resetTaskSwipe();
                 }, 200);
             }
+            isSwipingTask = false;
         }
         
         function handleTaskMouseStart(e) {
+            // ИСПРАВЛЕНИЕ: Добавляем проверку и останавливаем всплытие
+            if (isOnboardingShown) return;
+            
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
             isSwipingTask = true;
             taskReachedThreshold = false;
             
@@ -4571,18 +4591,19 @@
                 `;
                 taskCard.appendChild(swipeBackground);
             }
-            
-            e.stopPropagation();
         }
         
         function handleTaskMouseMove(e) {
-            if (!taskSwipeTarget || !taskSwipeStartX) return;
+            if (!taskSwipeTarget || !taskSwipeStartX || isOnboardingShown) return;
+            
+            // ИСПРАВЛЕНИЕ: Останавливаем всплытие
+            e.stopPropagation();
+            e.preventDefault();
             
             const currentX = e.clientX;
             const diffX = currentX - taskSwipeStartX;
             
             if (Math.abs(diffX) > 10) {
-                e.preventDefault();
                 isTaskSwiping = true;
                 taskSwipeCurrentX = currentX;
                 
@@ -4629,15 +4650,18 @@
                     taskReachedThreshold = false;
                     taskSwipeTarget.classList.remove('at-threshold');
                 }
-                
-                e.stopPropagation();
             }
         }
         
         function handleTaskMouseEnd() {
-            if (!taskSwipeTarget || !isTaskSwiping) {
+            if (!taskSwipeTarget || !isTaskSwiping || isOnboardingShown) {
                 resetTaskSwipe();
                 return;
+            }
+            
+            // ИСПРАВЛЕНИЕ: Останавливаем всплытие
+            if (event && event.stopPropagation) {
+                event.stopPropagation();
             }
             
             const taskWidth = taskSwipeTarget.offsetWidth;
@@ -4674,10 +4698,12 @@
                     resetTaskSwipe();
                 }, 300);
             }
+            
+            isSwipingTask = false;
         }
         
         function handleTaskMouseCancel() {
-            if (isTaskSwiping) {
+            if (isTaskSwiping && !isOnboardingShown) {
                 taskSwipeTarget.style.transform = 'translateX(0)';
                 taskSwipeTarget.style.opacity = '1';
                 
@@ -4685,6 +4711,7 @@
                     resetTaskSwipe();
                 }, 200);
             }
+            isSwipingTask = false;
         }
         
         function resetTaskSwipe() {
@@ -5036,7 +5063,7 @@
                 completedTasksList.innerHTML = '<p class="completed-tasks-loading">Загрузка выполненных задач...</p>';
                 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // Увеличено до 30 секунд
                 
                 const response = await fetch(N8N_GET_COMPLETED_TASKS_URL, {
                     method: 'GET',
@@ -5156,7 +5183,7 @@
                 tasksList.innerHTML = '<p class="loading-message">Загрузка задач...</p>';
                 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // Увеличено до 30 секунд
                 
                 const response = await fetch(N8N_GET_URL, {
                     method: 'GET',
@@ -5277,7 +5304,7 @@
                 }
                 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const timeoutId = setTimeout(() => controller.abort(), 45000); // Увеличено до 45 секунд
                 
                 const response = await fetch(N8N_GET_INSIGHTS_URL, {
                     method: 'GET',
@@ -5611,7 +5638,7 @@
                 }
 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // Увеличено до 30 секунд
                 
                 const response = await fetch(N8N_GET_STATS_URL, {
                     method: 'GET',
